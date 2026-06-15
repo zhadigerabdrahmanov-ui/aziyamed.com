@@ -1631,6 +1631,12 @@
   .quiz-name-field:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(34,164,85,0.1); }
   html.dark .quiz-name-field { background:#243044; color:#e2e8f0; border-color:rgba(255,255,255,0.12); }
   .quiz-grade-a { color:#1a8043; } .quiz-grade-b { color:#388e3c; } .quiz-grade-c { color:#e65100; } .quiz-grade-d { color:#c62828; }
+
+  @keyframes kzFloat {
+    0%   { transform: translateY(0) rotate(var(--r0)); opacity: var(--op1); }
+    100% { transform: translateY(var(--dy)) rotate(var(--r1)); opacity: calc(var(--op1) * 0.6); }
+  }
+  .kz-ornament { pointer-events: none; user-select: none; }
   /* ── REGISTRATION MODAL ── */
   .reg-open-btn { padding:9px 18px; border-radius:22px; background:linear-gradient(135deg,var(--green),var(--green-dark)); color:#fff; border:none; font-size:13px; font-weight:700; cursor:pointer; transition:.2s; white-space:nowrap; }
   .reg-open-btn:hover { opacity:.88; transform:translateY(-1px); }
@@ -4971,7 +4977,7 @@ function initKzBg() {
     { id:'staff',      ornaments:[{svg:horn(G,160),top:'8%',right:'-3%',dur:'10s',dy:'-20px',r0:'0deg',r1:'14deg',op1:0.18},{svg:diamond(O,140),top:'55%',left:'-4%',dur:'13s',dy:'18px',r0:'8deg',r1:'-6deg',op1:0.20},{svg:star8(O,100),top:'35%',left:'4%',dur:'9s',dy:'-12px',r0:'0deg',r1:'22deg',op1:0.16}]}
   ];
 
-  sections.forEach(({ id, ornaments }) => {
+  configs.forEach(({ id, ornaments }) => {
     const sec = document.getElementById(id);
     if (!sec) return;
     const existing = sec.querySelectorAll('.kz-ornament');
