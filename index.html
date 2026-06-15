@@ -1425,6 +1425,11 @@
     .contacts-wrap { grid-template-columns:1fr; }
     .footer-inner { grid-template-columns:1fr 1fr; }
     nav { display:none; }
+    .header-right { display:none; }
+    .burger-btn { display:flex; margin-left:auto; }
+    .header-inner { padding:10px 14px; }
+    .logo-icon { width:52px; height:52px; }
+    .logo-name { font-size:18px; }
   }
   @media(max-width:600px) {
     .footer-inner { grid-template-columns:1fr; }
@@ -1987,10 +1992,10 @@ html.dark .kz-tile { opacity:0.22; }
         <a href="#" onclick="showSection('compliance');return false;" class="nav-link" data-section="compliance">Пациентті қолдау және ішкі сараптама бөлімі</a>
         <a href="#" onclick="showSection('staff');return false;" class="nav-link" data-section="staff" style="color:var(--orange);font-weight:700;">🛠 ҚҰРАЛДАР</a>
       </nav>
-      <button class="burger-btn" id="burgerBtn" aria-label="Меню" onclick="toggleMobileNav()">
-        <span></span><span></span><span></span>
-      </button>
     </div>
+    <button class="burger-btn" id="burgerBtn" aria-label="Меню" onclick="toggleMobileNav()">
+      <span></span><span></span><span></span>
+    </button>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
       <div class="header-top-row" style="justify-content:flex-end;">
         <button class="header-icon-btn" id="darkToggle" onclick="toggleDark()" title="Күндізгі / түнгі режим">🌙</button>
