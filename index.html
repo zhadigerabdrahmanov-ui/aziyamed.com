@@ -1958,6 +1958,60 @@ html.dark .kz-tile { opacity:0.22; }
   .screening-form { padding:20px 18px; }
 }
 
+
+/* ── SCREENING PLANNER TOOL ── */
+.splan-wrap { }
+.splan-upload-zone { border:2px dashed var(--green); border-radius:16px; padding:32px 20px; text-align:center; cursor:pointer; transition:background .2s; background:rgba(34,164,85,.04); }
+.splan-upload-zone:hover,.splan-upload-zone.drag { background:rgba(34,164,85,.1); }
+.splan-upload-icon { font-size:2.5rem; margin-bottom:10px; }
+.splan-upload-title { font-weight:700; font-size:1rem; color:var(--dark); margin-bottom:6px; }
+.splan-upload-sub { font-size:.85rem; color:var(--gray); }
+.splan-file-input { display:none; }
+.splan-template-btn { display:inline-flex; align-items:center; gap:6px; margin-top:14px; padding:8px 18px; border:1.5px solid var(--green); border-radius:30px; color:var(--green); font-size:.85rem; font-weight:600; background:none; cursor:pointer; text-decoration:none; transition:all .2s; }
+.splan-template-btn:hover { background:var(--green); color:#fff; }
+.splan-status { margin:14px 0 0; font-size:.88rem; color:var(--gray); min-height:20px; }
+.splan-results { margin-top:24px; }
+.splan-summary-row { display:flex; gap:14px; flex-wrap:wrap; margin-bottom:24px; }
+.splan-stat { flex:1; min-width:130px; background:var(--green-light); border-radius:14px; padding:16px 20px; }
+.splan-stat-val { font-size:1.8rem; font-weight:900; color:var(--green-dark); line-height:1; }
+.splan-stat-label { font-size:.8rem; color:var(--gray); margin-top:4px; }
+.splan-months { display:flex; flex-direction:column; gap:10px; }
+.splan-month-row { background:var(--white); border-radius:14px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,.06); }
+.splan-month-head { display:flex; align-items:center; gap:14px; padding:14px 20px; cursor:pointer; }
+.splan-month-head:hover { background:rgba(34,164,85,.04); }
+.splan-month-num { width:36px; height:36px; border-radius:50%; background:var(--green); color:#fff; font-weight:900; font-size:.9rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.splan-month-name { font-weight:700; font-size:.95rem; color:var(--dark); flex:1; }
+.splan-month-count { font-size:.85rem; color:var(--gray); }
+.splan-month-chevron { color:var(--green); font-size:1rem; transition:transform .2s; }
+.splan-month-row.open .splan-month-chevron { transform:rotate(180deg); }
+.splan-month-body { display:none; padding:0 20px 16px; border-top:1px solid rgba(0,0,0,.06); }
+.splan-month-row.open .splan-month-body { display:block; }
+.splan-type-list { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; padding-top:14px; }
+.splan-type-tag { display:flex; align-items:center; gap:6px; background:#f0faf5; border-radius:20px; padding:6px 14px; font-size:.82rem; font-weight:600; color:var(--green-dark); }
+.splan-type-tag span { background:var(--green); color:#fff; border-radius:50%; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:.78rem; font-weight:900; flex-shrink:0; }
+.splan-patient-table-wrap { overflow-x:auto; border-radius:10px; border:1px solid rgba(0,0,0,.07); }
+.splan-patient-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+.splan-patient-table th { background:#f8fafc; padding:8px 12px; text-align:left; font-weight:700; color:var(--gray); border-bottom:1px solid rgba(0,0,0,.07); }
+.splan-patient-table td { padding:8px 12px; border-bottom:1px solid rgba(0,0,0,.04); }
+.splan-patient-table tr:last-child td { border-bottom:none; }
+.splan-scr-badge { display:inline-block; background:#e8f5e9; color:var(--green-dark); border-radius:8px; padding:2px 7px; font-size:.75rem; font-weight:600; margin:1px; }
+.splan-export-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:20px; }
+.splan-export-btn { display:flex; align-items:center; gap:8px; padding:11px 22px; border-radius:30px; font-weight:700; font-size:.9rem; cursor:pointer; border:none; transition:all .2s; }
+.splan-export-btn.excel { background:#1d6f42; color:#fff; }
+.splan-export-btn.excel:hover { background:#155232; }
+.splan-export-btn.csv { background:#f0faf5; color:var(--green-dark); border:2px solid var(--green); }
+.splan-export-btn.csv:hover { background:var(--green); color:#fff; }
+.splan-col-map { background:#f8fafc; border-radius:12px; padding:16px 20px; margin:16px 0; display:none; }
+.splan-col-map-title { font-weight:700; font-size:.9rem; margin-bottom:12px; color:var(--dark); }
+.splan-col-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+.splan-col-label { font-size:.85rem; color:var(--gray); width:160px; flex-shrink:0; }
+.splan-col-select { padding:7px 12px; border:1.5px solid #dde; border-radius:8px; font-size:.85rem; flex:1; min-width:140px; }
+.splan-map-btn { margin-top:12px; padding:10px 24px; background:var(--green); color:#fff; border:none; border-radius:30px; font-weight:700; cursor:pointer; font-size:.9rem; }
+@media(max-width:600px){
+  .splan-summary-row { gap:8px; }
+  .splan-stat { min-width:100px; }
+}
+
 </style>
 </head>
 <body>
@@ -2530,14 +2584,14 @@ html.dark .kz-tile { opacity:0.22; }
 
     <!-- Таб батырмалары -->
     <div class="doctors-tabs" style="margin-bottom:32px;">
-      <button class="doctors-tab active" id="tab-services" onclick="showPatientsTab('services')" data-i18n="tab_services">🏥 Қызметтер тізімі</button>
+      <button class="doctors-tab active" id="tab-screening" onclick="showPatientsTab('screening')">🩺 Жеке скрининг-калькулятор</button>
+      <button class="doctors-tab" id="tab-services" onclick="showPatientsTab('services')" data-i18n="tab_services">🏥 Қызметтер тізімі</button>
       <button class="doctors-tab" id="tab-sched" onclick="showPatientsTab('sched')" data-i18n="tab_schedule">📅 Жұмыс кестесі</button>
-      <button class="doctors-tab" id="tab-screening" onclick="showPatientsTab('screening')">🩺 Скрининг жоспары</button>
       <a href="https://damumed.kz/#/" target="_blank" class="doctors-tab" style="background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;border-color:transparent;text-decoration:none;">📋 Damumed арқылы жазылу</a>
     </div>
 
     <!-- PANEL: Қызметтер -->
-    <div id="panel-services" class="doctors-panel open">
+    <div id="panel-services" class="doctors-panel">
     <div class="services-grid">
       <div class="service-card reveal">
         <div class="service-icon">👨‍⚕️</div>
@@ -2859,7 +2913,7 @@ html.dark .kz-tile { opacity:0.22; }
     </div><!-- /panel-sched -->
 
     <!-- PANEL: Скрининг жоспары -->
-    <div id="panel-screening" class="doctors-panel">
+    <div id="panel-screening" class="doctors-panel open">
       <div class="screening-calc-wrap">
         <div class="screening-intro reveal">
           <div class="section-label" style="margin-bottom:12px;">ҚР ДСМ-174/2020 бұйрығы негізінде</div>
@@ -2886,6 +2940,10 @@ html.dark .kz-tile { opacity:0.22; }
           <div style="font-size:2.5rem;">✅</div>
           <p>Сіз <strong id="scrNoAge"></strong> жастасыз. Бұл жылы скрининг кестесіне кірмейсіз.</p>
           <p class="scr-next-info" id="scrNextInfo"></p>
+        </div>
+        <div class="scr-warning reveal" style="background:#fff8e1;border-left:4px solid #f59e0b;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;font-size:.88rem;line-height:1.5;color:#7c5e00;">
+          <span style="font-size:1.2rem;flex-shrink:0;">⚠️</span>
+          <span><strong>Ескерту:</strong> Скринингтен өту бойынша нақты шешімді дәрігер қабылдайтындығын ескертеміз!</span>
         </div>
         <div class="scr-disclaimer reveal">
           <span>📋</span> Нәтижелер ҚР Денсаулық сақтау министрінің <strong>№ ҚР ДСМ-174/2020</strong> бұйрығы негізінде есептеледі. Скринингтер тегін медициналық көмектің кепілдік берілген көлемі шеңберінде жүргізіледі.
@@ -3717,6 +3775,66 @@ html.dark .kz-tile { opacity:0.22; }
             <div id="qrepEmpty" class="inc-empty" style="display:none;">Нәтиже жоқ</div>
           </div>
 
+        </div>
+      </div>
+
+
+      <!-- СКРИНИНГ ЖОСПАР ГЕНЕРАТОРЫ -->
+      <div class="staff-task-card" id="taskScrPlan">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskScrPlanBody')">
+          <div class="staff-task-left">
+            <span class="staff-task-icon">📊</span>
+            <div>
+              <div class="staff-task-title">Скрининг жоспар генераторы</div>
+              <div class="staff-task-desc">Пациенттер тізімін жүктесеңіз, №ҚР ДСМ-174/2020 бұйрығы бойынша ай сайынғы шақыру жоспары жасалады</div>
+            </div>
+          </div>
+          <span class="staff-task-chevron">▼</span>
+        </div>
+        <div class="staff-task-body" id="taskScrPlanBody" style="display:none;">
+          <div class="splan-wrap">
+
+            <!-- Жүктеу аймағы -->
+            <div class="splan-upload-zone" id="splanDropZone"
+                 ondragover="event.preventDefault();this.classList.add('drag')"
+                 ondragleave="this.classList.remove('drag')"
+                 ondrop="splanHandleDrop(event)"
+                 onclick="document.getElementById('splanFileInput').click()">
+              <div class="splan-upload-icon">📂</div>
+              <div class="splan-upload-title">CSV немесе Excel файлын жүктеңіз</div>
+              <div class="splan-upload-sub">Файлды осы жерге сүйреп әкеліңіз немесе басыңыз</div>
+              <input type="file" id="splanFileInput" class="splan-file-input" accept=".csv,.xlsx,.xls" onchange="splanHandleFile(this.files[0])">
+            </div>
+            <div style="text-align:center;">
+              <button class="splan-template-btn" onclick="splanDownloadTemplate()">⬇ Үлгі файл жүктеу (CSV)</button>
+            </div>
+            <div class="splan-status" id="splanStatus"></div>
+
+            <!-- Баған белгілеу -->
+            <div class="splan-col-map" id="splanColMap">
+              <div class="splan-col-map-title">📋 Бағандарды белгілеңіз</div>
+              <div class="splan-col-row">
+                <span class="splan-col-label">Туған жылы / жасы:</span>
+                <select class="splan-col-select" id="splanColBirth"></select>
+              </div>
+              <div class="splan-col-row">
+                <span class="splan-col-label">Жынысы (М/Ж):</span>
+                <select class="splan-col-select" id="splanColGender"></select>
+              </div>
+              <div class="splan-col-row">
+                <span class="splan-col-label">Аты-жөні (міндетті емес):</span>
+                <select class="splan-col-select" id="splanColName"></select>
+              </div>
+              <div class="splan-col-row">
+                <span class="splan-col-label">ИИН (міндетті емес):</span>
+                <select class="splan-col-select" id="splanColIin"></select>
+              </div>
+              <button class="splan-map-btn" onclick="splanGenerate()">▶ Жоспар жасау</button>
+            </div>
+
+            <!-- Нәтиже -->
+            <div class="splan-results" id="splanResults" style="display:none;"></div>
+          </div>
         </div>
       </div>
 
@@ -6051,5 +6169,282 @@ function calcScreening() {
   res.innerHTML = html;
   res.style.display = 'flex';
 }
+
+
+/* ══ SCREENING PLANNER JS ══════════════════════════════════════════ */
+(function(){
+  var MONTHS_KZ = ['Қаңтар','Ақпан','Наурыз','Сәуір','Мамыр','Маусым','Шілде','Тамыз','Қыркүйек','Қазан','Қараша','Желтоқсан'];
+  var SCREENINGS = [
+    { id:'cvd', icon:'🫀', label:'АГ / ЖИА / Диабет / Глаукома', genders:['М','М.','M','Е','Е.','Ер','ЖО','Ж','Ж.','Ә','Ә.','Әйел'], anyGender:true,
+      ages:[40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76], freq:'2 жылда 1' },
+    { id:'breast', icon:'🩺', label:'Маммография (сүт безі)', genders:['Ж','Ж.','Ә','Ә.','Әйел','Жен','F','f','Женский'], anyGender:false, female:true,
+      ages:[40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76], freq:'2 жылда 1' },
+    { id:'cervix', icon:'🔬', label:'Жатыр мойны обыры (ПАП-тест)', genders:['Ж','Ж.','Ә','Ә.','Әйел','Жен','F','f','Женский'], anyGender:false, female:true,
+      ages:[30,34,38,42,46,50,54,58,62,66,70,74], freq:'4 жылда 1' },
+    { id:'stroke', icon:'🧠', label:'Цереброваскулярлық / Инсульт', genders:['М','М.','M','Е','Е.','Ер','Муж','Мужской'], anyGender:false, female:false,
+      ages:[50,52,54,56,58,60,62,64,66,68,70,72,74,76], freq:'2 жылда 1' },
+    { id:'colon', icon:'🫁', label:'Колоректальды обыр', genders:['М','М.','M','Е','Е.','Ер','ЖО','Ж','Ж.','Ә','Ә.','Әйел'], anyGender:true,
+      ages:[50,52,54,56,58,60,62,64,66,68,70,72,74,76], freq:'2 жылда 1' }
+  ];
+  var _parsedRows = [];
+  var _headers = [];
+
+  function isFemale(val){
+    if(!val) return null;
+    var v = String(val).trim().toLowerCase();
+    if(['ж','ж.','ә','ә.','әйел','жен','женский','f','female','2'].indexOf(v)!==-1) return true;
+    if(['м','м.','е','е.','ер','муж','мужской','m','male','1'].indexOf(v)!==-1) return false;
+    return null;
+  }
+
+  function getScreenings(age, female){
+    return SCREENINGS.filter(function(s){
+      if(!s.anyGender){ if(s.female && !female) return false; if(!s.female && female) return false; }
+      return s.ages.indexOf(age)!==-1;
+    });
+  }
+
+  window.splanHandleDrop = function(e){
+    e.preventDefault();
+    document.getElementById('splanDropZone').classList.remove('drag');
+    var f = e.dataTransfer.files[0];
+    if(f) splanHandleFile(f);
+  };
+
+  window.splanHandleFile = function(file){
+    if(!file) return;
+    setStatus('Файл оқылуда...');
+    var ext = file.name.split('.').pop().toLowerCase();
+    if(ext==='csv'){
+      var reader = new FileReader();
+      reader.onload = function(e){ splanParseCSV(e.target.result); };
+      reader.readAsText(file, 'UTF-8');
+    } else if(ext==='xlsx'||ext==='xls'){
+      if(typeof XLSX === 'undefined'){
+        var s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+        s.onload = function(){ readXLSX(file); };
+        document.head.appendChild(s);
+      } else { readXLSX(file); }
+    } else { setStatus('❌ Тек CSV немесе Excel файлы қабылданады'); }
+  };
+
+  function readXLSX(file){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var data = XLSX.utils.sheet_to_csv(ws);
+      splanParseCSV(data);
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function splanParseCSV(text){
+    var lines = text.trim().split(/\r?\n/);
+    var sep = text.indexOf(';')!==-1 ? ';' : ',';
+    _headers = lines[0].split(sep).map(function(h){ return h.replace(/"/g,'').trim(); });
+    _parsedRows = lines.slice(1).filter(function(l){ return l.trim(); }).map(function(line){
+      var cols = line.split(sep).map(function(c){ return c.replace(/"/g,'').trim(); });
+      var row = {};
+      _headers.forEach(function(h,i){ row[h] = cols[i]||''; });
+      return row;
+    });
+    setStatus('✅ ' + _parsedRows.length + ' жол табылды. Бағандарды белгілеңіз.');
+    showColMap();
+  }
+
+  function showColMap(){
+    var map = document.getElementById('splanColMap');
+    map.style.display = 'block';
+    var opts = '<option value="">— таңдаңыз —</option>' + _headers.map(function(h){ return '<option>'+h+'</option>'; }).join('');
+    ['splanColBirth','splanColGender','splanColName','splanColIin'].forEach(function(id){
+      document.getElementById(id).innerHTML = opts;
+    });
+    // auto-guess
+    _headers.forEach(function(h){
+      var hl = h.toLowerCase();
+      if(/туған|жыл|birth|год|vozrast|жас/.test(hl)) trySet('splanColBirth',h);
+      if(/жынысы|жыныс|пол|gender|sex/.test(hl)) trySet('splanColGender',h);
+      if(/аты|аты-жөні|фио|ф\.и\.о|name|ф\.и/.test(hl)) trySet('splanColName',h);
+      if(/иин|iin|жеке/.test(hl)) trySet('splanColIin',h);
+    });
+  }
+
+  function trySet(id, val){
+    var el = document.getElementById(id);
+    for(var i=0;i<el.options.length;i++){ if(el.options[i].value===val){ el.value=val; return; } }
+  }
+
+  window.splanGenerate = function(){
+    var birthCol = document.getElementById('splanColBirth').value;
+    var genderCol = document.getElementById('splanColGender').value;
+    var nameCol = document.getElementById('splanColName').value;
+    var iinCol = document.getElementById('splanColIin').value;
+    if(!birthCol||!genderCol){ alert('Туған жылы мен жынысын белгілеңіз'); return; }
+
+    var currentYear = new Date().getFullYear();
+    var patients = [];
+    _parsedRows.forEach(function(row){
+      var byRaw = row[birthCol];
+      var by = parseInt(byRaw);
+      if(!by||isNaN(by)) return;
+      // if age given instead of year
+      if(by < 1900) by = currentYear - by;
+      var age = currentYear - by;
+      var gVal = row[genderCol];
+      var female = isFemale(gVal);
+      if(female===null) return;
+      var scrs = getScreenings(age, female);
+      if(!scrs.length) return;
+      patients.push({
+        iin: iinCol ? row[iinCol]||'' : '',
+        name: nameCol ? row[nameCol]||'' : '',
+        by: by, age: age, female: female,
+        scrs: scrs
+      });
+    });
+
+    if(!patients.length){
+      setStatus('⚠️ Бұйрықтағы нысаналы жасқа кіретін пациент табылмады');
+      return;
+    }
+
+    // Sort by age desc (older first), then distribute across 12 months
+    patients.sort(function(a,b){ return b.age - a.age; });
+    var monthBuckets = Array.from({length:12}, function(){ return []; });
+    patients.forEach(function(p,i){ monthBuckets[i%12].push(p); });
+
+    renderResults(patients, monthBuckets, currentYear);
+    document.getElementById('splanColMap').style.display = 'none';
+    setStatus('');
+  };
+
+  function renderResults(patients, monthBuckets, year){
+    var totalByScr = {};
+    SCREENINGS.forEach(function(s){ totalByScr[s.id]=0; });
+    patients.forEach(function(p){ p.scrs.forEach(function(s){ totalByScr[s.id]++; }); });
+
+    var statsHtml = '<div class="splan-summary-row">' +
+      '<div class="splan-stat"><div class="splan-stat-val">'+patients.length+'</div><div class="splan-stat-label">Жалпы пациент</div></div>' +
+      SCREENINGS.filter(function(s){ return totalByScr[s.id]>0; }).map(function(s){
+        return '<div class="splan-stat"><div class="splan-stat-val">'+totalByScr[s.id]+'</div><div class="splan-stat-label">'+s.icon+' '+s.label+'</div></div>';
+      }).join('') +
+    '</div>';
+
+    var monthsHtml = monthBuckets.map(function(bucket,mi){
+      if(!bucket.length) return '';
+      var typeCount = {};
+      bucket.forEach(function(p){ p.scrs.forEach(function(s){ typeCount[s.id]=(typeCount[s.id]||0)+1; }); });
+      var tagsHtml = SCREENINGS.filter(function(s){ return typeCount[s.id]; }).map(function(s){
+        return '<div class="splan-type-tag">'+s.icon+' '+s.label+' <span>'+typeCount[s.id]+'</span></div>';
+      }).join('');
+      var rowsHtml = bucket.map(function(p,idx){
+        var scrBadges = p.scrs.map(function(s){ return '<span class="splan-scr-badge">'+s.icon+' '+s.label+'</span>'; }).join('');
+        return '<tr><td>'+(idx+1)+'</td><td>'+(p.iin||'—')+'</td><td>'+(p.name||'—')+'</td><td>'+p.by+'</td><td>'+(p.female?'Ж':'Е')+'</td><td>'+p.age+'</td><td>'+scrBadges+'</td></tr>';
+      }).join('');
+      return '<div class="splan-month-row" id="splanMonth'+mi+'">' +
+        '<div class="splan-month-head" onclick="splanToggleMonth('+mi+')">' +
+          '<div class="splan-month-num">'+(mi+1)+'</div>' +
+          '<div class="splan-month-name">'+MONTHS_KZ[mi]+' '+year+'</div>' +
+          '<div class="splan-month-count">'+bucket.length+' пациент</div>' +
+          '<span class="splan-month-chevron">▾</span>' +
+        '</div>' +
+        '<div class="splan-month-body">' +
+          '<div class="splan-type-list">'+tagsHtml+'</div>' +
+          '<div class="splan-patient-table-wrap"><table class="splan-patient-table">' +
+            '<thead><tr><th>№</th><th>ИИН</th><th>Аты-жөні</th><th>Туған жылы</th><th>Жынысы</th><th>Жасы</th><th>Скрининг түрлері</th></tr></thead>' +
+            '<tbody>'+rowsHtml+'</tbody>' +
+          '</table></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    var html2 = statsHtml +
+      '<div class="splan-months">'+monthsHtml+'</div>' +
+      '<div class="splan-export-row">' +
+        '<button class="splan-export-btn excel" onclick="splanExportExcel()">📥 Excel жүктеу</button>' +
+        '<button class="splan-export-btn csv" onclick="splanExportCSV2()">📄 CSV жүктеу</button>' +
+      '</div>';
+
+    var res = document.getElementById('splanResults');
+    res.innerHTML = html2;
+    res.style.display = 'block';
+    window._splanData = { patients: patients, monthBuckets: monthBuckets, year: year };
+  }
+
+  window.splanToggleMonth = function(mi){
+    var el = document.getElementById('splanMonth'+mi);
+    el.classList.toggle('open');
+  };
+
+  window.splanExportCSV2 = function(){
+    var d = window._splanData;
+    if(!d) return;
+    var rows = [['Ай','Аты-жөні','ИИН','Туған жылы','Жынысы','Жасы','Скрининг түрлері']];
+    var MONTHS_KZ2 = ['Қаңтар','Ақпан','Наурыз','Сәуір','Мамыр','Маусым','Шілде','Тамыз','Қыркүйек','Қазан','Қараша','Желтоқсан'];
+    d.monthBuckets.forEach(function(bucket,mi){
+      bucket.forEach(function(p){
+        rows.push([MONTHS_KZ2[mi]+' '+d.year, p.name||'', p.iin||'', p.by, p.female?'Ж':'Е', p.age, p.scrs.map(function(s){return s.label;}).join(' | ')]);
+      });
+    });
+    var csv = rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
+    var blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'scrining-jospy-'+d.year+'.csv';
+    a.click();
+  };
+
+  window.splanExportExcel = function(){
+    var d = window._splanData;
+    if(!d) return;
+    if(typeof XLSX === 'undefined'){
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload = function(){ doExcel(d); };
+      document.head.appendChild(s);
+    } else { doExcel(d); }
+  };
+
+  function doExcel(d){
+    var MONTHS_KZ2 = ['Қаңтар','Ақпан','Наурыз','Сәуір','Мамыр','Маусым','Шілде','Тамыз','Қыркүйек','Қазан','Қараша','Желтоқсан'];
+    var wb = XLSX.utils.book_new();
+    // Summary sheet
+    var sumRows = [['АЙ','ПАЦИЕНТ САНЫ','АГ/ЖИА/Диабет/Глаукома','Маммография','ПАП-тест','Цереброваскулярлық','Колоректальды']];
+    d.monthBuckets.forEach(function(bucket,mi){
+      var tc = {};
+      SCREENINGS.forEach(function(s){ tc[s.id]=0; });
+      bucket.forEach(function(p){ p.scrs.forEach(function(s){ tc[s.id]++; }); });
+      sumRows.push([MONTHS_KZ2[mi]+' '+d.year, bucket.length, tc.cvd||0, tc.breast||0, tc.cervix||0, tc.stroke||0, tc.colon||0]);
+    });
+    var ws1 = XLSX.utils.aoa_to_sheet(sumRows);
+    XLSX.utils.book_append_sheet(wb, ws1, 'Жалпы жоспар');
+    // Detail sheet
+    var detRows = [['АЙ','АТЫ-ЖӨНІ','ИИН','ТУҒАН ЖЫЛЫ','ЖЫНЫСЫ','ЖАСЫ','СКРИНИНГ ТҮРЛЕРІ']];
+    d.monthBuckets.forEach(function(bucket,mi){
+      bucket.forEach(function(p){
+        detRows.push([MONTHS_KZ2[mi]+' '+d.year, p.name||'', p.iin||'', p.by, p.female?'Ж':'Е', p.age, p.scrs.map(function(s){return s.label;}).join('; ')]);
+      });
+    });
+    var ws2 = XLSX.utils.aoa_to_sheet(detRows);
+    XLSX.utils.book_append_sheet(wb, ws2, 'Толық тізім');
+    XLSX.writeFile(wb, 'scrining-jospy-'+d.year+'.xlsx');
+  }
+
+  window.splanDownloadTemplate = function(){
+    var csv = '﻿ИИН,Аты-жөні,Туған жылы,Жынысы\r\n'+
+      '"123456789012","Ахметова Айгүл","1980","Ж"\r\n'+
+      '"234567890123","Сейткали Нұрлан","1966","Е"\r\n'+
+      '"345678901234","Жанботаева Зауреш","1974","Ж"\r\n';
+    var blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'patsient-ulgi.csv';
+    a.click();
+  };
+
+  function setStatus(msg){ document.getElementById('splanStatus').textContent = msg; }
+})();
 
 </script></body></html>
