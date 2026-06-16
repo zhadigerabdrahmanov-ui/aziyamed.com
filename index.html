@@ -2012,6 +2012,55 @@ html.dark .kz-tile { opacity:0.22; }
   .splan-stat { min-width:100px; }
 }
 
+
+/* ── VACC CALCULATOR ── */
+.vc-wrap { max-width:760px; margin:0 auto; padding-bottom:32px; }
+.vc-intro { text-align:center; }
+.vc-form-card { background:var(--white); border-radius:20px; padding:24px 28px; box-shadow:0 4px 24px rgba(0,0,0,.07); margin-bottom:24px; }
+.vc-fields { display:flex; gap:24px; flex-wrap:wrap; align-items:flex-end; }
+.vc-field-group { flex:1; min-width:180px; }
+.vc-label { display:block; font-weight:600; font-size:.85rem; color:var(--gray); margin-bottom:8px; text-transform:uppercase; letter-spacing:.04em; }
+.vc-input { width:100%; padding:13px 16px; border:2px solid #e8eef2; border-radius:12px; font-size:1rem; font-family:inherit; outline:none; transition:border .2s; box-sizing:border-box; }
+.vc-input:focus { border-color:var(--green); }
+.vc-warnings-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; }
+.vc-warn-card { border-radius:16px; padding:18px 20px; }
+.vc-warn-before { background:#fff8e1; border-left:4px solid #f59e0b; }
+.vc-warn-after  { background:#e8f5e9; border-left:4px solid var(--green); }
+.vc-warn-title { font-weight:700; font-size:.95rem; margin-bottom:10px; }
+.vc-warn-before .vc-warn-title { color:#7c5e00; }
+.vc-warn-after  .vc-warn-title { color:var(--green-dark); }
+.vc-warn-list { margin:0; padding-left:18px; display:flex; flex-direction:column; gap:5px; }
+.vc-warn-list li { font-size:.83rem; line-height:1.4; }
+.vc-warn-before .vc-warn-list li { color:#7c5e00; }
+.vc-warn-after  .vc-warn-list li { color:#1a4d2e; }
+.vc-table-wrap { background:var(--white); border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,.07); overflow:hidden; margin-bottom:16px; }
+.vc-table-title { padding:16px 20px 12px; font-weight:700; font-size:1rem; color:var(--dark); border-bottom:1px solid rgba(0,0,0,.06); }
+.vc-row { display:grid; grid-template-columns:160px 1fr auto; gap:12px; align-items:center; padding:13px 20px; border-bottom:1px solid rgba(0,0,0,.05); transition:background .15s; }
+.vc-row:last-child { border-bottom:none; }
+.vc-row:hover { background:rgba(34,164,85,.04); }
+.vc-row.past { opacity:.5; }
+.vc-row.today { background:#e8f5e9; }
+.vc-row.upcoming { }
+.vc-date { font-weight:700; font-size:.9rem; color:var(--dark); }
+.vc-age  { font-size:.78rem; color:var(--gray); margin-top:2px; }
+.vc-vaccines { display:flex; flex-wrap:wrap; gap:5px; }
+.vc-badge { display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:20px; font-size:.78rem; font-weight:600; }
+.vc-badge.done { background:#e8f5e9; color:var(--green-dark); }
+.vc-badge.next { background:var(--green); color:#fff; }
+.vc-badge.future { background:#f0faf5; color:var(--green-dark); border:1px solid var(--green-light); }
+.vc-badge.hpv { background:#fce4ec; color:#880e4f; }
+.vc-status-pill { font-size:.75rem; padding:4px 10px; border-radius:20px; font-weight:700; white-space:nowrap; }
+.vc-status-pill.done    { background:#e8f5e9; color:var(--green-dark); }
+.vc-status-pill.next    { background:var(--green); color:#fff; }
+.vc-status-pill.future  { background:#f0f4ff; color:#3949ab; }
+.vc-disclaimer { font-size:.82rem; color:var(--gray); background:#f8fafc; border-radius:12px; padding:14px 18px; display:flex; gap:10px; align-items:flex-start; line-height:1.5; }
+@media(max-width:640px){
+  .vc-warnings-row { grid-template-columns:1fr; }
+  .vc-row { grid-template-columns:130px 1fr; }
+  .vc-status-pill { display:none; }
+  .vc-fields { flex-direction:column; gap:14px; }
+}
+
 </style>
 </head>
 <body>
@@ -2585,6 +2634,7 @@ html.dark .kz-tile { opacity:0.22; }
     <!-- Таб батырмалары -->
     <div class="doctors-tabs" style="margin-bottom:32px;">
       <button class="doctors-tab active" id="tab-screening" onclick="showPatientsTab('screening')">🩺 Жеке скрининг-калькулятор</button>
+      <button class="doctors-tab" id="tab-vacc-calc" onclick="showPatientsTab('vacc-calc')">💉 Екпе калькуляторы</button>
       <button class="doctors-tab" id="tab-services" onclick="showPatientsTab('services')" data-i18n="tab_services">🏥 Қызметтер тізімі</button>
       <button class="doctors-tab" id="tab-sched" onclick="showPatientsTab('sched')" data-i18n="tab_schedule">📅 Жұмыс кестесі</button>
       <a href="https://damumed.kz/#/" target="_blank" class="doctors-tab" style="background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;border-color:transparent;text-decoration:none;">📋 Damumed арқылы жазылу</a>
@@ -2950,6 +3000,78 @@ html.dark .kz-tile { opacity:0.22; }
         </div>
       </div>
     </div><!-- /panel-screening -->
+    <!-- PANEL: Екпе калькуляторы -->
+    <div id="panel-vacc-calc" class="doctors-panel">
+      <div class="vc-wrap">
+
+        <!-- Кіріспе + форма -->
+        <div class="vc-intro reveal">
+          <div class="section-label" style="margin-bottom:10px;">ҚР Үкіметінің №612 қаулысы негізінде</div>
+          <h3 style="margin:0 0 8px;font-size:1.35rem;color:var(--green-dark);">💉 Жеке екпе кестесі</h3>
+          <p style="color:var(--gray);margin:0 0 24px;font-size:.93rem;">Туған күнін енгізіңіз — барлық міндетті екпелердің нақты мерзімдері автоматты есептеледі.</p>
+        </div>
+
+        <div class="vc-form-card reveal">
+          <div class="vc-fields">
+            <div class="vc-field-group">
+              <label class="vc-label">Туған күні</label>
+              <input type="date" id="vcBirthDate" class="vc-input" max="" oninput="calcVacc()">
+            </div>
+            <div class="vc-field-group">
+              <label class="vc-label">Жынысы</label>
+              <div class="scr-gender-btns">
+                <button class="scr-gender-btn active" id="vcGenderM" onclick="setVcGender('M')">♂ Еркек</button>
+                <button class="scr-gender-btn" id="vcGenderF" onclick="setVcGender('F')">♀ Әйел</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Нәтижелер -->
+        <div id="vcResults" style="display:none;">
+
+          <!-- Ескерту блоктары -->
+          <div class="vc-warnings-row reveal">
+            <div class="vc-warn-card vc-warn-before">
+              <div class="vc-warn-title">⚠️ Екпе АЛДЫНДА</div>
+              <ul class="vc-warn-list">
+                <li>Дәрігердің міндетті медициналық тексеруінен өту</li>
+                <li>Дене температурасын өлшеу (норма: 36,6°C дейін)</li>
+                <li>Аурудың белгілері болса — екпені кейінге қалдыру</li>
+                <li>Аллергия, созылмалы аурулар туралы дәрігерге хабарлау</li>
+                <li>Бұрынғы екпелерге реакция болса — хабарлау</li>
+                <li>Екпе жүргізуге хабардар келісім беру</li>
+              </ul>
+            </div>
+            <div class="vc-warn-card vc-warn-after">
+              <div class="vc-warn-title">✅ Екпеден КЕЙІН</div>
+              <ul class="vc-warn-list">
+                <li>Медициналық мекемеде <strong>30 минут</strong> бақылауда болу</li>
+                <li>Инъекция аймағын 24-48 сағат сулауға болмайды</li>
+                <li>Дене температурасының жоғарылауы мүмкін — бұл қалыпты</li>
+                <li>Инъекция орнында қызару / ісіну болуы мүмкін</li>
+                <li>Белгілер 3 күннен асса немесе нашарласа — дәрігерге жүгіну</li>
+                <li>Алғашқы тәулікте ауыр физикалық жүктемеден аулақ болу</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Кесте -->
+          <div class="vc-table-wrap reveal">
+            <div class="vc-table-title">📅 Екпе кестесі</div>
+            <div id="vcTableBody"></div>
+          </div>
+
+          <div class="vc-disclaimer reveal">
+            <span>📋</span>
+            Нәтижелер ҚР Үкіметінің <strong>№612 қаулысы</strong> (20.02.2024 жылғы өзгерістермен) негізінде есептеледі.
+            Нақты екпе мерзімін дәрігермен келісіңіз.
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /panel-vacc-calc -->
+
   </div>
 </section>
 
@@ -3438,6 +3560,37 @@ html.dark .kz-tile { opacity:0.22; }
             </div>
           </div>
         </div>
+
+      <!-- СКРИНИНГ ЖОСПАР ГЕНЕРАТОРЫ -->
+      <div class="staff-task-card" id="taskScrPlan">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskScrPlanBody')">
+          <div class="staff-task-left">
+            <span class="staff-task-icon">📊</span>
+            <div>
+              <div class="staff-task-title">Скрининг жоспар генераторы</div>
+              <div class="staff-task-desc">«Толық ИИН жасау» нәтижесі бойынша №ҚР ДСМ-174/2020 бұйрығына сәйкес ай сайынғы шақыру жоспары жасалады</div>
+            </div>
+          </div>
+          <span class="staff-task-chevron">▼</span>
+        </div>
+        <div class="staff-task-body" id="taskScrPlanBody" style="display:none;">
+          <div class="splan-wrap">
+
+            <!-- Дерек алу кнопкасы -->
+            <div id="splanFromRpnBox" style="text-align:center;padding:24px 0 8px;">
+              <div style="font-size:2.2rem;margin-bottom:10px;">🔗</div>
+              <div style="font-weight:700;font-size:1rem;color:var(--dark);margin-bottom:8px;">«Толық ИИН жасау» нәтижесінен алу</div>
+              <div style="font-size:.85rem;color:var(--gray);margin-bottom:18px;">Жоғарыдағы «Толық ИИН жасау» бөлімінде файл өңделген болса, деректер автоматты жүктеледі</div>
+              <button class="rpn-download-btn" onclick="splanLoadFromRpn()" style="font-size:.95rem;padding:13px 32px;">
+                ▶ Жоспар жасау
+              </button>
+            </div>
+            <div class="splan-status" id="splanStatus"></div>
+
+            <!-- Нәтиже -->
+            <div class="splan-results" id="splanResults" style="display:none;"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Жоспарлы профилактикалық екпелер — карточка -->
@@ -3780,64 +3933,7 @@ html.dark .kz-tile { opacity:0.22; }
 
 
       <!-- СКРИНИНГ ЖОСПАР ГЕНЕРАТОРЫ -->
-      <div class="staff-task-card" id="taskScrPlan">
-        <div class="staff-task-head" onclick="toggleStaffTask('taskScrPlanBody')">
-          <div class="staff-task-left">
-            <span class="staff-task-icon">📊</span>
-            <div>
-              <div class="staff-task-title">Скрининг жоспар генераторы</div>
-              <div class="staff-task-desc">Пациенттер тізімін жүктесеңіз, №ҚР ДСМ-174/2020 бұйрығы бойынша ай сайынғы шақыру жоспары жасалады</div>
-            </div>
-          </div>
-          <span class="staff-task-chevron">▼</span>
-        </div>
-        <div class="staff-task-body" id="taskScrPlanBody" style="display:none;">
-          <div class="splan-wrap">
-
-            <!-- Жүктеу аймағы -->
-            <div class="splan-upload-zone" id="splanDropZone"
-                 ondragover="event.preventDefault();this.classList.add('drag')"
-                 ondragleave="this.classList.remove('drag')"
-                 ondrop="splanHandleDrop(event)"
-                 onclick="document.getElementById('splanFileInput').click()">
-              <div class="splan-upload-icon">📂</div>
-              <div class="splan-upload-title">CSV немесе Excel файлын жүктеңіз</div>
-              <div class="splan-upload-sub">Файлды осы жерге сүйреп әкеліңіз немесе басыңыз</div>
-              <input type="file" id="splanFileInput" class="splan-file-input" accept=".csv,.xlsx,.xls" onchange="splanHandleFile(this.files[0])">
-            </div>
-            <div style="text-align:center;">
-              <button class="splan-template-btn" onclick="splanDownloadTemplate()">⬇ Үлгі файл жүктеу (CSV)</button>
-            </div>
-            <div class="splan-status" id="splanStatus"></div>
-
-            <!-- Баған белгілеу -->
-            <div class="splan-col-map" id="splanColMap">
-              <div class="splan-col-map-title">📋 Бағандарды белгілеңіз</div>
-              <div class="splan-col-row">
-                <span class="splan-col-label">Туған жылы / жасы:</span>
-                <select class="splan-col-select" id="splanColBirth"></select>
-              </div>
-              <div class="splan-col-row">
-                <span class="splan-col-label">Жынысы (М/Ж):</span>
-                <select class="splan-col-select" id="splanColGender"></select>
-              </div>
-              <div class="splan-col-row">
-                <span class="splan-col-label">Аты-жөні (міндетті емес):</span>
-                <select class="splan-col-select" id="splanColName"></select>
-              </div>
-              <div class="splan-col-row">
-                <span class="splan-col-label">ИИН (міндетті емес):</span>
-                <select class="splan-col-select" id="splanColIin"></select>
-              </div>
-              <button class="splan-map-btn" onclick="splanGenerate()">▶ Жоспар жасау</button>
-            </div>
-
-            <!-- Нәтиже -->
-            <div class="splan-results" id="splanResults" style="display:none;"></div>
-          </div>
-        </div>
-      </div>
-
+      
 <!-- Болашақта жаңа құралдар осы жерге қосылады -->
 
     </div>
@@ -6171,29 +6267,30 @@ function calcScreening() {
 }
 
 
+
+
+
 /* ══ SCREENING PLANNER JS ══════════════════════════════════════════ */
 (function(){
   var MONTHS_KZ = ['Қаңтар','Ақпан','Наурыз','Сәуір','Мамыр','Маусым','Шілде','Тамыз','Қыркүйек','Қазан','Қараша','Желтоқсан'];
   var SCREENINGS = [
-    { id:'cvd', icon:'🫀', label:'АГ / ЖИА / Диабет / Глаукома', genders:['М','М.','M','Е','Е.','Ер','ЖО','Ж','Ж.','Ә','Ә.','Әйел'], anyGender:true,
+    { id:'cvd',    icon:'🫀', label:'АГ / ЖИА / Диабет / Глаукома',     anyGender:true,  female:null,
       ages:[40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76], freq:'2 жылда 1' },
-    { id:'breast', icon:'🩺', label:'Маммография (сүт безі)', genders:['Ж','Ж.','Ә','Ә.','Әйел','Жен','F','f','Женский'], anyGender:false, female:true,
+    { id:'breast', icon:'🩺', label:'Маммография (сүт безі)',             anyGender:false, female:true,
       ages:[40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76], freq:'2 жылда 1' },
-    { id:'cervix', icon:'🔬', label:'Жатыр мойны обыры (ПАП-тест)', genders:['Ж','Ж.','Ә','Ә.','Әйел','Жен','F','f','Женский'], anyGender:false, female:true,
-      ages:[30,34,38,42,46,50,54,58,62,66,70,74], freq:'4 жылда 1' },
-    { id:'stroke', icon:'🧠', label:'Цереброваскулярлық / Инсульт', genders:['М','М.','M','Е','Е.','Ер','Муж','Мужской'], anyGender:false, female:false,
-      ages:[50,52,54,56,58,60,62,64,66,68,70,72,74,76], freq:'2 жылда 1' },
-    { id:'colon', icon:'🫁', label:'Колоректальды обыр', genders:['М','М.','M','Е','Е.','Ер','ЖО','Ж','Ж.','Ә','Ә.','Әйел'], anyGender:true,
-      ages:[50,52,54,56,58,60,62,64,66,68,70,72,74,76], freq:'2 жылда 1' }
+    { id:'cervix', icon:'🔬', label:'Жатыр мойны обыры (ПАП-тест)',       anyGender:false, female:true,
+      ages:[30,34,38,42,46,50,54,58,62,66,70,74],                       freq:'4 жылда 1' },
+    { id:'stroke', icon:'🧠', label:'Цереброваскулярлық / Инсульт',       anyGender:false, female:false,
+      ages:[50,52,54,56,58,60,62,64,66,68,70,72,74,76],                 freq:'2 жылда 1' },
+    { id:'colon',  icon:'🫁', label:'Колоректальды обыр',                 anyGender:true,  female:null,
+      ages:[50,52,54,56,58,60,62,64,66,68,70,72,74,76],                 freq:'2 жылда 1' }
   ];
-  var _parsedRows = [];
-  var _headers = [];
 
   function isFemale(val){
-    if(!val) return null;
+    if(val == null) return null;
     var v = String(val).trim().toLowerCase();
-    if(['ж','ж.','ә','ә.','әйел','жен','женский','f','female','2'].indexOf(v)!==-1) return true;
-    if(['м','м.','е','е.','ер','муж','мужской','m','male','1'].indexOf(v)!==-1) return false;
+    if(['женский','жен','ж','ж.','ә','ә.','әйел','f','female','2'].indexOf(v)!==-1) return true;
+    if(['мужской','муж','м','м.','е','е.','ер','m','male','1'].indexOf(v)!==-1) return false;
     return null;
   }
 
@@ -6204,123 +6301,69 @@ function calcScreening() {
     });
   }
 
-  window.splanHandleDrop = function(e){
-    e.preventDefault();
-    document.getElementById('splanDropZone').classList.remove('drag');
-    var f = e.dataTransfer.files[0];
-    if(f) splanHandleFile(f);
-  };
-
-  window.splanHandleFile = function(file){
-    if(!file) return;
-    setStatus('Файл оқылуда...');
-    var ext = file.name.split('.').pop().toLowerCase();
-    if(ext==='csv'){
-      var reader = new FileReader();
-      reader.onload = function(e){ splanParseCSV(e.target.result); };
-      reader.readAsText(file, 'UTF-8');
-    } else if(ext==='xlsx'||ext==='xls'){
-      if(typeof XLSX === 'undefined'){
-        var s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-        s.onload = function(){ readXLSX(file); };
-        document.head.appendChild(s);
-      } else { readXLSX(file); }
-    } else { setStatus('❌ Тек CSV немесе Excel файлы қабылданады'); }
-  };
-
-  function readXLSX(file){
-    var reader = new FileReader();
-    reader.onload = function(e){
-      var wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
-      var ws = wb.Sheets[wb.SheetNames[0]];
-      var data = XLSX.utils.sheet_to_csv(ws);
-      splanParseCSV(data);
-    };
-    reader.readAsArrayBuffer(file);
+  function colIdx(headers, keywords){
+    for(var k=0; k<keywords.length; k++){
+      for(var i=0; i<headers.length; i++){
+        if(String(headers[i]).toLowerCase().indexOf(keywords[k])!==-1) return i;
+      }
+    }
+    return -1;
   }
 
-  function splanParseCSV(text){
-    var lines = text.trim().split(/\r?\n/);
-    var sep = text.indexOf(';')!==-1 ? ';' : ',';
-    _headers = lines[0].split(sep).map(function(h){ return h.replace(/"/g,'').trim(); });
-    _parsedRows = lines.slice(1).filter(function(l){ return l.trim(); }).map(function(line){
-      var cols = line.split(sep).map(function(c){ return c.replace(/"/g,'').trim(); });
-      var row = {};
-      _headers.forEach(function(h,i){ row[h] = cols[i]||''; });
-      return row;
-    });
-    setStatus('✅ ' + _parsedRows.length + ' жол табылды. Бағандарды белгілеңіз.');
-    showColMap();
-  }
+  function setStatus(msg){ var el=document.getElementById('splanStatus'); if(el) el.textContent=msg; }
 
-  function showColMap(){
-    var map = document.getElementById('splanColMap');
-    map.style.display = 'block';
-    var opts = '<option value="">— таңдаңыз —</option>' + _headers.map(function(h){ return '<option>'+h+'</option>'; }).join('');
-    ['splanColBirth','splanColGender','splanColName','splanColIin'].forEach(function(id){
-      document.getElementById(id).innerHTML = opts;
-    });
-    // auto-guess
-    _headers.forEach(function(h){
-      var hl = h.toLowerCase();
-      if(/туған|жыл|birth|год|vozrast|жас/.test(hl)) trySet('splanColBirth',h);
-      if(/жынысы|жыныс|пол|gender|sex/.test(hl)) trySet('splanColGender',h);
-      if(/аты|аты-жөні|фио|ф\.и\.о|name|ф\.и/.test(hl)) trySet('splanColName',h);
-      if(/иин|iin|жеке/.test(hl)) trySet('splanColIin',h);
-    });
-  }
+  window.splanLoadFromRpn = function(){
+    if(typeof rpnCleanData === 'undefined' || !rpnCleanData || !rpnCleanData.length){
+      setStatus('⚠️ Деректер табылмады. Алдымен «Толық ИИН жасау» бөлімінде файл өңдеңіз.');
+      return;
+    }
+    var headers = typeof rpnHeaders !== 'undefined' ? rpnHeaders : [];
+    // Find columns
+    var yearCol   = colIdx(headers, ['год рождения','туған жыл','birth year','год']);
+    var genderCol = colIdx(headers, ['пол','жынысы','жыныс','gender','sex']);
+    var nameCol   = colIdx(headers, ['фио','аты','ф.и.о','name']);
+    var iinCol    = colIdx(headers, ['иин','жсн','iin']);
 
-  function trySet(id, val){
-    var el = document.getElementById(id);
-    for(var i=0;i<el.options.length;i++){ if(el.options[i].value===val){ el.value=val; return; } }
-  }
-
-  window.splanGenerate = function(){
-    var birthCol = document.getElementById('splanColBirth').value;
-    var genderCol = document.getElementById('splanColGender').value;
-    var nameCol = document.getElementById('splanColName').value;
-    var iinCol = document.getElementById('splanColIin').value;
-    if(!birthCol||!genderCol){ alert('Туған жылы мен жынысын белгілеңіз'); return; }
+    // fallback by position (based on known RPN file structure)
+    if(yearCol  ===-1) yearCol   = 10;
+    if(genderCol===-1) genderCol = 11;
+    if(nameCol  ===-1) nameCol   = 8;
+    if(iinCol   ===-1) iinCol    = 7;
 
     var currentYear = new Date().getFullYear();
     var patients = [];
-    _parsedRows.forEach(function(row){
-      var byRaw = row[birthCol];
-      var by = parseInt(byRaw);
-      if(!by||isNaN(by)) return;
-      // if age given instead of year
-      if(by < 1900) by = currentYear - by;
+    rpnCleanData.forEach(function(row){
+      // skip header-like rows
+      var by = parseInt(row[yearCol]);
+      if(!by || isNaN(by) || by < 1900 || by > currentYear) return;
       var age = currentYear - by;
-      var gVal = row[genderCol];
-      var female = isFemale(gVal);
-      if(female===null) return;
+      var female = isFemale(row[genderCol]);
+      if(female === null) return;
       var scrs = getScreenings(age, female);
       if(!scrs.length) return;
       patients.push({
-        iin: iinCol ? row[iinCol]||'' : '',
-        name: nameCol ? row[nameCol]||'' : '',
+        iin:  String(row[iinCol]  || ''),
+        name: String(row[nameCol] || ''),
         by: by, age: age, female: female,
         scrs: scrs
       });
     });
 
     if(!patients.length){
-      setStatus('⚠️ Бұйрықтағы нысаналы жасқа кіретін пациент табылмады');
+      setStatus('⚠️ Бұйрықтағы нысаналы жасқа кіретін пациент табылмады (' + currentYear + ' жыл)');
       return;
     }
 
-    // Sort by age desc (older first), then distribute across 12 months
+    // Sort older first, distribute across 12 months
     patients.sort(function(a,b){ return b.age - a.age; });
     var monthBuckets = Array.from({length:12}, function(){ return []; });
     patients.forEach(function(p,i){ monthBuckets[i%12].push(p); });
 
-    renderResults(patients, monthBuckets, currentYear);
-    document.getElementById('splanColMap').style.display = 'none';
+    renderSplanResults(patients, monthBuckets, currentYear);
     setStatus('');
   };
 
-  function renderResults(patients, monthBuckets, year){
+  function renderSplanResults(patients, monthBuckets, year){
     var totalByScr = {};
     SCREENINGS.forEach(function(s){ totalByScr[s.id]=0; });
     patients.forEach(function(p){ p.scrs.forEach(function(s){ totalByScr[s.id]++; }); });
@@ -6329,8 +6372,7 @@ function calcScreening() {
       '<div class="splan-stat"><div class="splan-stat-val">'+patients.length+'</div><div class="splan-stat-label">Жалпы пациент</div></div>' +
       SCREENINGS.filter(function(s){ return totalByScr[s.id]>0; }).map(function(s){
         return '<div class="splan-stat"><div class="splan-stat-val">'+totalByScr[s.id]+'</div><div class="splan-stat-label">'+s.icon+' '+s.label+'</div></div>';
-      }).join('') +
-    '</div>';
+      }).join('') + '</div>';
 
     var monthsHtml = monthBuckets.map(function(bucket,mi){
       if(!bucket.length) return '';
@@ -6340,8 +6382,8 @@ function calcScreening() {
         return '<div class="splan-type-tag">'+s.icon+' '+s.label+' <span>'+typeCount[s.id]+'</span></div>';
       }).join('');
       var rowsHtml = bucket.map(function(p,idx){
-        var scrBadges = p.scrs.map(function(s){ return '<span class="splan-scr-badge">'+s.icon+' '+s.label+'</span>'; }).join('');
-        return '<tr><td>'+(idx+1)+'</td><td>'+(p.iin||'—')+'</td><td>'+(p.name||'—')+'</td><td>'+p.by+'</td><td>'+(p.female?'Ж':'Е')+'</td><td>'+p.age+'</td><td>'+scrBadges+'</td></tr>';
+        var badges = p.scrs.map(function(s){ return '<span class="splan-scr-badge">'+s.icon+' '+s.label+'</span>'; }).join('');
+        return '<tr><td>'+(idx+1)+'</td><td>'+p.iin+'</td><td>'+p.name+'</td><td>'+p.by+'</td><td>'+(p.female?'Ж':'Е')+'</td><td>'+p.age+'</td><td>'+badges+'</td></tr>';
       }).join('');
       return '<div class="splan-month-row" id="splanMonth'+mi+'">' +
         '<div class="splan-month-head" onclick="splanToggleMonth('+mi+')">' +
@@ -6353,7 +6395,7 @@ function calcScreening() {
         '<div class="splan-month-body">' +
           '<div class="splan-type-list">'+tagsHtml+'</div>' +
           '<div class="splan-patient-table-wrap"><table class="splan-patient-table">' +
-            '<thead><tr><th>№</th><th>ИИН</th><th>Аты-жөні</th><th>Туған жылы</th><th>Жынысы</th><th>Жасы</th><th>Скрининг түрлері</th></tr></thead>' +
+            '<thead><tr><th>№</th><th>ИИН</th><th>АТЫ-ЖӨНІ</th><th>Туған жыл</th><th>Жынысы</th><th>Жасы</th><th>Скрининг түрлері</th></tr></thead>' +
             '<tbody>'+rowsHtml+'</tbody>' +
           '</table></div>' +
         '</div>' +
@@ -6370,81 +6412,138 @@ function calcScreening() {
     var res = document.getElementById('splanResults');
     res.innerHTML = html2;
     res.style.display = 'block';
-    window._splanData = { patients: patients, monthBuckets: monthBuckets, year: year };
+    window._splanData = { patients:patients, monthBuckets:monthBuckets, year:year };
   }
 
   window.splanToggleMonth = function(mi){
-    var el = document.getElementById('splanMonth'+mi);
-    el.classList.toggle('open');
+    document.getElementById('splanMonth'+mi).classList.toggle('open');
   };
 
   window.splanExportCSV2 = function(){
-    var d = window._splanData;
-    if(!d) return;
-    var rows = [['Ай','Аты-жөні','ИИН','Туған жылы','Жынысы','Жасы','Скрининг түрлері']];
-    var MONTHS_KZ2 = ['Қаңтар','Ақпан','Наурыз','Сәуір','Мамыр','Маусым','Шілде','Тамыз','Қыркүйек','Қазан','Қараша','Желтоқсан'];
+    var d = window._splanData; if(!d) return;
+    var rows = [['Ай','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','Скрининг түрлері']];
     d.monthBuckets.forEach(function(bucket,mi){
       bucket.forEach(function(p){
-        rows.push([MONTHS_KZ2[mi]+' '+d.year, p.name||'', p.iin||'', p.by, p.female?'Ж':'Е', p.age, p.scrs.map(function(s){return s.label;}).join(' | ')]);
+        rows.push([MONTHS_KZ[mi]+' '+d.year, p.name, p.iin, p.by, p.female?'Ж':'Е', p.age, p.scrs.map(function(s){return s.label;}).join(' | ')]);
       });
     });
     var csv = rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
-    var blob = new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'scrining-jospy-'+d.year+'.csv';
-    a.click();
+    var a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));
+    a.download = 'scrining-jospy-'+d.year+'.csv'; a.click();
   };
 
   window.splanExportExcel = function(){
-    var d = window._splanData;
-    if(!d) return;
-    if(typeof XLSX === 'undefined'){
-      var s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-      s.onload = function(){ doExcel(d); };
-      document.head.appendChild(s);
-    } else { doExcel(d); }
+    var d = window._splanData; if(!d) return;
+    function doEx(){
+      var wb = XLSX.utils.book_new();
+      var sum = [['АЙ','ПАЦИЕНТ САНЫ','АГ/ЖИА/Диабет','Маммография','ПАП-тест','Цереброваскулярлық','Колоректальды']];
+      d.monthBuckets.forEach(function(b,mi){
+        var tc={}; SCREENINGS.forEach(function(s){tc[s.id]=0;}); b.forEach(function(p){p.scrs.forEach(function(s){tc[s.id]++;});});
+        sum.push([MONTHS_KZ[mi]+' '+d.year, b.length, tc.cvd, tc.breast, tc.cervix, tc.stroke, tc.colon]);
+      });
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sum), 'Жалпы жоспар');
+      var det = [['АЙ','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','СКРИНИНГ ТҮРЛЕРІ']];
+      d.monthBuckets.forEach(function(b,mi){ b.forEach(function(p){ det.push([MONTHS_KZ[mi]+' '+d.year,p.name,p.iin,p.by,p.female?'Ж':'Е',p.age,p.scrs.map(function(s){return s.label;}).join('; ')]); }); });
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(det), 'Толық тізім');
+      XLSX.writeFile(wb, 'scrining-jospy-'+d.year+'.xlsx');
+    }
+    if(typeof XLSX==='undefined'){ var s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload=doEx; document.head.appendChild(s); } else doEx();
+  };
+})();
+
+
+/* ══ VACC CALCULATOR JS ══════════════════════════════════════════ */
+(function(){
+  var _vcGender = 'M';
+
+  window.setVcGender = function(g){
+    _vcGender = g;
+    document.getElementById('vcGenderM').classList.toggle('active', g==='M');
+    document.getElementById('vcGenderF').classList.toggle('active', g==='F');
+    calcVacc();
   };
 
-  function doExcel(d){
-    var MONTHS_KZ2 = ['Қаңтар','Ақпан','Наурыз','Сәуір','Мамыр','Маусым','Шілде','Тамыз','Қыркүйек','Қазан','Қараша','Желтоқсан'];
-    var wb = XLSX.utils.book_new();
-    // Summary sheet
-    var sumRows = [['АЙ','ПАЦИЕНТ САНЫ','АГ/ЖИА/Диабет/Глаукома','Маммография','ПАП-тест','Цереброваскулярлық','Колоректальды']];
-    d.monthBuckets.forEach(function(bucket,mi){
-      var tc = {};
-      SCREENINGS.forEach(function(s){ tc[s.id]=0; });
-      bucket.forEach(function(p){ p.scrs.forEach(function(s){ tc[s.id]++; }); });
-      sumRows.push([MONTHS_KZ2[mi]+' '+d.year, bucket.length, tc.cvd||0, tc.breast||0, tc.cervix||0, tc.stroke||0, tc.colon||0]);
-    });
-    var ws1 = XLSX.utils.aoa_to_sheet(sumRows);
-    XLSX.utils.book_append_sheet(wb, ws1, 'Жалпы жоспар');
-    // Detail sheet
-    var detRows = [['АЙ','АТЫ-ЖӨНІ','ИИН','ТУҒАН ЖЫЛЫ','ЖЫНЫСЫ','ЖАСЫ','СКРИНИНГ ТҮРЛЕРІ']];
-    d.monthBuckets.forEach(function(bucket,mi){
-      bucket.forEach(function(p){
-        detRows.push([MONTHS_KZ2[mi]+' '+d.year, p.name||'', p.iin||'', p.by, p.female?'Ж':'Е', p.age, p.scrs.map(function(s){return s.label;}).join('; ')]);
-      });
-    });
-    var ws2 = XLSX.utils.aoa_to_sheet(detRows);
-    XLSX.utils.book_append_sheet(wb, ws2, 'Толық тізім');
-    XLSX.writeFile(wb, 'scrining-jospy-'+d.year+'.xlsx');
+  // Set today as max
+  (function(){
+    var el = document.getElementById('vcBirthDate');
+    if(el) el.max = new Date().toISOString().split('T')[0];
+  })();
+
+  // Vaccination schedule (days after birth OR specific ages)
+  // Each entry: { label, icon, daysOffset OR targetAge (years), isHPV (girls only) }
+  var SCHEDULE = [
+    { ageLabel:'1–4 күн',   days:2,     vaccines:['💉 БЦЖ (туберкулез)','💉 В гепатиті (1-доза)'] },
+    { ageLabel:'2 ай',      days:61,    vaccines:['💉 В гепатиті (2-доза)','💉 ОПВ/ИПВ (1-доза)','💉 АКДС (1-доза)','💉 Hib (1-доза)','💉 Пневмококк (1-доза)'] },
+    { ageLabel:'3 ай',      days:92,    vaccines:['💉 ОПВ/ИПВ (2-доза)','💉 АКДС (2-доза)','💉 Hib (2-доза)'] },
+    { ageLabel:'4 ай',      days:122,   vaccines:['💉 В гепатиті (3-доза)','💉 ОПВ/ИПВ (3-доза)','💉 АКДС (3-доза)','💉 Hib (3-доза)','💉 Пневмококк (2-доза)'] },
+    { ageLabel:'12–15 ай',  days:365,   vaccines:['💉 ОПВ/ИПВ (4-доза)','💉 Пневмококк (3-доза)','💉 ҚҚП (қызылша/қызамық/паротит, 1-доза)'] },
+    { ageLabel:'18 ай',     days:548,   vaccines:['💉 ОПВ/ИПВ (5-доза, ревакцинация)','💉 АКДС (ревакцинация)','💉 Hib (ревакцинация)'] },
+    { ageLabel:'2 жас',     days:730,   vaccines:['💉 А гепатиті (1-доза)'] },
+    { ageLabel:'2,5 жас',   days:912,   vaccines:['💉 А гепатиті (2-доза)'] },
+    { ageLabel:'6 жас',     days:2190,  vaccines:['💉 АКДС (2-ревакцинация)','💉 ҚҚП (2-доза)'] },
+    { ageLabel:'11 жас',    days:4015,  vaccines:['💉 ҚПВ (адам папилломасы вирусы, 1-доза)'], hpv:true },
+    { ageLabel:'11,5 жас',  days:4198,  vaccines:['💉 ҚПВ (адам папилломасы вирусы, 2-доза)'], hpv:true },
+    { ageLabel:'16 жас',    days:5840,  vaccines:['💉 АДС-М (дифтерия/сіреспе, ревакцинация)'] },
+    { ageLabel:'26 жас',    days:9490,  vaccines:['💉 АДС-М (10 жыл сайын қайталау)'] },
+    { ageLabel:'36 жас',    days:13140, vaccines:['💉 АДС-М (10 жыл сайын қайталау)'] },
+    { ageLabel:'46 жас',    days:16790, vaccines:['💉 АДС-М (10 жыл сайын қайталау)'] },
+    { ageLabel:'56 жас',    days:20440, vaccines:['💉 АДС-М (10 жыл сайын қайталау)'] },
+    { ageLabel:'66 жас',    days:24090, vaccines:['💉 АДС-М (10 жыл сайын қайталау)'] },
+  ];
+
+  var MONTHS_KZ = ['қаңтар','ақпан','наурыз','сәуір','мамыр','маусым','шілде','тамыз','қыркүйек','қазан','қараша','желтоқсан'];
+
+  function fmtDate(d){
+    return d.getDate() + ' ' + MONTHS_KZ[d.getMonth()] + ' ' + d.getFullYear();
   }
 
-  window.splanDownloadTemplate = function(){
-    var csv = '﻿ИИН,Аты-жөні,Туған жылы,Жынысы\r\n'+
-      '"123456789012","Ахметова Айгүл","1980","Ж"\r\n'+
-      '"234567890123","Сейткали Нұрлан","1966","Е"\r\n'+
-      '"345678901234","Жанботаева Зауреш","1974","Ж"\r\n';
-    var blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'patsient-ulgi.csv';
-    a.click();
-  };
+  function addDays(d, n){
+    var r = new Date(d); r.setDate(r.getDate() + n); return r;
+  }
 
-  function setStatus(msg){ document.getElementById('splanStatus').textContent = msg; }
+  window.calcVacc = function(){
+    var bdStr = document.getElementById('vcBirthDate').value;
+    var res = document.getElementById('vcResults');
+    if(!bdStr){ res.style.display='none'; return; }
+
+    var bd = new Date(bdStr);
+    var today = new Date(); today.setHours(0,0,0,0);
+    var isFemale = _vcGender === 'F';
+
+    var rows = SCHEDULE.filter(function(s){ return !s.hpv || isFemale; }).map(function(s){
+      var vaccDate = addDays(bd, s.days);
+      var isPast = vaccDate < today;
+      var isToday = vaccDate.toDateString() === today.toDateString();
+      // Find "next upcoming"
+      return { s:s, date:vaccDate, isPast:isPast, isToday:isToday };
+    });
+
+    // Mark the next upcoming
+    var foundNext = false;
+    rows.forEach(function(r){
+      if(!r.isPast && !r.isToday && !foundNext){ r.isNext=true; foundNext=true; }
+    });
+
+    var html2 = rows.map(function(r){
+      var cls = r.isPast ? 'past' : (r.isToday ? 'today' : (r.isNext ? 'upcoming' : ''));
+      var pillTxt = r.isPast ? '✓ Өтті' : (r.isToday ? '⚡ Бүгін' : (r.isNext ? '→ Келесі' : ''));
+      var pillCls = r.isPast ? 'done' : (r.isToday ? 'next' : (r.isNext ? 'next' : 'future'));
+      var badgeCls = r.isPast ? 'done' : (r.isNext||r.isToday ? 'next' : 'future');
+      var hpvClass = r.s.hpv ? ' hpv' : '';
+      var badges = r.s.vaccines.map(function(v){ return '<span class="vc-badge '+badgeCls+hpvClass+'">'+v+'</span>'; }).join('');
+      return '<div class="vc-row '+cls+'">' +
+        '<div><div class="vc-date">'+fmtDate(r.date)+'</div><div class="vc-age">'+r.s.ageLabel+'</div></div>' +
+        '<div class="vc-vaccines">'+badges+'</div>' +
+        (pillTxt ? '<div><span class="vc-status-pill '+pillCls+'">'+pillTxt+'</span></div>' : '<div></div>') +
+      '</div>';
+    }).join('');
+
+    document.getElementById('vcTableBody').innerHTML = html2;
+    res.style.display = 'block';
+
+    // scroll into view smoothly
+    res.scrollIntoView({behavior:'smooth', block:'nearest'});
+  };
 })();
 
 </script></body></html>
