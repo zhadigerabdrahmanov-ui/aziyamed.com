@@ -1922,6 +1922,42 @@ html.dark .kz-tile { opacity:0.22; }
   from { stroke-dashoffset: var(--len,500); }
   to   { stroke-dashoffset: 0; }
 }
+
+/* ── SCREENING CALCULATOR ── */
+.screening-calc-wrap { max-width:720px; margin:0 auto; padding:0 0 32px; }
+.screening-intro { text-align:center; }
+.screening-form { background:var(--white); border-radius:20px; padding:28px 32px; box-shadow:0 4px 24px rgba(0,0,0,.07); margin-bottom:28px; }
+.scr-fields { display:flex; gap:28px; flex-wrap:wrap; align-items:flex-end; }
+.scr-field-group { flex:1; min-width:200px; }
+.scr-label { display:block; font-weight:600; font-size:.88rem; color:var(--gray); margin-bottom:8px; text-transform:uppercase; letter-spacing:.04em; }
+.scr-input { width:100%; padding:14px 18px; border:2px solid #e8eef2; border-radius:12px; font-size:1.05rem; font-family:inherit; outline:none; transition:border .2s; box-sizing:border-box; }
+.scr-input:focus { border-color:var(--green); }
+.scr-gender-btns { display:flex; gap:10px; }
+.scr-gender-btn { flex:1; padding:13px 10px; border:2px solid #e8eef2; border-radius:12px; background:var(--white); font-size:.95rem; font-weight:600; cursor:pointer; transition:all .2s; }
+.scr-gender-btn.active { border-color:var(--green); background:var(--green); color:#fff; }
+.scr-results { display:flex; flex-direction:column; gap:16px; margin-bottom:24px; }
+.scr-card { background:var(--white); border-radius:16px; padding:20px 24px; box-shadow:0 4px 20px rgba(0,0,0,.07); border-left:5px solid var(--green); animation:fadeInUp .35s ease; }
+.scr-card-head { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.scr-card-icon { font-size:1.6rem; }
+.scr-card-title { font-weight:700; font-size:1.05rem; color:var(--green-dark); }
+.scr-card-badge { margin-left:auto; background:var(--green-light); color:var(--green-dark); font-size:.78rem; font-weight:700; padding:4px 10px; border-radius:20px; white-space:nowrap; }
+.scr-card-badge.urgent { background:#fff3e0; color:#e65100; }
+.scr-tests { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+.scr-tests li { font-size:.9rem; color:var(--text); padding-left:20px; position:relative; }
+.scr-tests li::before { content:"✓"; position:absolute; left:0; color:var(--green); font-weight:700; }
+.scr-card-footer { margin-top:12px; padding-top:12px; border-top:1px solid #f0f0f0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+.scr-card-freq { font-size:.82rem; color:var(--gray); }
+.scr-book-btn { background:var(--green); color:#fff; border:none; padding:8px 18px; border-radius:30px; font-size:.85rem; font-weight:600; cursor:pointer; text-decoration:none; display:inline-block; transition:background .2s; }
+.scr-book-btn:hover { background:var(--green-dark); }
+.scr-no-results { text-align:center; padding:32px 20px; background:var(--white); border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,.06); margin-bottom:24px; color:var(--text); animation:fadeInUp .35s ease; }
+.scr-no-results p { margin:8px 0; font-size:1rem; }
+.scr-next-info { color:var(--gray); font-size:.9rem !important; }
+.scr-disclaimer { font-size:.82rem; color:var(--gray); background:#f8fafc; border-radius:12px; padding:14px 18px; display:flex; gap:10px; align-items:flex-start; line-height:1.5; }
+@media(max-width:600px) {
+  .scr-fields { flex-direction:column; gap:16px; }
+  .screening-form { padding:20px 18px; }
+}
+
 </style>
 </head>
 <body>
@@ -2496,6 +2532,7 @@ html.dark .kz-tile { opacity:0.22; }
     <div class="doctors-tabs" style="margin-bottom:32px;">
       <button class="doctors-tab active" id="tab-services" onclick="showPatientsTab('services')" data-i18n="tab_services">🏥 Қызметтер тізімі</button>
       <button class="doctors-tab" id="tab-sched" onclick="showPatientsTab('sched')" data-i18n="tab_schedule">📅 Жұмыс кестесі</button>
+      <button class="doctors-tab" id="tab-screening" onclick="showPatientsTab('screening')">🩺 Скрининг жоспары</button>
       <a href="https://damumed.kz/#/" target="_blank" class="doctors-tab" style="background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;border-color:transparent;text-decoration:none;">📋 Damumed арқылы жазылу</a>
     </div>
 
@@ -2820,6 +2857,41 @@ html.dark .kz-tile { opacity:0.22; }
       </table>
     </div>
     </div><!-- /panel-sched -->
+
+    <!-- PANEL: Скрининг жоспары -->
+    <div id="panel-screening" class="doctors-panel">
+      <div class="screening-calc-wrap">
+        <div class="screening-intro reveal">
+          <div class="section-label" style="margin-bottom:12px;">ҚР ДСМ-174/2020 бұйрығы негізінде</div>
+          <h3 style="margin:0 0 8px;font-size:1.4rem;color:var(--green-dark);">🩺 Жеке скрининг жоспарыңыз</h3>
+          <p style="color:var(--gray);margin:0 0 28px;font-size:.95rem;">Туған жылыңызды және жынысыңызды енгізіңіз — бұйрыққа сәйкес қандай скринингтерге кіретіңізді бірден білесіз.</p>
+        </div>
+        <div class="screening-form reveal">
+          <div class="scr-fields">
+            <div class="scr-field-group">
+              <label class="scr-label">Туған жылыңыз</label>
+              <input type="number" id="scrBirthYear" class="scr-input" placeholder="мысалы: 1980" min="1924" max="2010" oninput="calcScreening()">
+            </div>
+            <div class="scr-field-group">
+              <label class="scr-label">Жынысыңыз</label>
+              <div class="scr-gender-btns">
+                <button class="scr-gender-btn active" id="genderM" onclick="setGender('M')">♂ Еркек</button>
+                <button class="scr-gender-btn" id="genderF" onclick="setGender('F')">♀ Әйел</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="scrResults" class="scr-results" style="display:none;"></div>
+        <div id="scrNoResults" class="scr-no-results" style="display:none;">
+          <div style="font-size:2.5rem;">✅</div>
+          <p>Сіз <strong id="scrNoAge"></strong> жастасыз. Бұл жылы скрининг кестесіне кірмейсіз.</p>
+          <p class="scr-next-info" id="scrNextInfo"></p>
+        </div>
+        <div class="scr-disclaimer reveal">
+          <span>📋</span> Нәтижелер ҚР Денсаулық сақтау министрінің <strong>№ ҚР ДСМ-174/2020</strong> бұйрығы негізінде есептеледі. Скринингтер тегін медициналық көмектің кепілдік берілген көлемі шеңберінде жүргізіледі.
+        </div>
+      </div>
+    </div><!-- /panel-screening -->
   </div>
 </section>
 
@@ -5833,4 +5905,151 @@ function toggleMobileNav() {
     if (e.key === 'Escape')     closeGallery();
   });
 })();
+
+/* ── SCREENING CALCULATOR JS ── */
+var _scrGender = 'M';
+function setGender(g) {
+  _scrGender = g;
+  document.getElementById('genderM').classList.toggle('active', g==='M');
+  document.getElementById('genderF').classList.toggle('active', g==='F');
+  calcScreening();
+}
+function calcScreening() {
+  var by = parseInt(document.getElementById('scrBirthYear').value);
+  var res = document.getElementById('scrResults');
+  var noRes = document.getElementById('scrNoResults');
+  res.style.display = 'none';
+  noRes.style.display = 'none';
+  if (!by || by < 1924 || by > 2010) return;
+  var currentYear = new Date().getFullYear();
+  var age = currentYear - by;
+  var g = _scrGender;
+
+  var screenings = [
+    {
+      id: 1,
+      title: 'Артериялық гипертензия, жүрек ишемиясы, қант диабеті, глаукома',
+      icon: '🫀',
+      genders: ['M','F'],
+      ages: [40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76],
+      freq: '2 жылда 1 рет',
+      deadline: '60 күн ішінде',
+      tests: [
+        'Медбике / фельдшер қабылдауы',
+        'Қандағы төмен тығыздықты липопротеидтер (экспресс)',
+        'Қандағы триглицеридтер (экспресс)',
+        'Гликерленген гемоглобин (HbA1c)',
+        'Маклаков бойынша көзішілік қысым',
+        'Терапевт / Отбасы дәрігері қабылдауы'
+      ]
+    },
+    {
+      id: 2,
+      title: 'Сүт безі обырын ерте анықтау',
+      icon: '🩺',
+      genders: ['F'],
+      ages: [40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,74,76],
+      freq: '2 жылда 1 рет',
+      deadline: '60 күн ішінде',
+      tests: [
+        'Медбике / фельдшер қабылдауы',
+        'Маммография (4 суret)',
+        'Терапевт / Отбасы дәрігері қабылдауы',
+        'Рентгенолог консультациясы (2-кезең)'
+      ]
+    },
+    {
+      id: 3,
+      title: 'Жатыр мойны обырын ерте анықтау',
+      icon: '🔬',
+      genders: ['F'],
+      ages: [30,34,38,42,46,50,54,58,62,66,70,74],
+      freq: '4 жылда 1 рет',
+      deadline: '60 күн ішінде',
+      tests: [
+        'Медбике / акушер қабылдауы',
+        'Жатыр мойнынан жағынды алу (онкоцитология)',
+        'Сұйықтық цитология — ПАП-тест',
+        'Терапевт / Отбасы дәрігері қабылдауы',
+        'Акушер-гинеколог консультациясы (2-кезең)'
+      ]
+    },
+    {
+      id: 4,
+      title: 'Цереброваскулярлық аурулар / инсульт қаупі',
+      icon: '🧠',
+      genders: ['M'],
+      ages: [50,52,54,56,58,60,62,64,66,68,70,72,74,76],
+      freq: '2 жылда 1 рет',
+      deadline: '60 күн ішінде',
+      tests: [
+        'Медбике қабылдауы',
+        'Брахиоцефальды бағанның ультрадыбыстық доплерографиясы (УДДГ)',
+        'Терапевт / Отбасы дәрігері қабылдауы',
+        'Тамырлы хирург консультациясы (2-кезең)'
+      ]
+    },
+    {
+      id: 5,
+      title: 'Колоректальды обырды ерте анықтау',
+      icon: '🫁',
+      genders: ['M','F'],
+      ages: [50,52,54,56,58,60,62,64,66,68,70,72,74,76],
+      freq: '2 жылда 1 рет',
+      deadline: '60 күн ішінде',
+      tests: [
+        'Медбике / фельдшер қабылдауы',
+        'Нәжісте жасырын қанды анықтау (гемокульт-сынама)',
+        'Терапевт / Отбасы дәрігері қабылдауы',
+        'Колоноскопия (2-кезең, көрсетілім бойынша)',
+        'Онколог консультациясы (2-кезең)'
+      ]
+    }
+  ];
+
+  var matched = screenings.filter(function(s) {
+    return s.genders.indexOf(g) !== -1 && s.ages.indexOf(age) !== -1;
+  });
+
+  if (matched.length === 0) {
+    // find next year
+    var nextYear = null, nextAge = null;
+    for (var y = 1; y <= 10; y++) {
+      var futureAge = age + y;
+      var found = screenings.some(function(s) {
+        return s.genders.indexOf(g) !== -1 && s.ages.indexOf(futureAge) !== -1;
+      });
+      if (found) { nextYear = currentYear + y; nextAge = futureAge; break; }
+    }
+    noRes.style.display = 'block';
+    document.getElementById('scrNoAge').textContent = age;
+    var ni = document.getElementById('scrNextInfo');
+    if (nextYear) {
+      ni.textContent = 'Келесі скрининг жылы: ' + nextYear + ' ж. (' + nextAge + ' жасыңызда)';
+    } else {
+      ni.textContent = '';
+    }
+    return;
+  }
+
+  var html = matched.map(function(s) {
+    var testsHtml = s.tests.map(function(t) { return '<li>' + t + '</li>'; }).join('');
+    return '<div class="scr-card">' +
+      '<div class="scr-card-head">' +
+        '<span class="scr-card-icon">' + s.icon + '</span>' +
+        '<span class="scr-card-title">' + s.title + '</span>' +
+        '<span class="scr-card-badge">⚡ ' + currentYear + ' жылы өту керек</span>' +
+      '</div>' +
+      '<ul class="scr-tests">' + testsHtml + '</ul>' +
+      '<div class="scr-card-footer">' +
+        '<span class="scr-card-freq">🕐 Кезеңділігі: ' + s.freq + ' · Мерзімі: ' + s.deadline + '</span>' +
+        '<a href="https://damumed.kz/#/" target="_blank" class="scr-book-btn">📅 Жазылу</a>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  res.innerHTML = html;
+  res.style.display = 'flex';
+}
+
 </script></body></html>
