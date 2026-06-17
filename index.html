@@ -2197,8 +2197,8 @@ html.dark .kz-tile { opacity:0.22; }
         <a href="#" onclick="showSection('osms');return false;"    data-i18n="nav_osms"     class="nav-link" data-section="osms">МӘМС</a>
         <a href="#" onclick="showSection('incident');return false;" class="nav-link" data-section="incident">🚨 Инцидент</a>
         <a href="#" onclick="showSection('tmkkk');return false;" class="nav-link" data-section="tmkkk" data-i18n="nav_tmkkk">ТМККК</a>
-        <a href="#" onclick="showSection('compliance');return false;" class="nav-link" data-section="compliance">Пациентті қолдау және ішкі сараптама бөлімі</a>
-        <a href="#" onclick="showSection('staff');return false;" class="nav-link" data-section="staff" style="color:var(--orange);font-weight:700;">🛠 ҚҰРАЛДАР</a>
+        <a href="#" onclick="showSection('compliance');return false;" class="nav-link" data-section="compliance" data-i18n="nav_compliance">Пациентті қолдау және ішкі сараптама қызметі</a>
+        <a href="#" onclick="showSection('staff');return false;" class="nav-link" data-section="staff" data-i18n="nav_staff" style="color:var(--orange);font-weight:700;">🛠 ҚҰРАЛДАР</a>
       </nav>
     </div>
     <button class="burger-btn" id="burgerBtn" aria-label="Меню" onclick="toggleMobileNav()">
@@ -2438,13 +2438,13 @@ html.dark .kz-tile { opacity:0.22; }
           <div class="news-hcard-date">1 маусым 2026 жыл</div>
           <div class="news-hcard-title">Ашық есік күні өтті!</div>
           <div class="news-hcard-desc">1 маусым – Балаларды қорғау күніне орай біздің медициналық орталықта ерекше Ашық есік күні өтті!</div>
-          <a href="https://www.instagram.com/p/DZDGMTGID8r/" target="_blank" class="news-hcard-more" style="display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:8px 18px;background:linear-gradient(90deg,#E1306C,#c13584);color:#fff;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;">
+          <a href="https://www.instagram.com/p/DZJ9RJMuFjn/" target="_blank" class="news-hcard-more" style="display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:8px 18px;background:linear-gradient(90deg,#E1306C,#c13584);color:#fff;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" style="vertical-align:middle;"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="#fff" stroke="none"/></svg>
             Instagram-да көру <span>↗</span>
           </a>
         </div>
       </div>
-      <a class="news-hcard rv-right" href="https://www.instagram.com/p/DZDGMTGID8r/" target="_blank" style="overflow:hidden;text-decoration:none;display:block;">
+      <a class="news-hcard rv-right" href="https://www.instagram.com/p/DZJ9RJMuFjn/" target="_blank" style="overflow:hidden;text-decoration:none;display:block;">
         <div class="news-hcard-bg" style="background:#000; position:relative;">
           <div class="news-hcard-bg-inner" style="font-size:0;padding:0;background:#000;">
             <img src="accred-news.jpg" alt="Аккредитация" style="width:100%;height:240px;object-fit:cover;display:block;" onerror="this.style.display='none';this.parentElement.style.fontSize='52px';this.parentElement.innerHTML='🏅';">
@@ -4398,7 +4398,6 @@ html.dark .kz-tile { opacity:0.22; }
       <a href="#" onclick="showSection('osms');return false;" data-i18n="nav_osms">МӘМС</a>
       <a href="#" onclick="showSection('tmkkk');return false;" data-i18n="nav_tmkkk">ТМККК</a>
       <a href="#" onclick="showSection('compliance');return false;" data-i18n="nav_compliance">Комплаенс</a>
-      <a href="https://poliklinica.kz/kk/patsiyentterdy-koldau-zhane-yshky-audit/" target="_blank" data-i18n="nav_support">Пациенттерді қолдау ↗</a>
     </div>
     <div class="footer-col">
       <h4 data-i18n="nav_contacts">Байланыс</h4>
@@ -4621,7 +4620,7 @@ const T = {
     toast_ok:"✅ Жазылуыңыз қабылданды! Жақын арада хабарласамыз.",
     nav_home:"Басты бет", nav_about:"Біз туралы", nav_structure:"Құрылымы",
     nav_patients:"Пациенттерге", nav_reviews:"Пікірлер", nav_faq:"Сұрақ қою",
-    nav_osms:"МӘМС", nav_tmkkk:"ТМККК", nav_compliance:"ПҚжІСБ", nav_support:"Пациенттерді қолдау ↗",
+    nav_osms:"МӘМС", nav_tmkkk:"ТМККК", nav_compliance:"Пациентті қолдау және ішкі сараптама қызметі", nav_staff:"🛠 ҚҰРАЛДАР", nav_support:"Пациенттерді қолдау ↗",
     sec_tmkkk_label:"ТМККК", sec_tmkkk_title:"Тегін медициналық көмектің <span>кепілдік берілген көлемі</span>", sec_tmkkk_desc:"Мемлекет кепілдік берген тегін медициналық қызметтер тізімі",
     tmkkk1_title:"Алғашқы медициналық-санитариялық көмек", tmkkk1_text:"Учаскелік терапевт, педиатр, жалпы практика дәрігері — тіркеу бойынша тегін қабылдау.",
     tmkkk2_title:"Зертханалық диагностика", tmkkk2_text:"Жалпы қан, зәр талдаулары және негізгі биохимиялық зерттеулер ТМККК шеңберінде тегін жүргізіледі.",
@@ -4747,7 +4746,7 @@ const T = {
     toast_ok:"✅ Ваша запись принята! Мы свяжемся с вами в ближайшее время.",
     nav_home:"Главная", nav_about:"О нас", nav_structure:"Структура",
     nav_patients:"Пациентам", nav_reviews:"Отзывы", nav_faq:"Вопросы",
-    nav_osms:"ОСМС", nav_tmkkk:"ГОБМП", nav_compliance:"ПКвВЭ", nav_support:"Поддержка пациентов ↗",
+    nav_osms:"ОСМС", nav_tmkkk:"ГОБМП", nav_compliance:"Служба поддержки пациентов и внутреннего контроля", nav_staff:"🛠 Инструменты", nav_support:"Поддержка пациентов ↗",
     sec_tmkkk_label:"ГОБМП", sec_tmkkk_title:"Гарантированный объём <span>бесплатной медицинской помощи</span>", sec_tmkkk_desc:"Перечень бесплатных медицинских услуг, гарантированных государством",
     tmkkk1_title:"Первичная медико-санитарная помощь", tmkkk1_text:"Участковый терапевт, педиатр, врач общей практики — бесплатный приём по прикреплению.",
     tmkkk2_title:"Лабораторная диагностика", tmkkk2_text:"Общий анализ крови, мочи и основные биохимические исследования проводятся бесплатно в рамках ГОБМП.",
@@ -4865,7 +4864,7 @@ const T = {
     toast_ok:"✅ Appointment received! We will contact you soon.",
     nav_home:"Home",nav_about:"About",nav_structure:"Structure",
     nav_patients:"For Patients",nav_reviews:"Reviews",nav_faq:"FAQ",
-    nav_osms:"OSMS",nav_tmkkk:"GFMC",nav_compliance:"PSI Dept.",nav_support:"Patient Support ↗",
+    nav_osms:"OSMS",nav_tmkkk:"GFMC",nav_compliance:"Patient Support & Internal Expertise", nav_staff:"🛠 TOOLS",nav_support:"Patient Support ↗",
     sec_tmkkk_label:"GFMC",sec_tmkkk_title:"Guaranteed Volume of <span>Free Medical Care</span>",sec_tmkkk_desc:"List of free medical services guaranteed by the state",
     tmkkk1_title:"Primary Health Care",tmkkk1_text:"District therapist, pediatrician, GP — free reception by registration.",
     tmkkk2_title:"Laboratory Diagnostics",tmkkk2_text:"General blood and urine tests and basic biochemical tests are free under GFMC.",
