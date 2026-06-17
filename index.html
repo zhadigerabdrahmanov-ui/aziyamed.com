@@ -5581,22 +5581,14 @@ function _renderRpnPreview() {
 
   const wcBadge = totalWc > 0
     ? ' &nbsp;<span style="color:#c0392b;font-weight:700;">🚫 Белый код: ' + totalWc + ' адам</span>'
-    : '';
-  const hiddenCount = rows.length - LIMIT;
-  const toggleBtn = rows.length > LIMIT
-    ? ' &nbsp;<button onclick="_rpnPreviewToggle()" style="padding:2px 12px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;">'
-      + (expanded ? '▲ Жасыру' : '▼ Барлығын көрсету (' + rows.length + ' жол)') + '</button>'
+      + ' &nbsp;<button onclick="downloadWcOnly()" style="padding:2px 10px;background:#c0392b;color:#fff;border:none;border-radius:8px;font-size:.75rem;font-weight:700;cursor:pointer;">⬇️ Тізімді жүктеу</button>'
     : '';
   document.getElementById('rpnInfo').innerHTML =
-    'Барлығы: ' + rows.length + ' жол · ' + headers.length + ' баған'
-    + wcBadge + toggleBtn;
+    'Барлығы: ' + rows.length + ' жол · ' + headers.length + ' баған' + wcBadge;
   preview.style.display = '';
 }
 
-function _rpnPreviewToggle() {
-  _rpnPreviewState.expanded = !_rpnPreviewState.expanded;
-  _renderRpnPreview();
-}
+
 
 function downloadRpnResult() {
   if (!rpnCleanData || !rpnHeaders) return;
@@ -7118,29 +7110,34 @@ function _collapseTable(tableEl, limit) {
   limit = limit || 2;
   var tbody = tableEl.querySelector('tbody');
   if (!tbody) return;
-  var rows = Array.from(tbody.querySelectorAll('tr:not(.tbl-toggle-row)'));
-  var total = rows.length;
-  if (total <= limit) return;
+  var rows = Array.from(tbody.querySelectorAll('tr'));
+  if (rows.length <= limit) return;
   rows.slice(limit).forEach(function(r){ r.style.display='none'; });
-  var cols = tableEl.querySelectorAll('thead th, thead td').length || 1;
-  var expanded = false;
-  var toggleRow = document.createElement('tr');
-  toggleRow.className = 'tbl-toggle-row';
-  var td = document.createElement('td');
-  td.colSpan = cols;
-  td.style.cssText = 'text-align:center;padding:6px;background:rgba(34,164,85,.04);';
-  var btn = document.createElement('button');
-  btn.style.cssText = 'padding:3px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;';
-  btn.textContent = '▼ Барлығын көрсету (' + total + ' жол)';
-  btn.onclick = function(e) {
-    e.stopPropagation();
-    expanded = !expanded;
-    rows.slice(limit).forEach(function(r){ r.style.display = expanded ? '' : 'none'; });
-    btn.textContent = expanded ? '▲ Жасыру' : '▼ Барлығын көрсету (' + total + ' жол)';
-  };
-  td.appendChild(btn);
-  toggleRow.appendChild(td);
-  tbody.appendChild(toggleRow);
 }
 // ════════════════════════════════════════════════════════════════════════════
+
+function downloadWcOnly() {
+  if (!rpnCleanData || !rpnHeaders) { alert('Алдымен файлды өңдеңіз'); return; }
+  const wcList = JSON.parse(localStorage.getItem('whiteCode')||'[]');
+  if (!wcList.length) { alert('Белый код тізімі бос'); return; }
+  const wcSet = new Set(wcList.map(e => String(e.iin).trim()));
+  const IIN_H = 7;
+  const matched = rpnCleanData.filter(row => wcSet.has(String(row[IIN_H]==null?'':row[IIN_H]).trim()));
+  if (!matched.length) { alert('РПН тізімінде белый кодтағы пациент табылмады'); return; }
+  loadSheetJS(function() {
+    try {
+      const wsData = [rpnHeaders, ...matched];
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      const iinCol = rpnHeaders.length - 1;
+      matched.forEach((_, ri) => {
+        const addr = XLSX.utils.encode_cell({ r: ri+1, c: iinCol });
+        if (ws[addr]) ws[addr].t = 's';
+      });
+      ws['!cols'] = rpnHeaders.map(() => ({ wch: 18 }));
+      XLSX.utils.book_append_sheet(wb, ws, 'Белый код');
+      XLSX.writeFile(wb, 'WhiteCode_patients_' + new Date().toISOString().slice(0,10) + '.xlsx');
+    } catch(e) { alert('Қате: ' + e.message); }
+  });
+}
 </script></body></html>
