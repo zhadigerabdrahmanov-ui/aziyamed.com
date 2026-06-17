@@ -5344,6 +5344,7 @@ function showVaccMonth(monthIdx, btn) {
       '<td>'+selSh+'</td><td>'+selOt+'</td></tr>';
   }).join('') + '</tbody>';
   table.innerHTML = th + tb;
+  _collapseTable(table, 2);
 }
 
 function setVaccField(field, rowIdx, value, monthIdx) {
@@ -5547,7 +5548,7 @@ function _renderRpnPreview() {
   const preview = document.getElementById('rpnPreview');
   const table   = document.getElementById('rpnPreviewTable');
   const iinNewCol = headers.length - 1;
-  const LIMIT = 50;
+  const LIMIT = 2;
   const displayRows = expanded ? rows : rows.slice(0, LIMIT);
 
   const thead = '<thead><tr>' + headers.map((h, i) => {
@@ -5599,17 +5600,23 @@ function _rpnPreviewToggle() {
 
 function downloadRpnResult() {
   if (!rpnCleanData || !rpnHeaders) return;
-  const wsData = [rpnHeaders, ...rpnCleanData];
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
-  const iinCol = rpnHeaders.length - 1;
-  rpnCleanData.forEach((row, ri) => {
-    const addr = XLSX.utils.encode_cell({ r: ri+1, c: iinCol });
-    if (ws[addr]) ws[addr].t = 's';
+  loadSheetJS(function() {
+    try {
+      const wsData = [rpnHeaders, ...rpnCleanData];
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      const iinCol = rpnHeaders.length - 1;
+      rpnCleanData.forEach((row, ri) => {
+        const addr = XLSX.utils.encode_cell({ r: ri+1, c: iinCol });
+        if (ws[addr]) ws[addr].t = 's';
+      });
+      ws['!cols'] = rpnHeaders.map(() => ({ wch: 18 }));
+      XLSX.utils.book_append_sheet(wb, ws, 'РПН тізімі');
+      XLSX.writeFile(wb, 'RPN_tazalangan_' + new Date().toISOString().slice(0,10) + '.xlsx');
+    } catch(e) {
+      alert('Жүктеу қатесі: ' + e.message);
+    }
   });
-  ws['!cols'] = rpnHeaders.map(() => ({ wch: 18 }));
-  XLSX.utils.book_append_sheet(wb, ws, 'РПН тізімі');
-  XLSX.writeFile(wb, 'RPN_tazalangan_' + new Date().toISOString().slice(0,10) + '.xlsx');
 }
 
 function initKzBg() {
@@ -6692,6 +6699,8 @@ function calcScreening() {
     var res = document.getElementById('splanResults');
     res.innerHTML = html2;
     res.style.display = 'block';
+    // Apply 2-row collapse to each month table
+    res.querySelectorAll('.splan-patient-table').forEach(function(t){ _collapseTable(t, 2); });
     window._splanData = { patients:patients, monthBuckets:monthBuckets, year:year };
   }
 
@@ -6819,6 +6828,8 @@ function calcScreening() {
     }).join('');
 
     document.getElementById('vcTableBody').innerHTML = html2;
+    var _vcTbl = document.getElementById('vcTableBody') && document.getElementById('vcTableBody').closest('table');
+    if (_vcTbl) _collapseTable(_vcTbl, 2);
     res.style.display = 'block';
 
     // scroll into view smoothly
@@ -6901,6 +6912,7 @@ function calcScreening() {
         '<td>'+fmtVal(r[COL.adate])+'</td>'+
       '</tr>';
     }).join('');
+    _collapseTable(tb.closest('table'), 2);
   }
 
   window.rpndiffDrop = function(e,which){
@@ -7088,4 +7100,36 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 // ═════════════════════════════════════════════════════════
+
+// ═══ UNIVERSAL TABLE COLLAPSE (2 rows) ══════════════════════════════════════
+function _collapseTable(tableEl, limit) {
+  if (!tableEl) return;
+  limit = limit || 2;
+  var tbody = tableEl.querySelector('tbody');
+  if (!tbody) return;
+  var rows = Array.from(tbody.querySelectorAll('tr:not(.tbl-toggle-row)'));
+  var total = rows.length;
+  if (total <= limit) return;
+  rows.slice(limit).forEach(function(r){ r.style.display='none'; });
+  var cols = tableEl.querySelectorAll('thead th, thead td').length || 1;
+  var expanded = false;
+  var toggleRow = document.createElement('tr');
+  toggleRow.className = 'tbl-toggle-row';
+  var td = document.createElement('td');
+  td.colSpan = cols;
+  td.style.cssText = 'text-align:center;padding:6px;background:rgba(34,164,85,.04);';
+  var btn = document.createElement('button');
+  btn.style.cssText = 'padding:3px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;';
+  btn.textContent = '▼ Барлығын көрсету (' + total + ' жол)';
+  btn.onclick = function(e) {
+    e.stopPropagation();
+    expanded = !expanded;
+    rows.slice(limit).forEach(function(r){ r.style.display = expanded ? '' : 'none'; });
+    btn.textContent = expanded ? '▲ Жасыру' : '▼ Барлығын көрсету (' + total + ' жол)';
+  };
+  td.appendChild(btn);
+  toggleRow.appendChild(td);
+  tbody.appendChild(toggleRow);
+}
+// ════════════════════════════════════════════════════════════════════════════
 </script></body></html>
