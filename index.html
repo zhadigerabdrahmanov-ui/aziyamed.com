@@ -7101,6 +7101,17 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 // ═════════════════════════════════════════════════════════
 
+// ═══ XLSX LAZY LOADER ═══════════════════════════════════════════════════════
+function loadSheetJS(cb) {
+  if (typeof XLSX !== 'undefined') { cb(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload = cb;
+  s.onerror = function() { alert('XLSX кітапханасы жүктелмеді. Интернет байланысын тексеріңіз.'); };
+  document.head.appendChild(s);
+}
+// ════════════════════════════════════════════════════════════════════════════
+
 // ═══ UNIVERSAL TABLE COLLAPSE (2 rows) ══════════════════════════════════════
 function _collapseTable(tableEl, limit) {
   if (!tableEl) return;
