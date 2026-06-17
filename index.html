@@ -5626,12 +5626,38 @@ function downloadRpnResult() {
     XS.utils.book_append_sheet(wb, ws, 'РПН тізімі');
     XS.writeFile(wb, 'RPN_tazalangan_' + new Date().toISOString().slice(0,10) + '.xlsx');
   }
+  function _fallbackDownload() {
+    // XLSXStyle жоқ — қарапайым XLSX, заливкасыз
+    const wcSetDl = new Set((JSON.parse(localStorage.getItem('whiteCode')||'[]')).map(e=>String(e.iin).trim()));
+    const IIN_H = 7;
+    const headers = [...rpnHeaders, 'Белый код'];
+    const wsData = [headers, ...rpnCleanData.map(row => {
+      const rowIin = String(row[IIN_H]==null?'':row[IIN_H]).trim();
+      return [...row, (wcSetDl.size>0 && wcSetDl.has(rowIin)) ? '⚠️ ИӘ' : ''];
+    })];
+    loadSheetJS(function() {
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      const iinCol = rpnHeaders.length - 1;
+      rpnCleanData.forEach((_,ri) => {
+        const addr = XLSX.utils.encode_cell({r:ri+1,c:iinCol});
+        if (ws[addr]) ws[addr].t = 's';
+      });
+      ws['!cols'] = headers.map(()=>({wch:18}));
+      XLSX.utils.book_append_sheet(wb, ws, 'РПН тізімі');
+      XLSX.writeFile(wb, 'RPN_tazalangan_' + new Date().toISOString().slice(0,10) + '.xlsx');
+    });
+  }
   if (typeof XLSXStyle !== 'undefined') {
     _doRpnDownload(XLSXStyle);
   } else {
     var s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx-js-style.min.js';
-    s.onload = function() { _doRpnDownload(XLSXStyle); };
+    s.onload = function() {
+      if (typeof XLSXStyle !== 'undefined') _doRpnDownload(XLSXStyle);
+      else _fallbackDownload();
+    };
+    s.onerror = function() { _fallbackDownload(); };
     document.head.appendChild(s);
   }
 }
