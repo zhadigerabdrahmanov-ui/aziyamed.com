@@ -5533,20 +5533,35 @@ function processRpnFile(file) {
   reader.readAsArrayBuffer(file);
 }
 
+const _rpnPreviewState = { expanded: false, rows: null, headers: null };
+
 function buildRpnPreview(headers, rows) {
+  _rpnPreviewState.rows = rows;
+  _rpnPreviewState.headers = headers;
+  _rpnPreviewState.expanded = false;
+  _renderRpnPreview();
+}
+
+function _renderRpnPreview() {
+  const { rows, headers, expanded } = _rpnPreviewState;
   const preview = document.getElementById('rpnPreview');
   const table   = document.getElementById('rpnPreviewTable');
   const iinNewCol = headers.length - 1;
+  const LIMIT = 50;
+  const displayRows = expanded ? rows : rows.slice(0, LIMIT);
+
   const thead = '<thead><tr>' + headers.map((h, i) => {
     const style = i === iinNewCol ? ' style="background:#1a8043;"' : '';
     return '<th' + style + '>' + (h || '—') + '</th>';
   }).join('') + '</tr></thead>';
+
   const wcSet = new Set((JSON.parse(localStorage.getItem('whiteCode')||'[]')).map(e=>String(e.iin).trim()));
-  const IIN_COL = 7; // H бағанасы — нақты ИИН
+  const IIN_COL = 7;
   let wcFound = 0;
-  const tbody = '<tbody>' + rows.map(row => {
+
+  const tbody = '<tbody>' + displayRows.map(row => {
     const rawIin = row[IIN_COL];
-    const rowIin = String(rawIin === null || rawIin === undefined ? '' : rawIin).trim();
+    const rowIin = String(rawIin == null ? '' : rawIin).trim();
     const isWc = wcSet.size > 0 && wcSet.has(rowIin);
     if (isWc) wcFound++;
     const trStyle = isWc ? ' style="background:#ffcccc;"' : '';
@@ -5556,38 +5571,54 @@ function buildRpnPreview(headers, rows) {
       return '<td' + cls + '>' + val + '</td>';
     }).join('') + '</tr>';
   }).join('') + '</tbody>';
+
   table.innerHTML = thead + tbody;
-  const wcBadge = wcFound > 0 ? ' · <span style="color:#c0392b;font-weight:700;">🚫 Белый код: ' + wcFound + ' адам</span>' : '';
-  document.getElementById('rpnInfo').innerHTML = 'Барлығы: ' + rows.length + ' жол · ' + headers.length + ' баған' + wcBadge;
+
+  // Count white-code in ALL rows (not just displayed)
+  let totalWc = 0;
+  if (wcSet.size > 0) rows.forEach(r => { if (wcSet.has(String(r[IIN_COL]==null?'':r[IIN_COL]).trim())) totalWc++; });
+
+  const wcBadge = totalWc > 0
+    ? ' &nbsp;<span style="color:#c0392b;font-weight:700;">🚫 Белый код: ' + totalWc + ' адам</span>'
+    : '';
+  const hiddenCount = rows.length - LIMIT;
+  const toggleBtn = rows.length > LIMIT
+    ? ' &nbsp;<button onclick="_rpnPreviewToggle()" style="padding:2px 12px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer;">'
+      + (expanded ? '▲ Жасыру' : '▼ Барлығын көрсету (' + rows.length + ' жол)') + '</button>'
+    : '';
+  document.getElementById('rpnInfo').innerHTML =
+    'Барлығы: ' + rows.length + ' жол · ' + headers.length + ' баған'
+    + wcBadge + toggleBtn;
   preview.style.display = '';
+}
+
+function _rpnPreviewToggle() {
+  _rpnPreviewState.expanded = !_rpnPreviewState.expanded;
+  _renderRpnPreview();
 }
 
 function downloadRpnResult() {
   if (!rpnCleanData || !rpnHeaders) return;
-  const wsData = [rpnHeaders, ...rpnCleanData];
+  const wcSetDl = new Set((JSON.parse(localStorage.getItem('whiteCode')||'[]')).map(e=>String(e.iin).trim()));
+  const IIN_H = 7;
+  // Add "Белый код" column
+  const wcCol = 'Белый код';
+  const headers = [...rpnHeaders, wcCol];
+  const wsData = [headers, ...rpnCleanData.map(row => {
+    const rowIin = String(row[IIN_H] == null ? '' : row[IIN_H]).trim();
+    return [...row, (wcSetDl.size > 0 && wcSetDl.has(rowIin)) ? '⚠️ ИӘ' : ''];
+  })];
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(wsData);
+  // IIN column as string
   const iinCol = rpnHeaders.length - 1;
-  const wcSetDl = new Set((JSON.parse(localStorage.getItem('whiteCode')||'[]')).map(e=>String(e.iin).trim()));
-  const IIN_H = 7; // H бағанасы — нақты ИИН позициясы
   rpnCleanData.forEach((row, ri) => {
     const addr = XLSX.utils.encode_cell({ r: ri+1, c: iinCol });
     if (ws[addr]) ws[addr].t = 's';
-    // Red fill for white-code patients
-    if (wcSetDl.size) {
-      const rowIin = String(row[IIN_H]||'').trim();
-      if (wcSetDl.has(rowIin)) {
-        for (let ci = 0; ci < rpnHeaders.length; ci++) {
-          const ca = XLSX.utils.encode_cell({ r: ri+1, c: ci });
-          if (!ws[ca]) ws[ca] = { t: 's', v: '' };
-          ws[ca].s = { fill: { fgColor: { rgb: 'FFCCCC' }, patternType: 'solid' } };
-        }
-      }
-    }
   });
-  ws['!cols'] = rpnHeaders.map(() => ({ wch: 18 }));
+  ws['!cols'] = headers.map(() => ({ wch: 18 }));
   XLSX.utils.book_append_sheet(wb, ws, 'РПН тізімі');
-  XLSX.writeFile(wb, 'RPN_tazalangan_' + new Date().toISOString().slice(0,10) + '.xlsx', {cellStyles: true});
+  XLSX.writeFile(wb, 'RPN_tazalangan_' + new Date().toISOString().slice(0,10) + '.xlsx');
 }
 
 function initKzBg() {
