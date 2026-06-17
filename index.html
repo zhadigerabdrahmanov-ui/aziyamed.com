@@ -5537,25 +5537,28 @@ function buildRpnPreview(headers, rows) {
   const preview = document.getElementById('rpnPreview');
   const table   = document.getElementById('rpnPreviewTable');
   const iinNewCol = headers.length - 1;
-  const previewRows = rows.slice(0, 10);
   const thead = '<thead><tr>' + headers.map((h, i) => {
     const style = i === iinNewCol ? ' style="background:#1a8043;"' : '';
     return '<th' + style + '>' + (h || '—') + '</th>';
   }).join('') + '</tr></thead>';
   const wcSet = new Set((JSON.parse(localStorage.getItem('whiteCode')||'[]')).map(e=>String(e.iin).trim()));
-  const IIN_COL = 7; // H бағанасы — тіркелгенжер ИИН
-  const tbody = '<tbody>' + previewRows.map(row => {
-    const rowIin = String(row[IIN_COL]||'').trim();
-    const isWc = wcSet.size && wcSet.has(rowIin);
+  const IIN_COL = 7; // H бағанасы — нақты ИИН
+  let wcFound = 0;
+  const tbody = '<tbody>' + rows.map(row => {
+    const rawIin = row[IIN_COL];
+    const rowIin = String(rawIin === null || rawIin === undefined ? '' : rawIin).trim();
+    const isWc = wcSet.size > 0 && wcSet.has(rowIin);
+    if (isWc) wcFound++;
     const trStyle = isWc ? ' style="background:#ffcccc;"' : '';
     return '<tr' + trStyle + '>' + row.map((cell, i) => {
       const cls = i === iinNewCol ? ' class="iin-new"' : '';
-      const val = cell instanceof Date ? cell.toLocaleDateString('ru') : String(cell);
+      const val = cell instanceof Date ? cell.toLocaleDateString('ru') : String(cell == null ? '' : cell);
       return '<td' + cls + '>' + val + '</td>';
     }).join('') + '</tr>';
   }).join('') + '</tbody>';
   table.innerHTML = thead + tbody;
-  document.getElementById('rpnInfo').textContent = 'Барлығы: ' + rows.length + ' жол · ' + headers.length + ' баған';
+  const wcBadge = wcFound > 0 ? ' · <span style="color:#c0392b;font-weight:700;">🚫 Белый код: ' + wcFound + ' адам</span>' : '';
+  document.getElementById('rpnInfo').innerHTML = 'Барлығы: ' + rows.length + ' жол · ' + headers.length + ' баған' + wcBadge;
   preview.style.display = '';
 }
 
@@ -5584,7 +5587,7 @@ function downloadRpnResult() {
   });
   ws['!cols'] = rpnHeaders.map(() => ({ wch: 18 }));
   XLSX.utils.book_append_sheet(wb, ws, 'РПН тізімі');
-  XLSX.writeFile(wb, 'RPN_tazalangan_' + new Date().toISOString().slice(0,10) + '.xlsx');
+  XLSX.writeFile(wb, 'RPN_tazalangan_' + new Date().toISOString().slice(0,10) + '.xlsx', {cellStyles: true});
 }
 
 function initKzBg() {
