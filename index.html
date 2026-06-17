@@ -1381,14 +1381,19 @@
   /* ── WHATSAPP FLOAT ── */
   .whatsapp-float {
     position:fixed; bottom:28px; right:28px; z-index:999;
-    width:56px; height:56px; background:#25d366;
-    border-radius:50%; display:flex; align-items:center; justify-content:center;
-    font-size:26px; text-decoration:none; color:#fff;
+    background:#25d366; border-radius:50px;
+    display:flex; align-items:center; gap:10px;
+    padding:10px 18px 10px 14px;
+    text-decoration:none; color:#fff;
     box-shadow:0 4px 20px rgba(37,211,102,0.45);
     transition:all .3s; animation:floatBounce 3s ease-in-out infinite;
   }
+  .whatsapp-float-icon { width:32px; height:32px; flex-shrink:0; }
+  .whatsapp-float-label {
+    font-size:.82rem; font-weight:700; white-space:nowrap; line-height:1.2;
+  }
   @keyframes floatBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-  .whatsapp-float:hover { transform:scale(1.1); }
+  .whatsapp-float:hover { transform:scale(1.05); }
 
   /* ── IIN CHECK WIDGET ── */
   .iin-check-wrap { margin-top:36px; display:flex; justify-content:center; }
@@ -2709,6 +2714,9 @@ html.dark .kz-tile { opacity:0.22; }
       <button class="doctors-tab" id="tab-sched" onclick="showPatientsTab('sched')" data-i18n="tab_schedule">
         <span class="ti">📅</span><span class="tl">Жұмыс кестесі</span>
       </button>
+      <button class="doctors-tab" id="tab-paid" onclick="showPatientsTab('paid')">
+        <span class="ti">💰</span><span class="tl">Ақылы қызметтер</span>
+      </button>
       <a href="https://damumed.kz/#/" target="_blank" class="doctors-tab damumed-tab">
         <span class="ti">📋</span><span class="tl">Damumed арқылы жазылу</span>
       </a>
@@ -2759,6 +2767,61 @@ html.dark .kz-tile { opacity:0.22; }
       </div>
     </div>
     </div><!-- /panel-services -->
+
+
+    <!-- PANEL: Ақылы қызметтер -->
+    <div id="panel-paid" class="doctors-panel">
+      <div style="padding:8px 0 20px;">
+        <div style="font-size:1.1rem;font-weight:800;color:var(--dark);margin-bottom:6px;">💰 Ақылы медициналық қызметтер</div>
+        <div style="font-size:.85rem;color:var(--gray);">Төмендегі қызметтер МӘМС/ГОБМП бойынша өтемделмейді және ақылы негізде көрсетіледі.</div>
+      </div>
+      <div class="services-grid" id="paidServicesGrid">
+        <div class="service-card reveal">
+          <div class="service-icon">🩸</div>
+          <div class="service-name">Жалпы қан анализі</div>
+          <div class="service-desc">Кешенді қан анализі, нәтиже 1 жұмыс күні ішінде</div>
+        </div>
+        <div class="service-card reveal">
+          <div class="service-icon">🔬</div>
+          <div class="service-name">Биохимиялық анализ</div>
+          <div class="service-desc">Глюкоза, холестерин, бауыр ферменттері және т.б.</div>
+        </div>
+        <div class="service-card reveal">
+          <div class="service-icon">🫀</div>
+          <div class="service-name">ЭКГ</div>
+          <div class="service-desc">Жүрек электрокардиографиясы, дәрігер қорытындысымен</div>
+        </div>
+        <div class="service-card reveal">
+          <div class="service-icon">🔊</div>
+          <div class="service-name">УДЗ (ультрадыбыстық зерттеу)</div>
+          <div class="service-desc">Іш қуысы, қалқанша без, бүйрек, жамбас мүшелері</div>
+        </div>
+        <div class="service-card reveal">
+          <div class="service-icon">💉</div>
+          <div class="service-name">Инъекция / тамшылатқыш</div>
+          <div class="service-desc">Бұлшықет ішіне, көктамыр ішіне егу процедуралары</div>
+        </div>
+        <div class="service-card reveal">
+          <div class="service-icon">📋</div>
+          <div class="service-name">Анықтама / сертификат</div>
+          <div class="service-desc">Жұмысқа, оқуға, жүргізуші куәлігіне медициналық анықтама</div>
+        </div>
+        <div class="service-card reveal">
+          <div class="service-icon">🧪</div>
+          <div class="service-name">ПЦР / экспресс-тест</div>
+          <div class="service-desc">Инфекциялық аурулардың жылдам диагностикасы</div>
+        </div>
+        <div class="service-card reveal">
+          <div class="service-icon">👁️</div>
+          <div class="service-name">Офтальмолог</div>
+          <div class="service-desc">Көру өткірлігін тексеру, көзілдірік рецептін жазу</div>
+        </div>
+      </div>
+      <div style="margin-top:24px;padding:16px 20px;background:rgba(34,164,85,.07);border-radius:14px;border-left:4px solid var(--green);">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:6px;">📞 Бағасы туралы толық ақпарат алу үшін:</div>
+        <div style="font-size:.85rem;color:var(--gray);">+7 (702) 083-55-56 &nbsp;·&nbsp; <a href="https://wa.me/77020835556" target="_blank" style="color:var(--green);font-weight:700;">WhatsApp арқылы жазу</a></div>
+      </div>
+    </div><!-- /panel-paid -->
 
     <!-- PANEL: Жұмыс кестесі -->
     <div id="panel-sched" class="doctors-panel">
@@ -4363,7 +4426,8 @@ html.dark .kz-tile { opacity:0.22; }
 <button class="scroll-top-btn" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Жоғары">↑</button>
 
 <a href="https://wa.me/77020835556?text=Сәлеметсізбе!" class="whatsapp-float" target="_blank" title="WhatsApp">
-  <img src="icon-whatsapp.png" alt="WhatsApp" style="width:32px;height:32px;object-fit:contain;">
+  <img src="icon-whatsapp.png" alt="WhatsApp" class="whatsapp-float-icon" style="object-fit:contain;">
+  <span class="whatsapp-float-label">Кері байланыс</span>
 </a>
 
 <!-- Toast -->
