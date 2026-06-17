@@ -3803,6 +3803,67 @@ html.dark .kz-tile { opacity:0.22; }
         </div>
       </div>
 
+
+      <!-- БЕЛЫЙ КОД -->
+      <div class="staff-task-card" id="taskWhiteCode">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskWhiteCodeBody')">
+          <div class="staff-task-left">
+            <span class="staff-task-icon">🚫</span>
+            <div>
+              <div class="staff-task-title">Белый код</div>
+              <div class="staff-task-desc">Қайта тіркелмеу туралы тілек білдірген пациенттер тізімі. «Толық ИИН жасау» кезінде автоматты анықталады.</div>
+            </div>
+          </div>
+          <span class="staff-task-arrow">▼</span>
+        </div>
+        <div class="staff-task-body" id="taskWhiteCodeBody" style="display:none;">
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:flex-end;">
+            <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;">
+              <label style="font-size:.75rem;color:var(--gray);font-weight:600;">ФИО</label>
+              <input id="wc-fio" type="text" placeholder="Аты-жөні" style="padding:8px 12px;border:1.5px solid #e0ede6;border-radius:10px;font-size:.85rem;outline:none;">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;min-width:130px;">
+              <label style="font-size:.75rem;color:var(--gray);font-weight:600;">ИИН</label>
+              <input id="wc-iin" type="text" maxlength="12" placeholder="12 сан" style="padding:8px 12px;border:1.5px solid #e0ede6;border-radius:10px;font-size:.85rem;outline:none;">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;">
+              <label style="font-size:.75rem;color:var(--gray);font-weight:600;">Мекенжай</label>
+              <input id="wc-addr" type="text" placeholder="Үй мекенжайы" style="padding:8px 12px;border:1.5px solid #e0ede6;border-radius:10px;font-size:.85rem;outline:none;">
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;min-width:120px;">
+              <label style="font-size:.75rem;color:var(--gray);font-weight:600;">Телефон</label>
+              <input id="wc-tel" type="text" placeholder="+7..." style="padding:8px 12px;border:1.5px solid #e0ede6;border-radius:10px;font-size:.85rem;outline:none;">
+            </div>
+            <button onclick="wcAdd()" style="padding:8px 20px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap;align-self:flex-end;">+ Қосу</button>
+          </div>
+
+          <div id="wc-msg" style="font-size:.82rem;margin-bottom:8px;min-height:18px;"></div>
+
+          <div class="rpn-table-wrap">
+            <table class="rpn-table" id="wcTable">
+              <thead><tr>
+                <th style="width:40px;">№</th>
+                <th>ФИО</th>
+                <th>ИИН</th>
+                <th>Мекенжай</th>
+                <th>Телефон</th>
+                <th style="width:60px;"></th>
+              </tr></thead>
+              <tbody id="wcTbody"></tbody>
+            </table>
+          </div>
+
+          <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button onclick="wcExport()" style="padding:8px 18px;background:#1a8043;color:#fff;border:none;border-radius:10px;font-size:.82rem;font-weight:700;cursor:pointer;">📥 Excel жүктеу</button>
+            <button onclick="wcImport()" style="padding:8px 18px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:.82rem;font-weight:700;cursor:pointer;">📤 Excel жүктеу (импорт)</button>
+            <input id="wc-import-file" type="file" accept=".xlsx" style="display:none" onchange="wcImportFile(this)">
+            <span style="font-size:.78rem;color:var(--gray);align-self:center;" id="wc-count"></span>
+          </div>
+
+        </div>
+      </div>
+
       <!-- ДЕЗ ЕСЕПТЕГІШ -->
       <div class="staff-task-card" id="taskDez">
         <div class="staff-task-head" onclick="toggleStaffTask('taskDezBody')">
@@ -5481,13 +5542,17 @@ function buildRpnPreview(headers, rows) {
     const style = i === iinNewCol ? ' style="background:#1a8043;"' : '';
     return '<th' + style + '>' + (h || '—') + '</th>';
   }).join('') + '</tr></thead>';
-  const tbody = '<tbody>' + previewRows.map(row =>
-    '<tr>' + row.map((cell, i) => {
+  const wcSet = new Set((JSON.parse(localStorage.getItem('whiteCode')||'[]')).map(e=>String(e.iin).trim()));
+  const tbody = '<tbody>' + previewRows.map(row => {
+    const rowIin = String(row[iinNewCol]||'').trim();
+    const isWc = wcSet.size && wcSet.has(rowIin);
+    const trStyle = isWc ? ' style="background:#ffcccc;"' : '';
+    return '<tr' + trStyle + '>' + row.map((cell, i) => {
       const cls = i === iinNewCol ? ' class="iin-new"' : '';
       const val = cell instanceof Date ? cell.toLocaleDateString('ru') : String(cell);
       return '<td' + cls + '>' + val + '</td>';
-    }).join('') + '</tr>'
-  ).join('') + '</tbody>';
+    }).join('') + '</tr>';
+  }).join('') + '</tbody>';
   table.innerHTML = thead + tbody;
   document.getElementById('rpnInfo').textContent = 'Барлығы: ' + rows.length + ' жол · ' + headers.length + ' баған';
   preview.style.display = '';
@@ -5499,9 +5564,21 @@ function downloadRpnResult() {
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(wsData);
   const iinCol = rpnHeaders.length - 1;
+  const wcSetDl = new Set((JSON.parse(localStorage.getItem('whiteCode')||'[]')).map(e=>String(e.iin).trim()));
   rpnCleanData.forEach((row, ri) => {
     const addr = XLSX.utils.encode_cell({ r: ri+1, c: iinCol });
     if (ws[addr]) ws[addr].t = 's';
+    // Red fill for white-code patients
+    if (wcSetDl.size) {
+      const rowIin = String(row[iinCol]||'').trim();
+      if (wcSetDl.has(rowIin)) {
+        for (let ci = 0; ci < rpnHeaders.length; ci++) {
+          const ca = XLSX.utils.encode_cell({ r: ri+1, c: ci });
+          if (!ws[ca]) ws[ca] = { t: 's', v: '' };
+          ws[ca].s = { fill: { fgColor: { rgb: 'FFCCCC' }, patternType: 'solid' } };
+        }
+      }
+    }
   });
   ws['!cols'] = rpnHeaders.map(() => ({ wch: 18 }));
   XLSX.utils.book_append_sheet(wb, ws, 'РПН тізімі');
@@ -6873,4 +6950,115 @@ function calcScreening() {
   };
 })();
 
+
+// ═══════════════════════ БЕЛЫЙ КОД ═══════════════════════
+const WC_KEY = 'whiteCode';
+function wcLoad() { return JSON.parse(localStorage.getItem(WC_KEY)||'[]'); }
+function wcSave(arr) { localStorage.setItem(WC_KEY, JSON.stringify(arr)); }
+
+function wcRender() {
+  const arr = wcLoad();
+  const tb = document.getElementById('wcTbody');
+  const cnt = document.getElementById('wc-count');
+  if (!tb) return;
+  if (!arr.length) {
+    tb.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--gray);padding:16px;">Тізім бос</td></tr>';
+  } else {
+    tb.innerHTML = arr.map((e,i) =>
+      `<tr>
+        <td>${i+1}</td>
+        <td>${e.fio||''}</td>
+        <td style="font-weight:700;color:#c0392b;">${e.iin||''}</td>
+        <td>${e.addr||''}</td>
+        <td>${e.tel||''}</td>
+        <td><button onclick="wcDel(${i})" style="background:none;border:none;cursor:pointer;font-size:1.1rem;" title="Жою">🗑️</button></td>
+      </tr>`
+    ).join('');
+  }
+  if (cnt) cnt.textContent = 'Барлығы: ' + arr.length + ' жазба';
+}
+
+function wcAdd() {
+  const fio  = document.getElementById('wc-fio').value.trim();
+  const iin  = document.getElementById('wc-iin').value.trim();
+  const addr = document.getElementById('wc-addr').value.trim();
+  const tel  = document.getElementById('wc-tel').value.trim();
+  const msg  = document.getElementById('wc-msg');
+  if (!iin || iin.length < 11) { msg.style.color='#c0392b'; msg.textContent='⚠️ ИИН дұрыс емес (11-12 сан)'; return; }
+  const arr = wcLoad();
+  if (arr.find(e=>e.iin===iin)) { msg.style.color='#c0392b'; msg.textContent='⚠️ Бұл ИИН тізімде бар'; return; }
+  arr.push({ fio, iin, addr, tel });
+  wcSave(arr);
+  msg.style.color='var(--green)'; msg.textContent='✅ Қосылды';
+  document.getElementById('wc-fio').value='';
+  document.getElementById('wc-iin').value='';
+  document.getElementById('wc-addr').value='';
+  document.getElementById('wc-tel').value='';
+  wcRender();
+  setTimeout(()=>{ if(msg) msg.textContent=''; }, 3000);
+}
+
+function wcDel(i) {
+  const arr = wcLoad();
+  arr.splice(i, 1);
+  wcSave(arr);
+  wcRender();
+}
+
+function wcExport() {
+  loadSheetJS(function() {
+    const arr = wcLoad();
+    if (!arr.length) { alert('Тізім бос'); return; }
+    const wsData = [['№','ФИО','ИИН','Мекенжай','Телефон'], ...arr.map((e,i)=>[i+1,e.fio,e.iin,e.addr,e.tel])];
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols'] = [8,30,14,30,14].map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws, 'Белый код');
+    XLSX.writeFile(wb, 'WhiteCode_' + new Date().toISOString().slice(0,10) + '.xlsx');
+  });
+}
+
+function wcImport() { document.getElementById('wc-import-file').click(); }
+
+function wcImportFile(input) {
+  const file = input.files[0]; if (!file) return;
+  loadSheetJS(function() {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+        const arr = wcLoad();
+        let added = 0;
+        rows.slice(1).forEach(r => {
+          const iin = String(r[2]||'').trim();
+          if (iin.length >= 11 && !arr.find(e=>e.iin===iin)) {
+            arr.push({ fio:String(r[1]||''), iin, addr:String(r[3]||''), tel:String(r[4]||'') });
+            added++;
+          }
+        });
+        wcSave(arr);
+        wcRender();
+        const msg = document.getElementById('wc-msg');
+        if (msg) { msg.style.color='var(--green)'; msg.textContent='✅ ' + added + ' жазба импортталды'; setTimeout(()=>{msg.textContent='';},3000); }
+      } catch(err) { alert('Қате: ' + err.message); }
+    };
+    reader.readAsArrayBuffer(file);
+  });
+  input.value='';
+}
+
+// init on DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+  const body = document.getElementById('taskWhiteCodeBody');
+  if (body) {
+    const obs = new MutationObserver(function(muts) {
+      muts.forEach(m => { if (body.style.display !== 'none') { wcRender(); } });
+    });
+    obs.observe(body, { attributes:true, attributeFilter:['style'] });
+    if (body.style.display !== 'none') wcRender();
+  }
+});
+// ═════════════════════════════════════════════════════════
 </script></body></html>
