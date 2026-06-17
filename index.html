@@ -5543,8 +5543,9 @@ function buildRpnPreview(headers, rows) {
     return '<th' + style + '>' + (h || '—') + '</th>';
   }).join('') + '</tr></thead>';
   const wcSet = new Set((JSON.parse(localStorage.getItem('whiteCode')||'[]')).map(e=>String(e.iin).trim()));
+  const IIN_COL = 7; // H бағанасы — тіркелгенжер ИИН
   const tbody = '<tbody>' + previewRows.map(row => {
-    const rowIin = String(row[iinNewCol]||'').trim();
+    const rowIin = String(row[IIN_COL]||'').trim();
     const isWc = wcSet.size && wcSet.has(rowIin);
     const trStyle = isWc ? ' style="background:#ffcccc;"' : '';
     return '<tr' + trStyle + '>' + row.map((cell, i) => {
@@ -5565,12 +5566,13 @@ function downloadRpnResult() {
   const ws = XLSX.utils.aoa_to_sheet(wsData);
   const iinCol = rpnHeaders.length - 1;
   const wcSetDl = new Set((JSON.parse(localStorage.getItem('whiteCode')||'[]')).map(e=>String(e.iin).trim()));
+  const IIN_H = 7; // H бағанасы — нақты ИИН позициясы
   rpnCleanData.forEach((row, ri) => {
     const addr = XLSX.utils.encode_cell({ r: ri+1, c: iinCol });
     if (ws[addr]) ws[addr].t = 's';
     // Red fill for white-code patients
     if (wcSetDl.size) {
-      const rowIin = String(row[iinCol]||'').trim();
+      const rowIin = String(row[IIN_H]||'').trim();
       if (wcSetDl.has(rowIin)) {
         for (let ci = 0; ci < rpnHeaders.length; ci++) {
           const ca = XLSX.utils.encode_cell({ r: ri+1, c: ci });
