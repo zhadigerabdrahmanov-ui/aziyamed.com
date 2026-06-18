@@ -3688,24 +3688,31 @@ html.dark .kz-tile { opacity:0.22; }
         </div>
         <div class="staff-task-body" id="taskPatientMapBody" style="display:none;">
 
-          <div style="font-size:.82rem;color:var(--gray);margin-bottom:12px;">
-            ⚠️ Деректер «Толық ИИН жасау» бөлімінде файл өңделгеннен кейін қолжетімді болады
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+            <div style="flex:1;min-width:120px;padding:12px 16px;background:#e8f8ef;border-radius:12px;text-align:center;">
+              <div id="pmActiveCount" style="font-size:1.5rem;font-weight:800;color:#1a8043;">0</div>
+              <div style="font-size:.75rem;color:#6b8c76;font-weight:600;">Белсенді пациент</div>
+            </div>
+            <div style="flex:1;min-width:120px;padding:12px 16px;background:#f5faf7;border-radius:12px;text-align:center;">
+              <div id="pmLastUpdate" style="font-size:.82rem;font-weight:700;color:#1a3a2a;">—</div>
+              <div style="font-size:.75rem;color:#6b8c76;font-weight:600;">Соңғы жаңарту</div>
+            </div>
+            <button onclick="pmSendLink()" style="padding:12px 18px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:.82rem;font-weight:700;cursor:pointer;white-space:nowrap;">📤 Сілтеме жіберу</button>
           </div>
 
-          <!-- Search input with autocomplete -->
-          <div style="position:relative;margin-bottom:10px;">
-            <input id="pmSearch" type="text" placeholder="ИИН немесе аты-жөн..."
-              oninput="pmAutocomplete()" onkeydown="if(event.key==='Escape')pmHideList()"
-              style="width:100%;padding:11px 16px;border:2px solid #e0ede6;border-radius:12px;font-size:.9rem;outline:none;box-sizing:border-box;">
-            <div id="pmDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #e0ede6;border-radius:0 0 12px 12px;z-index:999;max-height:200px;overflow-y:auto;box-shadow:0 8px 20px rgba(0,0,0,.1);"></div>
+          <div id="pmSendPanel" style="display:none;background:#f5faf7;border-radius:14px;padding:16px;margin-bottom:16px;">
+            <div style="font-size:.85rem;font-weight:700;margin-bottom:10px;">Пациентке WhatsApp сілтемесі жіберу:</div>
+            <div style="position:relative;">
+              <input id="pmLinkSearch" type="text" placeholder="ИИН немесе аты-жөн..."
+                oninput="pmLinkAutocomplete()"
+                style="width:100%;padding:10px 14px;border:2px solid #e0ede6;border-radius:10px;font-size:.85rem;outline:none;box-sizing:border-box;">
+              <div id="pmLinkDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #e0ede6;border-radius:0 0 10px 10px;z-index:999;max-height:180px;overflow-y:auto;box-shadow:0 6px 16px rgba(0,0,0,.1);"></div>
+            </div>
+            <div id="pmLinkResult" style="margin-top:10px;"></div>
           </div>
 
-          <!-- Selected patient info -->
-          <div id="pmInfo" style="display:none;padding:10px 14px;background:#f5faf7;border-radius:10px;margin-bottom:12px;font-size:.85rem;"></div>
-
-          <!-- Map -->
-          <div id="pmMap" style="height:380px;border-radius:14px;overflow:hidden;border:1.5px solid #e0ede6;display:none;"></div>
-          <div id="pmStatus" style="font-size:.82rem;color:var(--gray);margin-top:8px;min-height:18px;"></div>
+          <div id="pmMap" style="height:420px;border-radius:14px;overflow:hidden;border:1.5px solid #e0ede6;"></div>
+          <div id="pmStatus" style="font-size:.8rem;color:var(--gray);margin-top:8px;min-height:16px;"></div>
 
         </div>
       </div>
@@ -7322,10 +7329,31 @@ function staffLog(event, detail) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 
-// ═══════════════ PATIENT MAP ═══════════════════════════════════════════════
+// ═══════════════ PATIENT MAP (Firebase) ════════════════════════════════════
 var _pmMap = null;
-var _pmMarker = null;
-var _pmLeafletLoaded = false;
+var _pmMarkers = {};
+var _pmFirebaseLoaded = false;
+var _pmUnsubscribe = null;
+
+const _FB_CONFIG = {
+  apiKey: "AIzaSyDe4xyQNxgYTYUGGhI5yCFCPIqQFRiEUNY",
+  authDomain: "aziyamed-b0714.firebaseapp.com",
+  databaseURL: "https://aziyamed-b0714-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "aziyamed-b0714"
+};
+
+function pmInit() {
+  _pmLoadLeaflet(function() {
+    if (!_pmMap) {
+      _pmMap = L.map('pmMap').setView([41.2566, 69.2588], 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap', maxZoom: 19
+      }).addTo(_pmMap);
+    }
+    setTimeout(function(){ _pmMap.invalidateSize(); }, 300);
+    _pmLoadFirebase();
+  });
+}
 
 function _pmLoadLeaflet(cb) {
   if (window.L) { cb(); return; }
@@ -7335,105 +7363,109 @@ function _pmLoadLeaflet(cb) {
   document.head.appendChild(s);
 }
 
-function pmAutocomplete() {
-  const q = (document.getElementById('pmSearch').value || '').trim().toLowerCase();
-  const dd = document.getElementById('pmDropdown');
-  if (!q || q.length < 2 || !rpnCleanData) { dd.style.display='none'; return; }
+function _pmLoadFirebase() {
+  if (_pmFirebaseLoaded) { _pmSubscribe(); return; }
+  // Load Firebase compat SDK
+  var s = document.createElement('script');
+  s.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
+  s.onload = function() {
+    var s2 = document.createElement('script');
+    s2.src = 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js';
+    s2.onload = function() {
+      if (!firebase.apps.length) firebase.initializeApp(_FB_CONFIG);
+      _pmFirebaseLoaded = true;
+      _pmSubscribe();
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+}
 
-  const IIN_C = 7, FIO_C = 0;
-  const matches = [];
-  for (var i = 0; i < rpnCleanData.length && matches.length < 8; i++) {
-    const row = rpnCleanData[i];
-    const iin = String(row[IIN_C]||'').trim();
-    const fio = String(row[FIO_C]||'').trim();
-    if (iin.includes(q) || fio.toLowerCase().includes(q)) matches.push({iin, fio, row});
+function _pmSubscribe() {
+  var status = document.getElementById('pmStatus');
+  if (status) status.textContent = '🔄 Firebase-ке қосылуда...';
+  var locRef = firebase.database().ref('locations');
+  locRef.on('value', function(snapshot) {
+    var data = snapshot.val() || {};
+    _pmRenderMarkers(data);
+    if (status) status.textContent = '🟢 Нақты уақыт режимі — ' + new Date().toLocaleTimeString('ru');
+    var count = Object.keys(data).length;
+    var el = document.getElementById('pmActiveCount');
+    if (el) el.textContent = count;
+    var lu = document.getElementById('pmLastUpdate');
+    if (lu) lu.textContent = new Date().toLocaleTimeString('ru');
+  }, function(err) {
+    if (status) status.textContent = '❌ Қате: ' + err.message;
+  });
+}
+
+function _pmRenderMarkers(data) {
+  if (!_pmMap) return;
+  // Remove old markers
+  Object.values(_pmMarkers).forEach(function(m){ _pmMap.removeLayer(m); });
+  _pmMarkers = {};
+
+  var bounds = [];
+  Object.values(data).forEach(function(p) {
+    if (!p.lat || !p.lon) return;
+    var age = Date.now() - (p.timestamp || 0);
+    var color = age < 3600000 ? '#34a455' : '#f39c12'; // green < 1hr, yellow otherwise
+    var icon = L.divIcon({
+      html: '<div style="width:14px;height:14px;background:'+color+';border:2.5px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3);"></div>',
+      className: '', iconAnchor: [7,7]
+    });
+    var marker = L.marker([p.lat, p.lon], {icon: icon}).addTo(_pmMap);
+    var time = p.timestamp ? new Date(p.timestamp).toLocaleString('ru') : '—';
+    marker.bindPopup(
+      '<b>'+p.name+'</b><br>' +
+      '<span style="font-family:monospace;font-size:.8rem;">'+p.iin+'</span><br>' +
+      '🕐 '+time+'<br>' +
+      '🎯 Дәлдік: ~'+p.accuracy+'м<br>' +
+      '<a href="https://maps.google.com/?q='+p.lat+','+p.lon+'" target="_blank" style="color:#1a8043;font-weight:700;">🗺 Google Maps-та ашу</a>'
+    );
+    _pmMarkers[p.iin] = marker;
+    bounds.push([p.lat, p.lon]);
+  });
+
+  if (bounds.length) _pmMap.fitBounds(bounds, {padding:[40,40], maxZoom:15});
+}
+
+function pmSendLink() {
+  var panel = document.getElementById('pmSendPanel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function pmLinkAutocomplete() {
+  var q = (document.getElementById('pmLinkSearch').value || '').trim().toLowerCase();
+  var dd = document.getElementById('pmLinkDropdown');
+  if (!q || q.length < 2 || !rpnCleanData) { dd.style.display='none'; return; }
+  var matches = [];
+  for (var i=0; i<rpnCleanData.length && matches.length<6; i++) {
+    var row = rpnCleanData[i];
+    var iin = String(row[7]||'').trim();
+    var fio = String(row[0]||'').trim();
+    if (iin.includes(q) || fio.toLowerCase().includes(q)) matches.push({iin,fio});
   }
   if (!matches.length) { dd.style.display='none'; return; }
-
-  dd.innerHTML = matches.map(function(m) {
-    return '<div onclick="pmSelect(this)" data-iin="'+m.iin+'" data-fio="'+m.fio.replace(/"/g,'&quot;')+'" data-addr="'+String(m.row[3]||'').replace(/"/g,'&quot;')+'" data-tel="'+String(m.row[4]||'').replace(/"/g,'&quot;')+'"'
-      + ' style="padding:9px 14px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:.85rem;">'
-      + '<span style="font-weight:700;">'+m.fio+'</span> <span style="color:var(--gray);font-family:monospace;font-size:.8rem;">'+m.iin+'</span>'
-      + '</div>';
+  dd.innerHTML = matches.map(function(m){
+    return '<div onclick="pmSelectForLink(''+m.iin+'',''+m.fio.replace(/'/g,'')+'')" style="padding:9px 14px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:.83rem;">'
+      +'<b>'+m.fio+'</b> <span style="color:#888;font-family:monospace;font-size:.78rem;">'+m.iin+'</span></div>';
   }).join('');
   dd.style.display = 'block';
 }
 
-function pmHideList() { document.getElementById('pmDropdown').style.display='none'; }
-
-function pmSelect(el) {
-  const fio  = el.dataset.fio;
-  const iin  = el.dataset.iin;
-  const addr = el.dataset.addr;
-  const tel  = el.dataset.tel;
-  document.getElementById('pmSearch').value = fio;
-  pmHideList();
-
-  const info = document.getElementById('pmInfo');
-  info.style.display = 'block';
-  info.innerHTML = '<b>👤 '+fio+'</b><br>'
-    + '🪪 ИИН: <span style="font-family:monospace;">'+iin+'</span><br>'
-    + '🏠 Мекенжайы: '+(addr||'—')+'<br>'
-    + '📞 Телефон: '+(tel||'—');
-
-  if (!addr || addr.trim() === '—' || addr.trim() === '') {
-    document.getElementById('pmStatus').textContent = '⚠️ Мекенжай жоқ';
-    return;
-  }
-  pmGeocode(addr, fio, iin);
-}
-
-function pmGeocode(addr, fio, iin) {
-  const status = document.getElementById('pmStatus');
-  status.textContent = '⏳ Мекенжай іздестірілуде...';
-
-  // Build query: add "Сарыағаш" context if not present
-  const query = addr + (addr.toLowerCase().includes('шымкент') || addr.toLowerCase().includes('сарыаг') ? '' : ', Сарыағаш, Казахстан');
-
-  fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&limit=1', {
-    headers: { 'Accept-Language': 'ru' }
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(data) {
-    if (!data || !data.length) {
-      // retry without extra context
-      return fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(addr) + '&limit=1', { headers: { 'Accept-Language': 'ru' } }).then(function(r){ return r.json(); });
-    }
-    return data;
-  })
-  .then(function(data) {
-    if (!data || !data.length) {
-      status.textContent = '❌ Мекенжай картадан табылмады: ' + addr;
-      return;
-    }
-    const lat = parseFloat(data[0].lat);
-    const lon = parseFloat(data[0].lon);
-    status.textContent = '✅ Табылды: ' + data[0].display_name;
-    pmShowMap(lat, lon, fio, iin, addr);
-  })
-  .catch(function(e) { status.textContent = '❌ Қате: ' + e.message; });
-}
-
-function pmShowMap(lat, lon, fio, iin, addr) {
-  const mapEl = document.getElementById('pmMap');
-  mapEl.style.display = 'block';
-
-  _pmLoadLeaflet(function() {
-    if (!_pmMap) {
-      _pmMap = L.map('pmMap').setView([lat, lon], 15);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap',
-        maxZoom: 19
-      }).addTo(_pmMap);
-    } else {
-      _pmMap.setView([lat, lon], 15);
-      if (_pmMarker) _pmMap.removeLayer(_pmMarker);
-    }
-    _pmMarker = L.marker([lat, lon]).addTo(_pmMap)
-      .bindPopup('<b>'+fio+'</b><br><span style="font-family:monospace;">'+iin+'</span><br>'+addr)
-      .openPopup();
-    setTimeout(function(){ _pmMap.invalidateSize(); }, 200);
-  });
+function pmSelectForLink(iin, fio) {
+  document.getElementById('pmLinkSearch').value = fio;
+  document.getElementById('pmLinkDropdown').style.display = 'none';
+  var link = 'https://aziyamed.com/checkin.html?iin='+iin+'&name='+encodeURIComponent(fio);
+  var wa = 'https://wa.me/?text='+encodeURIComponent('Сәлеметсізбе! '+fio+', дәрігер сізді іздеу үшін орыныңызды бөлісіңіз:
+'+link);
+  document.getElementById('pmLinkResult').innerHTML =
+    '<div style="background:#fff;border:1.5px solid #e0ede6;border-radius:10px;padding:12px;font-size:.82rem;">'
+    +'<div style="word-break:break-all;color:#1a3a2a;margin-bottom:10px;">'+link+'</div>'
+    +'<a href="'+wa+'" target="_blank" style="display:inline-block;padding:8px 16px;background:#25d366;color:#fff;border-radius:8px;font-weight:700;font-size:.82rem;text-decoration:none;">📲 WhatsApp арқылы жіберу</a>'
+    +' <button onclick="navigator.clipboard.writeText(''+link+'')" style="padding:8px 14px;background:#eee;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;margin-left:6px;">📋 Көшіру</button>'
+    +'</div>';
 }
 // ═══════════════════════════════════════════════════════════════════════════
 
