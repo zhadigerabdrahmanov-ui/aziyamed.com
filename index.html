@@ -5481,6 +5481,7 @@ function toggleSchedRow(rowId, expandId) {
 }
 
 // ─── STAFF TASKS ─────────────────────────────────────────────────────────────
+var _TOOL_NAMES = {"taskRpnBody": "РПН тазалау", "taskScrPlanBody": "Скрининг жоспар", "taskVaccBody": "Екпе калькулятор", "taskRpnDiffBody": "Тіркелгендер мен шыққандарды анықтау", "taskWhiteCodeBody": "Белый код", "taskDezBody": "Дезинфекция", "taskDez2Body": "Дезинфекция 2", "taskQuartzBody": "Кварц", "taskQuizBody": "Тест", "taskIncidentBody": "Инцидент"};
 function toggleStaffTask(bodyId) {
   const body = document.getElementById(bodyId);
   if (!body) return;
@@ -5488,6 +5489,10 @@ function toggleStaffTask(bodyId) {
   const isOpen = body.style.display !== 'none';
   body.style.display = isOpen ? 'none' : '';
   if (card) card.classList.toggle('open', !isOpen);
+  if (!isOpen) {
+    var toolName = _TOOL_NAMES[bodyId] || bodyId;
+    staffLog('Құрал ашылды', toolName);
+  }
 }
 
 // ─── RPN EXCEL PROCESSOR ─────────────────────────────────────────────────────
@@ -7227,6 +7232,24 @@ function downloadWcOnly() {
   });
 }
 
+
+// ═══════════════ GOOGLE SHEETS LOGGER ═══════════════════════════════════════
+const _LOG_URL = 'https://script.google.com/macros/s/AKfycbw0xpmL50SbRGW7DwjGyx0lbVVZ7-lRqmTW8au3nTFt7dd0VjijX3EZKRcdfPdNN5_b/exec';
+
+function staffLog(event, detail) {
+  var user = staffGetCurrent();
+  if (!user) return;
+  try {
+    fetch(_LOG_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ iin: user.iin, name: user.name, event: event, detail: detail || '' }),
+      mode: 'no-cors'
+    });
+  } catch(e) {}
+}
+// ══════════════════════════════════════════════════════════════════════════════
+
 // ═══════════════ STAFF AUTH ═══════════════════════════════════════════════
 const STAFF_DB = {
   "890628400669":"Аманбаева Перизат Ерсинбаевна",
@@ -7309,7 +7332,7 @@ const STAFF_DB = {
   "980710300677":"Әбітай Орынбасар Мұратұлы",
   "610505402075":"Назиева Жумагуль Толхунбаевна",
   "931208400995":"Құлбатыр Назира Сарсенбайқызы",
-  "590923401231":"Калаева Манзура Сапаровна",
+  "590923401221":"Калаева Манзура Сапаровна",
   "511010402561":"Мамбетова Мадина Беляловна",
   "020603600704":"Асилмаматова Айкумис Бахытжанқызы",
   "910202301175":"Шаметов Казбек Исламұлы",
@@ -7357,11 +7380,13 @@ function staffLoginSubmit() {
     return;
   }
   sessionStorage.setItem(_STAFF_KEY, iin);
+  staffLog('Кіру', 'Жүйеге кірді');
   staffLoginClose();
   _staffShowSection();
 }
 
 function staffLogout() {
+  staffLog('Шығу', 'Жүйеден шықты');
   sessionStorage.removeItem(_STAFF_KEY);
   document.getElementById('staffGreeting').style.display = 'none';
   showSection('hero');
