@@ -6836,6 +6836,28 @@ function calcScreening() {
 })();
 
 
+/* ══ TABLE COLLAPSE HELPER ══════════════════════════════════════════ */
+function _collapseTable(table, visibleRows) {
+  if (!table) return;
+  var tbody = table.querySelector('tbody');
+  if (!tbody) return;
+  var rows = tbody.querySelectorAll('tr');
+  if (rows.length <= visibleRows) return;
+  for (var i = visibleRows; i < rows.length; i++) rows[i].style.display = 'none';
+  var btn = document.createElement('tr');
+  btn.className = 'collapse-more-row';
+  btn.innerHTML = '<td colspan="99" style="text-align:center;padding:6px;">' +
+    '<button onclick="_expandTable(this)" style="font-size:.78rem;background:none;border:1px solid var(--green);color:var(--green);border-radius:6px;padding:3px 14px;cursor:pointer;">' +
+    '▼ Толығырақ көрсету (' + (rows.length - visibleRows) + ' жол)' +
+    '</button></td>';
+  tbody.appendChild(btn);
+}
+function _expandTable(btn) {
+  var tbody = btn.closest('tbody');
+  tbody.querySelectorAll('tr').forEach(function(r){ r.style.display=''; });
+  btn.closest('tr').remove();
+}
+
 /* ══ VACC CALCULATOR JS ══════════════════════════════════════════ */
 (function(){
   var _vcGender = 'M';
