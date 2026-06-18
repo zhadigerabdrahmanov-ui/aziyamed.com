@@ -7459,13 +7459,12 @@ function pmSelectForLink(iin, fio) {
   document.getElementById('pmLinkSearch').value = fio;
   document.getElementById('pmLinkDropdown').style.display = 'none';
   var link = 'https://aziyamed.com/checkin.html?iin='+iin+'&name='+encodeURIComponent(fio);
-  var wa = 'https://wa.me/?text='+encodeURIComponent('Сәлеметсізбе! '+fio+', дәрігер сізді іздеу үшін орыныңызды бөлісіңіз:
-'+link);
+  var wa = 'https://wa.me/?text='+encodeURIComponent('Сәлеметсізбе! '+fio+', дәрігер сізді іздеу үшін орыныңызды бөлісіңіз:\n'+link);
   document.getElementById('pmLinkResult').innerHTML =
     '<div style="background:#fff;border:1.5px solid #e0ede6;border-radius:10px;padding:12px;font-size:.82rem;">'
     +'<div style="word-break:break-all;color:#1a3a2a;margin-bottom:10px;">'+link+'</div>'
     +'<a href="'+wa+'" target="_blank" style="display:inline-block;padding:8px 16px;background:#25d366;color:#fff;border-radius:8px;font-weight:700;font-size:.82rem;text-decoration:none;">📲 WhatsApp арқылы жіберу</a>'
-    +' <button onclick="navigator.clipboard.writeText(''+link+'')" style="padding:8px 14px;background:#eee;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;margin-left:6px;">📋 Көшіру</button>'
+    +' <button onclick="navigator.clipboard.writeText(this.dataset.l)" data-l="'+link+'" style="padding:8px 14px;background:#eee;border:none;border-radius:8px;font-size:.82rem;cursor:pointer;margin-left:6px;">📋 Көшіру</button>'
     +'</div>';
 }
 // ═══════════════════════════════════════════════════════════════════════════
