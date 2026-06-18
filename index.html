@@ -5178,6 +5178,16 @@ function submitReg(e, role) {
     all.push(data);
     localStorage.setItem('regList', JSON.stringify(all));
   } catch(_) {}
+  // Google Sheets-ке жіберу
+  try {
+    const roleLabel = role === 'patient' ? 'Пациент' : 'Қызметкер';
+    const name = data.name || data.fio || data.fullname || '';
+    const iin  = data.iin  || data.jsn  || '';
+    const phone = data.phone || data.tel || '';
+    const detail = 'Рөл: ' + roleLabel + (phone ? ' | Тел: ' + phone : '');
+    const params = new URLSearchParams({ iin: iin, name: name, event: 'Тіркелу', detail: detail });
+    fetch(_LOG_URL + '?' + params.toString(), { mode: 'no-cors' });
+  } catch(_) {}
   regShowStep('regSuccess');
 }
 
