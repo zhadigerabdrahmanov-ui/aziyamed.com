@@ -7395,7 +7395,7 @@ function staffLoginSubmit() {
   sessionStorage.setItem(_STAFF_KEY, iin);
   staffLog('Кіру', 'Жүйеге кірді');
   staffLoginClose();
-  _staffShowSection();
+  _staffActivateUI();  // тек UI жаңарту, бет ауыспайды
 }
 
 function staffLogout() {
@@ -7410,7 +7410,7 @@ function staffLogout() {
   showSection('hero');
 }
 
-function _staffShowSection() {
+function _staffActivateUI() {
   const user = staffGetCurrent();
   if (!user) return;
   const greet = document.getElementById('staffGreeting');
@@ -7421,7 +7421,10 @@ function _staffShowSection() {
   var nb2 = document.getElementById('navLogoutBtn');
   if(nb) nb.style.display = 'none';
   if(nb2) nb2.style.display = '';
-  // Actually show the section
+}
+
+function _staffShowSection() {
+  _staffActivateUI();
   _originalShowSection('staff');
 }
 
