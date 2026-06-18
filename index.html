@@ -3701,6 +3701,18 @@ html.dark .kz-tile { opacity:0.22; }
               <div class="rpn-info" id="rpnInfo"></div>
               <button class="rpn-download-btn" onclick="downloadRpnResult()">⬇️ Тазаланған файлды жүктеу</button>
             </div>
+
+            <!-- PATIENT BASE DIFF PANEL -->
+            <div id="pbPanel" style="margin-top:18px;border-top:2px solid #e0ede6;padding-top:16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+                <div>
+                  <div style="font-size:1rem;font-weight:800;color:var(--dark);">🗂 Пациенттер базасы</div>
+                  <div id="pbSavedInfo" style="font-size:.78rem;color:var(--gray);margin-top:2px;"></div>
+                </div>
+                <button onclick="pbSave()" style="padding:8px 18px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:.85rem;font-weight:700;cursor:pointer;">💾 Базаны жаңарту</button>
+              </div>
+              <div id="pbDiffResult"></div>
+            </div>
           </div>
         </div>
 
@@ -3908,6 +3920,16 @@ html.dark .kz-tile { opacity:0.22; }
           </div>
 
           <div id="wc-msg" style="font-size:.82rem;margin-bottom:8px;min-height:18px;"></div>
+
+          <!-- WC Search -->
+          <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
+            <input id="wc-search" type="text" maxlength="12" placeholder="ИИН бойынша іздеу..."
+              oninput="wcSearchFilter()"
+              style="padding:9px 14px;border:2px solid #e0ede6;border-radius:10px;font-size:.9rem;outline:none;flex:1;font-family:monospace;letter-spacing:1px;">
+            <button onclick="document.getElementById('wc-search').value='';wcSearchFilter();"
+              style="padding:9px 14px;background:#eee;color:#555;border:none;border-radius:10px;font-size:.82rem;cursor:pointer;">✕</button>
+          </div>
+          <div id="wc-search-result" style="font-size:.82rem;color:var(--green-dark);min-height:18px;margin-bottom:6px;font-weight:600;"></div>
 
           <div class="rpn-table-wrap">
             <table class="rpn-table" id="wcTable">
@@ -5632,6 +5654,8 @@ function buildRpnPreview(headers, rows) {
   _rpnPreviewState.headers = headers;
   _rpnPreviewState.expanded = false;
   _renderRpnPreview();
+  pbRenderInfo();
+  pbCompare();
 }
 
 function _renderRpnPreview() {
@@ -7078,6 +7102,26 @@ const WC_KEY = 'whiteCode';
 function wcLoad() { return JSON.parse(localStorage.getItem(WC_KEY)||'[]'); }
 function wcSave(arr) { localStorage.setItem(WC_KEY, JSON.stringify(arr)); }
 
+function wcSearchFilter() {
+  const q = (document.getElementById('wc-search').value || '').trim();
+  const rows = document.querySelectorAll('#wcTbody tr');
+  const res = document.getElementById('wc-search-result');
+  if (!q) {
+    rows.forEach(function(r){ r.style.display=''; });
+    res.textContent = '';
+    return;
+  }
+  let found = 0;
+  rows.forEach(function(r) {
+    const iin = (r.cells[2] ? r.cells[2].textContent.trim() : '');
+    const fio = (r.cells[1] ? r.cells[1].textContent.trim().toLowerCase() : '');
+    const match = iin.includes(q) || fio.includes(q.toLowerCase());
+    r.style.display = match ? '' : 'none';
+    if (match) found++;
+  });
+  res.textContent = found ? '✅ ' + found + ' нәтиже табылды' : '❌ Табылмады';
+}
+
 function wcRender() {
   const arr = wcLoad();
   const tb = document.getElementById('wcTbody');
@@ -7232,6 +7276,90 @@ function downloadWcOnly() {
   });
 }
 
+
+
+// ═══════════════ PATIENT BASE ══════════════════════════════════════════════
+const PB_KEY = 'aziyamed_patientBase';
+const PB_IIN_COL = 7; // H column
+
+function pbGetStored() {
+  try { return JSON.parse(localStorage.getItem(PB_KEY) || 'null'); } catch(e) { return null; }
+}
+
+function pbSave() {
+  if (!rpnCleanData || !rpnHeaders) { alert('Алдымен файлды өңдеңіз'); return; }
+  const iinMap = {};
+  rpnCleanData.forEach(function(row) {
+    const iin = String(row[PB_IIN_COL] == null ? '' : row[PB_IIN_COL]).trim();
+    if (iin) iinMap[iin] = {
+      fio: String(row[0] == null ? '' : row[0]).trim(),
+      addr: String(row[3] == null ? '' : row[3]).trim()
+    };
+  });
+  const now = new Date().toLocaleString('ru', { timeZone: 'Asia/Almaty' });
+  localStorage.setItem(PB_KEY, JSON.stringify({ date: now, count: Object.keys(iinMap).length, iinMap: iinMap }));
+  pbRenderInfo();
+  pbCompare();
+  alert('✅ База сақталды: ' + Object.keys(iinMap).length + ' пациент');
+}
+
+function pbRenderInfo() {
+  const stored = pbGetStored();
+  const el = document.getElementById('pbSavedInfo');
+  if (!el) return;
+  if (!stored) {
+    el.textContent = 'База сақталмаған — алдымен «Базаны жаңарту» басыңыз';
+  } else {
+    el.textContent = 'Соңғы сақталған: ' + stored.date + ' · ' + stored.count + ' пациент';
+  }
+}
+
+function pbCompare() {
+  const res = document.getElementById('pbDiffResult');
+  if (!res) return;
+  if (!rpnCleanData || !rpnHeaders) { res.innerHTML = ''; return; }
+
+  const stored = pbGetStored();
+  if (!stored) {
+    res.innerHTML = '<div style="color:var(--gray);font-size:.85rem;">База жоқ — файлды өңдеп «Базаны жаңарту» басыңыз.</div>';
+    return;
+  }
+
+  const oldMap = stored.iinMap || {};
+  const newMap = {};
+  rpnCleanData.forEach(function(row) {
+    const iin = String(row[PB_IIN_COL] == null ? '' : row[PB_IIN_COL]).trim();
+    if (iin) newMap[iin] = {
+      fio: String(row[0] == null ? '' : row[0]).trim(),
+      addr: String(row[3] == null ? '' : row[3]).trim()
+    };
+  });
+
+  const added   = Object.keys(newMap).filter(function(i){ return !oldMap[i]; });
+  const removed = Object.keys(oldMap).filter(function(i){ return !newMap[i]; });
+
+  if (!added.length && !removed.length) {
+    res.innerHTML = '<div style="color:#1a8043;font-weight:700;font-size:.9rem;">✅ Өзгеріс жоқ — тізім бұрынғымен бірдей</div>';
+    return;
+  }
+
+  function makeTable(list, map, color, label) {
+    if (!list.length) return '';
+    const rows = list.map(function(iin, i) {
+      const p = map[iin] || {};
+      return '<tr><td>' + (i+1) + '</td><td>' + (p.fio || '—') + '</td><td style="font-family:monospace;">' + iin + '</td><td>' + (p.addr || '—') + '</td></tr>';
+    }).join('');
+    return '<div style="margin-bottom:14px;">'
+      + '<div style="font-weight:800;font-size:.9rem;color:' + color + ';margin-bottom:6px;">' + label + ': ' + list.length + ' адам</div>'
+      + '<div class="rpn-table-wrap"><table class="rpn-table"><thead><tr><th>№</th><th>ФИО</th><th>ИИН</th><th>Мекенжай</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+      + '</div>';
+  }
+
+  res.innerHTML =
+    makeTable(added,   newMap, '#1a8043', '🟢 Жаңадан тіркелген') +
+    makeTable(removed, oldMap, '#c0392b', '🔴 Тізімнен шыққан');
+}
+// ══════════════════════════════════════════════════════════════════════════
 
 // ═══════════════ GOOGLE SHEETS LOGGER ═══════════════════════════════════════
 const _LOG_URL = 'https://script.google.com/macros/s/AKfycbw0xpmL50SbRGW7DwjGyx0IbVVZ7-IRqmTW8au3nTFt7dd0VjijX3EZKRcdfPdNN5_b/exec';
