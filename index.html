@@ -7240,12 +7240,13 @@ function staffLog(event, detail) {
   var user = staffGetCurrent();
   if (!user) return;
   try {
-    fetch(_LOG_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ iin: user.iin, name: user.name, event: event, detail: detail || '' }),
-      mode: 'no-cors'
+    var params = new URLSearchParams({
+      iin: user.iin,
+      name: user.name,
+      event: event,
+      detail: detail || ''
     });
+    fetch(_LOG_URL + '?' + params.toString(), { mode: 'no-cors' });
   } catch(e) {}
 }
 // ══════════════════════════════════════════════════════════════════════════════
