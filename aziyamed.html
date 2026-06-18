@@ -817,6 +817,8 @@
     letter-spacing:1.5px; text-transform:uppercase;
     padding:5px 14px; border-radius:20px; margin-bottom:12px;
   }
+  .section-label[data-i18n] { display:none; }
+  div.section-label:not([style]) { display:none; }
   h2 { font-size:clamp(24px,3vw,38px); font-weight:800; line-height:1.2; margin-bottom:14px; }
   h2 span { color:var(--green); }
   .section-desc { font-size:16px; color:var(--gray); line-height:1.7; max-width:560px; }
@@ -2131,6 +2133,7 @@ html.dark .kz-tile { opacity:0.22; }
 }
 
 </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
 <body>
 
@@ -2215,6 +2218,9 @@ html.dark .kz-tile { opacity:0.22; }
             <button class="lang-btn" onclick="setLang('en')">ENG</button>
           </div>
           <button class="reg-open-btn" onclick="openReg()" style="font-size:11px;padding:5px 13px;">👤 Тіркелу</button>
+          <button id="navLoginBtn" class="reg-open-btn" onclick="staffLoginOpen()" style="font-size:11px;padding:5px 13px;background:var(--green);color:#fff;border:none;margin-top:4px;">🔑 Кіру</button>
+          <button id="navLogoutBtn" onclick="staffLogout()" style="display:none;font-size:11px;padding:5px 13px;background:#e74c3c;color:#fff;border:none;border-radius:8px;margin-top:4px;cursor:pointer;">🚪 Шығу</button>
+          <button id="navCabinetBtn" onclick="openCabinet()" style="display:none;font-size:11px;padding:5px 13px;background:#3498db;color:#fff;border:none;border-radius:8px;margin-top:4px;cursor:pointer;">🗂 Жеке кабинет</button>
         </div>
         <div id="accredBadgeWrap" class="accred-badge-wrap" style="position:relative;top:auto;left:auto;transform:none;width:105px;height:105px;flex-shrink:0;margin-left:6px;">
           <img id="accredBadge" src="accred-kk.png" alt="I санат аккредитация" class="accred-badge-img" style="width:105px;height:105px;" onerror="this.closest('#accredBadgeWrap').style.display='none'">
@@ -3701,6 +3707,7 @@ html.dark .kz-tile { opacity:0.22; }
               <div class="rpn-info" id="rpnInfo"></div>
               <button class="rpn-download-btn" onclick="downloadRpnResult()">⬇️ Тазаланған файлды жүктеу</button>
             </div>
+
           </div>
         </div>
 
@@ -3908,6 +3915,16 @@ html.dark .kz-tile { opacity:0.22; }
           </div>
 
           <div id="wc-msg" style="font-size:.82rem;margin-bottom:8px;min-height:18px;"></div>
+
+          <!-- WC Search -->
+          <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center;">
+            <input id="wc-search" type="text" maxlength="12" placeholder="ИИН бойынша іздеу..."
+              oninput="wcSearchFilter()"
+              style="padding:9px 14px;border:2px solid #e0ede6;border-radius:10px;font-size:.9rem;outline:none;flex:1;font-family:monospace;letter-spacing:1px;">
+            <button onclick="document.getElementById('wc-search').value='';wcSearchFilter();"
+              style="padding:9px 14px;background:#eee;color:#555;border:none;border-radius:10px;font-size:.82rem;cursor:pointer;">✕</button>
+          </div>
+          <div id="wc-search-result" style="font-size:.82rem;color:var(--green-dark);min-height:18px;margin-bottom:6px;font-weight:600;"></div>
 
           <div class="rpn-table-wrap">
             <table class="rpn-table" id="wcTable">
@@ -4245,6 +4262,15 @@ html.dark .kz-tile { opacity:0.22; }
     </div>
   </div>
 </section>
+
+<!-- ЖЕКЕ КАБИНЕТ -->
+<section id="cabinet" class="page-section" style="background:var(--light);display:none;">
+  <div class="section-inner">
+    <div id="cabinetContent"></div>
+  </div>
+</section>
+
+
 
 <!-- COMPLIANCE -->
 <section id="compliance" class="page-section">
@@ -4916,7 +4942,7 @@ const T = {
 };
 
 // ─── CORE ────────────────────────────────────────────────────────────────────
-const PAGE_SECTIONS = ['about','structure','patients','news','reviews','faq','osms','incident','tmkkk','compliance','staff'];
+const PAGE_SECTIONS = ['about','structure','patients','news','reviews','faq','osms','incident','tmkkk','compliance','staff','cabinet'];
 let currentLang = localStorage.getItem('aziyamed_lang') || 'kk';
 
 function setLang(lang) {
@@ -4988,8 +5014,38 @@ function showPatientsTab(tab) {
   document.querySelectorAll('.doctors-panel').forEach(p => p.style.display = p.id === 'panel-'+tab ? 'block' : 'none');
 }
 
+
+function submitFaqQuestion(e) {
+  e.preventDefault();
+  if (!requireLogin('Сұрақ жіберу үшін тіркелу қажет.')) return;
+  var name = document.getElementById('faqAskerName').value.trim();
+  var q    = document.getElementById('faqAskerQ').value.trim();
+  if (!name || !q) return;
+  // Save to localStorage
+  try {
+    var FAQ_KEY = 'aziyamed_faq_questions';
+    var qs = JSON.parse(localStorage.getItem(FAQ_KEY) || '[]');
+    qs.push({ ts: Date.now(), name: name, question: q, iin: (staffGetCurrent()||{}).iin || sessionStorage.getItem('aziyamed_patient_iin') || '' });
+    localStorage.setItem(FAQ_KEY, JSON.stringify(qs));
+  } catch(_) {}
+  // Log to Google Sheets
+  try {
+    var su = staffGetCurrent();
+    var iin = su ? su.iin : (sessionStorage.getItem('aziyamed_patient_iin') || '');
+    var params = new URLSearchParams({ iin: iin, name: name, event: 'Сұрақ жіберді', detail: q.slice(0,100) });
+    fetch(_LOG_URL + '?' + params.toString(), { mode: 'no-cors' });
+  } catch(_) {}
+  e.target.reset();
+  // Autofill name back
+  var nameInput = document.getElementById('faqAskerName');
+  if (nameInput) nameInput.value = getLoggedInName();
+  var btn = e.target.querySelector('button[type=submit]');
+  if (btn) { var orig = btn.textContent; btn.textContent = '✅ Жіберілді!'; btn.disabled = true; setTimeout(function(){ btn.textContent = orig; btn.disabled = false; }, 2500); }
+}
+
 function submitBooking(e) {
   e.preventDefault();
+  if (!requireLogin('Жазылу үшін тіркелу қажет.')) return;
   const t = T[currentLang] || T.kk;
   const toast = document.getElementById('toast');
   if (toast) { toast.textContent = t.toast_ok || '✅ Жіберілді!'; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 3500); }
@@ -5161,6 +5217,16 @@ function submitReg(e, role) {
     const all = JSON.parse(localStorage.getItem('regList') || '[]');
     all.push(data);
     localStorage.setItem('regList', JSON.stringify(all));
+  } catch(_) {}
+  // Google Sheets-ке жіберу
+  try {
+    const roleLabel = role === 'patient' ? 'Пациент' : 'Қызметкер';
+    const name = data.name || data.fio || data.fullname || '';
+    const iin  = data.iin  || data.jsn  || '';
+    const phone = data.phone || data.tel || '';
+    const detail = 'Рөл: ' + roleLabel + (phone ? ' | Тел: ' + phone : '');
+    const params = new URLSearchParams({ iin: iin, name: name, event: 'Тіркелу', detail: detail });
+    fetch(_LOG_URL + '?' + params.toString(), { mode: 'no-cors' });
   } catch(_) {}
   regShowStep('regSuccess');
 }
@@ -5481,7 +5547,7 @@ function toggleSchedRow(rowId, expandId) {
 }
 
 // ─── STAFF TASKS ─────────────────────────────────────────────────────────────
-var _TOOL_NAMES = {"taskRpnBody": "РПН тазалау", "taskScrPlanBody": "Скрининг жоспар", "taskVaccBody": "Екпе калькулятор", "taskRpnDiffBody": "Тіркелгендер мен шыққандарды анықтау", "taskWhiteCodeBody": "Белый код", "taskDezBody": "Дезинфекция", "taskDez2Body": "Дезинфекция 2", "taskQuartzBody": "Кварц", "taskQuizBody": "Тест", "taskIncidentBody": "Инцидент"};
+var _TOOL_NAMES = {"taskRpnBody": "РПН тазалау", "taskScrPlanBody": "Скрининг жоспар", "taskVaccBody": "Екпе калькулятор", "taskRpnDiffBody": "Тіркелгендер мен шыққандарды анықтау", "taskWhiteCodeBody": "Белый код", "taskDezBody": "Дезинфекция", "taskDez2Body": "Дезинфекция 2", "taskQuartzBody": "Кварц", "taskQuizBody": "Тест", "taskIncidentBody": "Инцидент", "taskPatientMapBody": "Пациенттер картасы"};
 function toggleStaffTask(bodyId) {
   const body = document.getElementById(bodyId);
   if (!body) return;
@@ -5894,6 +5960,12 @@ function incShowTab(paneId, btn) {
 }
 
 function incSubmit() {
+  // Auto-fill reporter if empty
+  var repEl = document.getElementById('incReporter');
+  if (repEl && !repEl.value.trim()) {
+    var _isu = staffGetCurrent();
+    if (_isu) repEl.value = _isu.name;
+  }
   var date     = document.getElementById('incDate').value;
   var time     = document.getElementById('incTime').value;
   var dept     = document.getElementById('incDept').value;
@@ -5913,8 +5985,10 @@ function incSubmit() {
   }
   errEl.style.display = 'none';
 
+  var _incStaff = staffGetCurrent();
   var rec = {
     id: incGenId(),
+    staffIin: _incStaff ? _incStaff.iin : '',
     date: date, time: time, dept: dept, type: type,
     sev: parseInt(sev), reporter: reporter, patient: patient,
     status: status, desc: desc, actions: actions,
@@ -5923,6 +5997,7 @@ function incSubmit() {
   var arr = incLoadAll();
   arr.push(rec);
   incSaveAll(arr);
+  _staffActivity('Инцидент тіркелді', rec.type + ' — ' + rec.dept);
 
   // Форманы тазалау
   ['incDate','incTime','incDesc','incActions','incReporter','incPatient'].forEach(function(id){
@@ -6218,7 +6293,13 @@ function quizSelectTopic(i) {
 }
 
 function quizStart() {
-  var name = document.getElementById('quizEmployeeName').value.trim();
+  // Auto-fill from staff session if empty
+  var nameInput = document.getElementById('quizEmployeeName');
+  if (!nameInput.value.trim()) {
+    var su = staffGetCurrent();
+    if (su) nameInput.value = su.name;
+  }
+  var name = nameInput.value.trim();
   var errEl = document.getElementById('quizStartErr');
   if (!name) { errEl.textContent='⚠️ Атыңызды енгізіңіз.'; errEl.style.display=''; return; }
   if (quizState.selectedTopicIdx === undefined) { errEl.textContent='⚠️ Тест тақырыбын таңдаңыз.'; errEl.style.display=''; return; }
@@ -6294,7 +6375,8 @@ function quizFinish() {
   var color = pct>=90?'#1a8043':pct>=75?'#388e3c':pct>=60?'#e65100':'#c62828';
   // Save result
   var results = quizLoadResults();
-  results.push({ id:Date.now(), employee:s.employee, topicId:s.topic.id, topicName:s.topic.name, score:score, total:total, pct:pct, grade:grade, date:new Date().toISOString().slice(0,10), time:new Date().toTimeString().slice(0,5) });
+  var _su = staffGetCurrent();
+  results.push({ id:Date.now(), employee:s.employee, staffIin:_su?_su.iin:'', topicId:s.topic.id, topicName:s.topic.name, score:score, total:total, pct:pct, grade:grade, date:new Date().toISOString().slice(0,10), time:new Date().toTimeString().slice(0,5) });
   quizSaveResults(results);
   // Show result screen
   document.getElementById('quizScreen1').style.display='none';
@@ -6670,6 +6752,7 @@ function calcScreening() {
       return s.ages.indexOf(age)!==-1;
     });
   }
+  window.getScreenings = getScreenings;
 
   function colIdx(headers, keywords){
     for(var k=0; k<keywords.length; k++){
@@ -6689,10 +6772,12 @@ function calcScreening() {
     }
     var headers = typeof rpnHeaders !== 'undefined' ? rpnHeaders : [];
     // Find columns
-    var yearCol   = colIdx(headers, ['год рождения','туған жыл','birth year','год']);
-    var genderCol = colIdx(headers, ['пол','жынысы','жыныс','gender','sex']);
-    var nameCol   = colIdx(headers, ['фио','аты','ф.и.о','name']);
-    var iinCol    = colIdx(headers, ['иин','жсн','iin']);
+    var yearCol      = colIdx(headers, ['год рождения','туған жыл','birth year','год']);
+    var genderCol    = colIdx(headers, ['пол','жынысы','жыныс','gender','sex']);
+    var nameCol      = colIdx(headers, ['фио','аты','ф.и.о','name']);
+    var iinCol       = colIdx(headers, ['иин','жсн','iin']);
+    var phoneCol     = colIdx(headers, ['контактн','телефон','phone','байланыс','связь']);
+    var uchastokCol  = colIdx(headers, ['участ','учас']);
 
     // fallback by position (based on known RPN file structure)
     if(yearCol  ===-1) yearCol   = 10;
@@ -6712,8 +6797,10 @@ function calcScreening() {
       var scrs = getScreenings(age, female);
       if(!scrs.length) return;
       patients.push({
-        iin:  String(row[iinCol]  || ''),
-        name: String(row[nameCol] || ''),
+        iin:      String(row[iinCol]       || ''),
+        name:     String(row[nameCol]      || ''),
+        phone:    phoneCol    >= 0 ? String(row[phoneCol]    || '') : '',
+        uchastok: uchastokCol >= 0 ? String(row[uchastokCol] || '') : '',
         by: by, age: age, female: female,
         scrs: scrs
       });
@@ -6792,11 +6879,12 @@ function calcScreening() {
   };
 
   window.splanExportCSV2 = function(){
+    _staffActivity('Есеп жүктелді', 'Скрининг жоспары (CSV)');
     var d = window._splanData; if(!d) return;
-    var rows = [['Ай','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','Скрининг түрлері']];
+    var rows = [['Ай','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','УЧАСКЕ','ТЕЛЕФОН','Скрининг түрлері']];
     d.monthBuckets.forEach(function(bucket,mi){
       bucket.forEach(function(p){
-        rows.push([MONTHS_KZ[mi]+' '+d.year, p.name, p.iin, p.by, p.female?'Ж':'Е', p.age, p.scrs.map(function(s){return s.label;}).join(' | ')]);
+        rows.push([MONTHS_KZ[mi]+' '+d.year, p.name, p.iin, p.by, p.female?'Ж':'Е', p.age, p.uchastok||'', p.phone||'', p.scrs.map(function(s){return s.label;}).join(' | ')]);
       });
     });
     var csv = rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
@@ -6805,6 +6893,7 @@ function calcScreening() {
   };
 
   window.splanExportExcel = function(){
+    _staffActivity('Есеп жүктелді', 'Скрининг жоспары (Excel)');
     var d = window._splanData; if(!d) return;
     function doEx(){
       var wb = XLSX.utils.book_new();
@@ -6814,8 +6903,8 @@ function calcScreening() {
         sum.push([MONTHS_KZ[mi]+' '+d.year, b.length, tc.cvd, tc.breast, tc.cervix, tc.stroke, tc.colon]);
       });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sum), 'Жалпы жоспар');
-      var det = [['АЙ','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','СКРИНИНГ ТҮРЛЕРІ']];
-      d.monthBuckets.forEach(function(b,mi){ b.forEach(function(p){ det.push([MONTHS_KZ[mi]+' '+d.year,p.name,p.iin,p.by,p.female?'Ж':'Е',p.age,p.scrs.map(function(s){return s.label;}).join('; ')]); }); });
+      var det = [['АЙ','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','УЧАСКЕ','ТЕЛЕФОН','СКРИНИНГ ТҮРЛЕРІ']];
+      d.monthBuckets.forEach(function(b,mi){ b.forEach(function(p){ det.push([MONTHS_KZ[mi]+' '+d.year,p.name,p.iin,p.by,p.female?'Ж':'Е',p.age,p.uchastok||'',p.phone||'',p.scrs.map(function(s){return s.label;}).join('; ')]); }); });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(det), 'Толық тізім');
       XLSX.writeFile(wb, 'scrining-jospy-'+d.year+'.xlsx');
     }
@@ -6823,6 +6912,28 @@ function calcScreening() {
   };
 })();
 
+
+/* ══ TABLE COLLAPSE HELPER ══════════════════════════════════════════ */
+function _collapseTable(table, visibleRows) {
+  if (!table) return;
+  var tbody = table.querySelector('tbody');
+  if (!tbody) return;
+  var rows = tbody.querySelectorAll('tr');
+  if (rows.length <= visibleRows) return;
+  for (var i = visibleRows; i < rows.length; i++) rows[i].style.display = 'none';
+  var btn = document.createElement('tr');
+  btn.className = 'collapse-more-row';
+  btn.innerHTML = '<td colspan="99" style="text-align:center;padding:6px;">' +
+    '<button onclick="_expandTable(this)" style="font-size:.78rem;background:none;border:1px solid var(--green);color:var(--green);border-radius:6px;padding:3px 14px;cursor:pointer;">' +
+    '▼ Толығырақ көрсету (' + (rows.length - visibleRows) + ' жол)' +
+    '</button></td>';
+  tbody.appendChild(btn);
+}
+function _expandTable(btn) {
+  var tbody = btn.closest('tbody');
+  tbody.querySelectorAll('tr').forEach(function(r){ r.style.display=''; });
+  btn.closest('tr').remove();
+}
 
 /* ══ VACC CALCULATOR JS ══════════════════════════════════════════ */
 (function(){
@@ -7078,6 +7189,26 @@ const WC_KEY = 'whiteCode';
 function wcLoad() { return JSON.parse(localStorage.getItem(WC_KEY)||'[]'); }
 function wcSave(arr) { localStorage.setItem(WC_KEY, JSON.stringify(arr)); }
 
+function wcSearchFilter() {
+  const q = (document.getElementById('wc-search').value || '').trim();
+  const rows = document.querySelectorAll('#wcTbody tr');
+  const res = document.getElementById('wc-search-result');
+  if (!q) {
+    rows.forEach(function(r){ r.style.display=''; });
+    res.textContent = '';
+    return;
+  }
+  let found = 0;
+  rows.forEach(function(r) {
+    const iin = (r.cells[2] ? r.cells[2].textContent.trim() : '');
+    const fio = (r.cells[1] ? r.cells[1].textContent.trim().toLowerCase() : '');
+    const match = iin.includes(q) || fio.includes(q.toLowerCase());
+    r.style.display = match ? '' : 'none';
+    if (match) found++;
+  });
+  res.textContent = found ? '✅ ' + found + ' нәтиже табылды' : '❌ Табылмады';
+}
+
 function wcRender() {
   const arr = wcLoad();
   const tb = document.getElementById('wcTbody');
@@ -7193,65 +7324,346 @@ function loadSheetJS(cb) {
   s.onerror = function() { alert('XLSX кітапханасы жүктелмеді. Интернет байланысын тексеріңіз.'); };
   document.head.appendChild(s);
 }
-// ════════════════════════════════════════════════════════════════════════════
 
-// ═══ UNIVERSAL TABLE COLLAPSE (2 rows) ══════════════════════════════════════
-function _collapseTable(tableEl, limit) {
-  if (!tableEl) return;
-  limit = limit || 2;
-  var tbody = tableEl.querySelector('tbody');
-  if (!tbody) return;
-  var rows = Array.from(tbody.querySelectorAll('tr'));
-  if (rows.length <= limit) return;
-  rows.slice(limit).forEach(function(r){ r.style.display='none'; });
+
+
+// ═══════════════════ КІРУ ТЕКСЕРУ ════════════════════════════════════════════
+function isLoggedIn() {
+  return !!(staffGetCurrent() || sessionStorage.getItem('aziyamed_patient_iin'));
 }
-// ════════════════════════════════════════════════════════════════════════════
-
-function downloadWcOnly() {
-  if (!rpnCleanData || !rpnHeaders) { alert('Алдымен файлды өңдеңіз'); return; }
-  const wcList = JSON.parse(localStorage.getItem('whiteCode')||'[]');
-  if (!wcList.length) { alert('Белый код тізімі бос'); return; }
-  const wcSet = new Set(wcList.map(e => String(e.iin).trim()));
-  const IIN_H = 7;
-  const matched = rpnCleanData.filter(row => wcSet.has(String(row[IIN_H]==null?'':row[IIN_H]).trim()));
-  if (!matched.length) { alert('РПН тізімінде белый кодтағы пациент табылмады'); return; }
-  loadSheetJS(function() {
-    try {
-      const wsData = [rpnHeaders, ...matched];
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet(wsData);
-      const iinCol = rpnHeaders.length - 1;
-      matched.forEach((_, ri) => {
-        const addr = XLSX.utils.encode_cell({ r: ri+1, c: iinCol });
-        if (ws[addr]) ws[addr].t = 's';
-      });
-      ws['!cols'] = rpnHeaders.map(() => ({ wch: 18 }));
-      XLSX.utils.book_append_sheet(wb, ws, 'Белый код');
-      XLSX.writeFile(wb, 'WhiteCode_patients_' + new Date().toISOString().slice(0,10) + '.xlsx');
-    } catch(e) { alert('Қате: ' + e.message); }
-  });
+function getLoggedInName() {
+  var s = staffGetCurrent();
+  if (s) return s.name;
+  return sessionStorage.getItem('aziyamed_patient_name') || '';
 }
+function requireLogin(msg) {
+  if (isLoggedIn()) return true;
+  if (confirm((msg || 'Бұл әрекет үшін тіркелу қажет.') + '\n\nТіркелу бетіне өту?')) {
+    staffLoginOpen();
+  }
+  return false;
+}
+// ═════════════════════════════════════════════════════════════════════════════
 
-
-// ═══════════════ GOOGLE SHEETS LOGGER ═══════════════════════════════════════
-const _LOG_URL = 'https://script.google.com/macros/s/AKfycbw0xpmL50SbRGW7DwjGyx0lbVVZ7-lRqmTW8au3nTFt7dd0VjijX3EZKRcdfPdNN5_b/exec';
-
-function staffLog(event, detail) {
-  var user = staffGetCurrent();
-  if (!user) return;
+function _staffActivity(action, detail) {
+  var su = staffGetCurrent();
+  if (!su) return;
   try {
-    var params = new URLSearchParams({
-      iin: user.iin,
-      name: user.name,
-      event: event,
-      detail: detail || ''
-    });
-    fetch(_LOG_URL + '?' + params.toString(), { mode: 'no-cors' });
-  } catch(e) {}
+    var key = 'az_hist_' + su.iin;
+    var hist = JSON.parse(localStorage.getItem(key) || '[]');
+    hist.unshift({ ts: Date.now(), action: action, detail: detail || '' });
+    if (hist.length > 50) hist = hist.slice(0, 50);
+    localStorage.setItem(key, JSON.stringify(hist));
+  } catch(_) {}
 }
-// ══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════ ЖЕКЕ КАБИНЕТ ════════════════════════════════════════════
+function parseIIN(iin) {
+  if (!iin || iin.length < 8) return null;
+  var yy = parseInt(iin.slice(0,2)), mm = parseInt(iin.slice(2,4)), dd = parseInt(iin.slice(4,6));
+  var cg = parseInt(iin[6]);
+  var century = (cg <= 2) ? 1800 : (cg <= 4) ? 1900 : 2000;
+  var year = century + yy;
+  var female = (cg % 2 === 0);
+  return { year: year, month: mm, day: dd, female: female };
+}
+
+function openCabinet() {
+  _originalShowSection('cabinet');
+  renderCabinet();
+  setTimeout(function(){
+    var el = document.getElementById('cabinet');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 250);
+}
+
+function renderCabinet() {
+  var box = document.getElementById('cabinetContent');
+  var staffUser = staffGetCurrent();
+  var patIin  = sessionStorage.getItem('aziyamed_patient_iin');
+  var patName = sessionStorage.getItem('aziyamed_patient_name');
+
+  if (staffUser) {
+    renderStaffCabinet(box, staffUser);
+  } else if (patIin) {
+    renderPatientCabinet(box, patIin, patName);
+  } else {
+    box.innerHTML = '<p>Кіру қажет.</p>';
+  }
+}
+
+/* ── ҚЫЗМЕТКЕР КАБИНЕТІ ─────────────────────────────────────────── */
+function renderStaffCabinet(box, user) {
+  var histKey = 'az_hist_' + user.iin;
+  var history = [];
+  try { history = JSON.parse(localStorage.getItem(histKey) || '[]'); } catch(_) {}
+
+  // Quiz results
+  var allQuiz = [];
+  try { allQuiz = JSON.parse(localStorage.getItem('aziyamed_quiz_results') || '[]'); } catch(_) {}
+  var myQuiz = allQuiz.filter(function(r){ return r.staffIin === user.iin || r.employee === user.name; });
+
+  // Incidents
+  var allInc = [];
+  try { allInc = JSON.parse(localStorage.getItem('aziyamed_incidents') || '[]'); } catch(_) {}
+  var myInc = allInc.filter(function(r){ return r.staffIin === user.iin || r.reporter === user.name; });
+
+  // History rows (login + activity)
+  var histRows = history.slice(0,15).map(function(h) {
+    var d = new Date(h.ts).toLocaleString('kk-KZ', {timeZone:'Asia/Almaty'});
+    return '<tr><td style="padding:6px 8px;color:#888;">'+d+'</td><td style="padding:6px 8px;">'+h.action+(h.detail?' <span style="color:#6b8c76;font-size:.8rem;">— '+h.detail+'</span>':'')+'</td></tr>';
+  }).join('') || '<tr><td colspan="2" style="color:#aaa;text-align:center;padding:12px;">Тарих жоқ</td></tr>';
+
+  // Quiz rows
+  var quizRows = myQuiz.slice(0,10).map(function(r) {
+    var col = r.pct>=90?'#1a8043':r.pct>=75?'#388e3c':r.pct>=60?'#e65100':'#c62828';
+    return '<tr><td style="padding:6px 8px;color:#888;">'+r.date+' '+r.time+'</td>' +
+      '<td style="padding:6px 8px;">'+r.topicName+'</td>' +
+      '<td style="padding:6px 8px;font-weight:700;color:'+col+';">'+r.score+'/'+r.total+' ('+r.pct+'%) — '+r.grade+'</td></tr>';
+  }).join('') || '<tr><td colspan="3" style="color:#aaa;text-align:center;padding:12px;">Тест тапсырылмаған</td></tr>';
+
+  // Incident rows
+  var incRows = myInc.slice(0,8).map(function(r) {
+    return '<tr><td style="padding:6px 8px;color:#888;">'+r.date+'</td>' +
+      '<td style="padding:6px 8px;">'+r.type+'</td>' +
+      '<td style="padding:6px 8px;color:#6b8c76;">'+r.dept+'</td>' +
+      '<td style="padding:6px 8px;">'+r.desc.slice(0,50)+(r.desc.length>50?'...':'')+'</td></tr>';
+  }).join('') || '<tr><td colspan="4" style="color:#aaa;text-align:center;padding:12px;">Инцидент тіркелмеген</td></tr>';
+
+  var thStyle = 'padding:8px;text-align:left;background:#f5faf7;font-size:.8rem;color:#6b8c76;';
+  box.innerHTML =
+    '<div style="max-width:800px;margin:0 auto;">' +
+    '<h2 style="color:var(--green-dark);margin-bottom:24px;">👤 Жеке кабинет</h2>' +
+    // Profile
+    '<div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);">' +
+      '<div style="display:flex;align-items:center;gap:18px;margin-bottom:16px;">' +
+        '<div style="width:64px;height:64px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:2rem;">👨‍⚕️</div>' +
+        '<div><div style="font-size:1.2rem;font-weight:800;color:var(--green-dark);">'+user.name+'</div>' +
+        '<div style="font-size:.85rem;color:#6b8c76;">'+(STAFF_ROLES[user.iin]||'Медицина қызметкері')+'</div></div>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">' +
+        '<div style="background:#f5faf7;border-radius:10px;padding:12px;"><div style="font-size:.75rem;color:#6b8c76;">ЖСН (ИИН)</div><div style="font-weight:700;">'+user.iin+'</div></div>' +
+        '<div style="background:#f5faf7;border-radius:10px;padding:12px;"><div style="font-size:.75rem;color:#6b8c76;">Тест тапсыру</div><div style="font-weight:700;color:var(--green);">'+myQuiz.length+' рет</div></div>' +
+        '<div style="background:#f5faf7;border-radius:10px;padding:12px;"><div style="font-size:.75rem;color:#6b8c76;">Инцидент</div><div style="font-weight:700;color:#e65100;">'+myInc.length+' тіркелген</div></div>' +
+      '</div>' +
+    '</div>' +
+    // Quiz results
+    '<div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);">' +
+      '<h3 style="margin-bottom:14px;color:var(--green-dark);">📝 Тест нәтижелері</h3>' +
+      '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.82rem;">' +
+        '<thead><tr><th style="'+thStyle+'">Күні</th><th style="'+thStyle+'">Тақырып</th><th style="'+thStyle+'">Нәтиже</th></tr></thead>' +
+        '<tbody>'+quizRows+'</tbody></table></div>' +
+    '</div>' +
+    // Incidents
+    '<div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);">' +
+      '<h3 style="margin-bottom:14px;color:var(--green-dark);">🚨 Инциденттер</h3>' +
+      '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.82rem;">' +
+        '<thead><tr><th style="'+thStyle+'">Күні</th><th style="'+thStyle+'">Түрі</th><th style="'+thStyle+'">Бөлім</th><th style="'+thStyle+'">Сипаттама</th></tr></thead>' +
+        '<tbody>'+incRows+'</tbody></table></div>' +
+    '</div>' +
+    // Activity history
+    '<div style="background:#fff;border-radius:16px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.07);">' +
+      '<h3 style="margin-bottom:14px;color:var(--green-dark);">🕐 Белсенділік тарихы</h3>' +
+      '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:.82rem;">' +
+        '<thead><tr><th style="'+thStyle+'">Уақыт</th><th style="'+thStyle+'">Іс-әрекет</th></tr></thead>' +
+        '<tbody>'+histRows+'</tbody></table></div>' +
+    '</div>' +
+    '</div>';
+}
+
+/* ── ПАЦИЕНТ КАБИНЕТІ ───────────────────────────────────────────── */
+function renderPatientCabinet(box, iin, name) {
+  var info = parseIIN(iin);
+  var regList = [];
+  try { regList = JSON.parse(localStorage.getItem('regList') || '[]'); } catch(_) {}
+  var pat = regList.find(function(p){ return String(p.iin).trim() === iin; }) || {};
+  var phone = pat.phone || pat.tel || '—';
+  var regDate = pat.ts ? new Date(pat.ts).toLocaleDateString('kk-KZ') : '—';
+
+  var vaccHtml = '';
+  var scrHtml = '';
+
+  if (info) {
+    var age = new Date().getFullYear() - info.year;
+    // Screening
+    if (typeof getScreenings === 'function') {
+      var scrs = getScreenings(age, info.female);
+      if (scrs.length) {
+        scrHtml = '<div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);">' +
+          '<h3 style="margin-bottom:14px;color:var(--green-dark);">🔬 Скрининг тізімі (' + new Date().getFullYear() + ')</h3>' +
+          '<div style="display:flex;flex-wrap:wrap;gap:10px;">' +
+          scrs.map(function(s){ return '<div style="background:#e8f8ef;border-radius:10px;padding:10px 16px;font-size:.85rem;font-weight:600;color:var(--green-dark);">'+s.icon+' '+s.label+'</div>'; }).join('') +
+          '</div></div>';
+      } else {
+        scrHtml = '<div style="background:#fff;border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);color:#6b8c76;font-size:.9rem;">🔬 Биылғы жылға скрининг тапсырманыз жоқ.</div>';
+      }
+    }
+    // Vaccines - use age to show relevant upcoming vaccines
+    vaccHtml = renderPatientVaccines(info, age);
+  }
+
+  box.innerHTML =
+    '<div style="max-width:700px;margin:0 auto;">' +
+    '<h2 style="color:var(--green-dark);margin-bottom:24px;">👤 Жеке кабинет</h2>' +
+    '<div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);">' +
+      '<div style="display:flex;align-items:center;gap:18px;margin-bottom:16px;">' +
+        '<div style="width:64px;height:64px;border-radius:50%;background:#e8f8ef;display:flex;align-items:center;justify-content:center;font-size:2rem;">🧑</div>' +
+        '<div><div style="font-size:1.2rem;font-weight:800;color:var(--green-dark);">'+(name||'Пациент')+'</div>' +
+        '<div style="font-size:.85rem;color:#6b8c76;">Пациент</div></div>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+        '<div style="background:#f5faf7;border-radius:10px;padding:12px;"><div style="font-size:.75rem;color:#6b8c76;">ЖСН (ИИН)</div><div style="font-weight:700;">'+iin+'</div></div>' +
+        '<div style="background:#f5faf7;border-radius:10px;padding:12px;"><div style="font-size:.75rem;color:#6b8c76;">Телефон</div><div style="font-weight:700;">'+phone+'</div></div>' +
+        (info ? '<div style="background:#f5faf7;border-radius:10px;padding:12px;"><div style="font-size:.75rem;color:#6b8c76;">Туған жыл</div><div style="font-weight:700;">'+info.year+'</div></div>' : '') +
+        '<div style="background:#f5faf7;border-radius:10px;padding:12px;"><div style="font-size:.75rem;color:#6b8c76;">Тіркелген күн</div><div style="font-weight:700;">'+regDate+'</div></div>' +
+      '</div>' +
+    '</div>' +
+    scrHtml +
+    vaccHtml +
+    '</div>';
+}
+
+function renderPatientVaccines(info, age) {
+  var upcoming = [];
+  if (age < 18) {
+    upcoming.push({ label: 'Балалар екпе кестесін дәрігермен тексеріңіз', icon: '💉' });
+  } else {
+    // Adults
+    if (age >= 18) upcoming.push({ label: 'Тұмау (жыл сайын)', icon: '💉' });
+    if (age >= 18 && age <= 55) upcoming.push({ label: 'АДС-М (10 жыл сайын)', icon: '💉' });
+    if (age >= 60) upcoming.push({ label: 'Пневмококк', icon: '💉' });
+    if (info.female && age >= 9 && age <= 45) upcoming.push({ label: 'ҚПВ (адам папилломасы вирусы)', icon: '💉' });
+    if (age >= 65) upcoming.push({ label: 'Қант диабеті бар болса — тұмауға қарсы', icon: '💉' });
+  }
+  if (!upcoming.length) return '';
+  return '<div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);">' +
+    '<h3 style="margin-bottom:14px;color:var(--green-dark);">💉 Екпе кестесі</h3>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:10px;">' +
+    upcoming.map(function(v){ return '<div style="background:#fff8e1;border-radius:10px;padding:10px 16px;font-size:.85rem;font-weight:600;color:#7a5c00;">'+v.icon+' '+v.label+'</div>'; }).join('') +
+    '</div></div>';
+}
+
+// ─── Greeting жолағын кабинетке сілтеме ет ─────────────────────────────────
+function _staffActivateUI() {
+  const user = staffGetCurrent();
+  const patIin = sessionStorage.getItem('aziyamed_patient_iin');
+  const patName = sessionStorage.getItem('aziyamed_patient_name');
+  const greet = document.getElementById('staffGreeting');
+  const greetText = document.getElementById('staffGreetText');
+  const displayName = user ? user.name : (patName || 'Пациент');
+  greetText.innerHTML = '<span onclick="openCabinet()" style="cursor:pointer;text-decoration:underline dotted;">👋 Сәлем, ' + displayName + '!</span>';
+  greet.style.display = 'flex';
+  var nb = document.getElementById('navLoginBtn');
+  var nb2 = document.getElementById('navLogoutBtn');
+  if(nb) nb.style.display = 'none';
+  if(nb2) nb2.style.display = '';
+  var nb3 = document.getElementById('navCabinetBtn');
+  if(nb3) nb3.style.display = '';
+}
+// ═════════════════════════════════════════════════════════════════════════════
 
 // ═══════════════ STAFF AUTH ═══════════════════════════════════════════════
+const STAFF_ROLES = {
+  "890628400669": "Басшы",
+  "920402301461": "Емдеу бөлімінің орынбасар басшысы",
+  "870813301444": "Кардиолог-дәрігер, стационар меңгерушісі",
+  "920123300487": "Эпидемиолог-дәрігер",
+  "831023000277": "Терапевт-дәрігер",
+  "890509401481": "Акушер-гинеколог дәрігер",
+  "720701302186": "Уролог-дәрігер, УДЗ дәрігері",
+  "900129301573": "Невропатолог-дәрігер",
+  "890705301768": "Кәсіби патолог дәрігері",
+  "670801402858": "Стоматолог-дәрігер",
+  "870510000698": "Лаборант дәрігері",
+  "940807301398": "Учаскелік педиатр, инфекционист",
+  "911206302297": "Акушер-гинеколог дәрігер",
+  "580727401978": "Учаскелік ЖПМК дәрігері",
+  "601204401557": "Учаскелік ЖПМК дәрігері",
+  "841027402027": "Учаскелік ЖПМК дәрігері, учаске бөлімінің меңгерушісі",
+  "000726500109": "Учаскелік ЖПМК дәрігері",
+  "900301402215": "Учаскелік ЖПМК дәрігері, хирург, сарапшы",
+  "000713600739": "Учаскелік ЖПМК дәрігері",
+  "600611402674": "Учаскелік ЖПМК дәрігері",
+  "971104400580": "УДЗ дәрігері",
+  "930415300426": "Хирург дәрігер",
+  "890917300683": "Реабилитолог-дәрігер",
+  "950708300748": "Балалар кардиологы",
+  "931217302141": "Травматолог-ортопед дәрігер",
+  "871225401070": "Иммунолог-дәрігер",
+  "820711402613": "Эндокринолог-дәрігер",
+  "880719401164": "Маммолог, окулист дәрігер",
+  "750131302341": "ЛОР дәрігері",
+  "951104301350": "Рентгенолог, УДЗ дәрігері",
+  "780612400074": "Фтизио-педиатр дәрігері",
+  "610203301712": "Фтизиатр дәрігер",
+  "970623300365": "Ұйымд.-әдіст. орынбасары, медстатист",
+  "930801400857": "Бас мейіргер",
+  "030131500060": "Фельдшер",
+  "960314400746": "Мейіргер",
+  "900212402261": "Мейіргер",
+  "961117401141": "Мейіргер",
+  "670916402546": "Егу мейіргері",
+  "751224402871": "Вакцинация мейіргері",
+  "980611400556": "ЛОР кабинетінің мейіргері",
+  "000226000070": "УДЗ кабинеті мейіргері",
+  "021107600691": "Учаскелік педиатр мейіргері",
+  "930712402146": "Учаскелік педиатр мейіргері",
+  "931030401956": "Учаскелік педиатр мейіргері",
+  "821110401343": "Учаскелік мейіргер",
+  "910109402382": "Учаскелік мейіргер",
+  "951007401341": "Учаскелік мейіргер",
+  "960510000815": "Учаскелік мейіргер",
+  "980807300179": "Учаскелік медбрат",
+  "030715600656": "Учаскелік мейіргер",
+  "780212401226": "Учаскелік мейіргер",
+  "951115401159": "Учаскелік мейіргер",
+  "890206403014": "Учаскелік мейіргер",
+  "011215601467": "Учаскелік мейіргер",
+  "920511402617": "Учаскелік мейіргер",
+  "950726401237": "Учаскелік мейіргер",
+  "930828400527": "Учаскелік мейіргер",
+  "870615402105": "Учаскелік мейіргер",
+  "760120400551": "Учаскелік мейіргер",
+  "870114401926": "Акушер",
+  "631110401125": "Акушер",
+  "741014402687": "Палаталық мейіргер",
+  "910201402590": "Палаталық мейіргер",
+  "790909401722": "Палаталық мейіргер",
+  "980514401438": "Палаталық мейіргер",
+  "910917401882": "Стоматолог кабинетінің мейіргері",
+  "800701402596": "Хирург, травматолог кабинетінің мейіргері",
+  "940301401135": "Физкабинет мейіргері, массажист",
+  "940824402226": "Физкабинет мейіргері, массажист",
+  "020121601069": "УДЗ кабинеті мейіргері",
+  "890526402462": "Клиникалық зертхана лаборанты",
+  "960725401779": "Клиникалық зертхана лаборанты",
+  "901102402513": "Зертхана мейіргері",
+  "791113400690": "Зертхана мейіргері",
+  "580304402531": "Эпидемиолог дәрігерінің көмекшісі",
+  "020224500410": "Рентгенолаборант",
+  "980710300677": "Рентгенолаборант",
+  "610505402075": "Рентгенолаборант",
+  "931208400995": "Медтіркеуші",
+  "590923401221": "Экономист, бухгалтер",
+  "511010402561": "Кадр маманы",
+  "020603600704": "Психолог",
+  "910202301175": "АТ маманы, мед.техник, бухгалтер",
+  "890127302656": "Провизор",
+  "000820500477": "Провизор",
+  "990922301312": "Менеджер",
+  "000131501468": "Менеджер",
+  "981110300172": "Менеджер",
+  "650218301008": "Шаруашылық бөлімінің орынбасары",
+  "900724302784": "АТ маманы, бағдарламашы",
+  "990612301258": "Бағдарламашы",
+  "660126301159": "Жүргізуші",
+  "810426302517": "Ұста",
+  "860420401968": "Аспазшы",
+  "750304050104": "Шаруашы, кір жуу операторы",
+  "930308401331": "Санитарка",
+  "690104402093": "Санитарка",
+  "870703403548": "Санитарка"
+};
 const STAFF_DB = {
   "890628400669":"Аманбаева Перизат Ерсинбаевна",
   "920402301461":"Едилов Нурғали Абдикаримұлы",
@@ -7354,6 +7766,16 @@ const STAFF_DB = {
   "870703403548":"Алиева Гульбахар Пердебековна"
 };
 
+const _LOG_URL = 'https://script.google.com/macros/s/AKfycbw0xpmL50SbRGW7DwjGyx0IbVVZ7-IRqmTW8au3nTFt7dd0VjijX3EZKRcdfPdNN5_b/exec';
+function staffLog(event, detail) {
+  var user = staffGetCurrent();
+  if (!user) return;
+  try {
+    var params = new URLSearchParams({ iin: user.iin, name: user.name, event: event, detail: detail || '' });
+    fetch(_LOG_URL + '?' + params.toString(), { mode: 'no-cors' });
+  } catch(e) {}
+}
+
 const _STAFF_KEY = 'aziyamed_staff_iin';
 
 function staffGetCurrent() {
@@ -7376,43 +7798,148 @@ function staffLoginSubmit() {
   const iin = document.getElementById('staffIinInput').value.trim();
   const err = document.getElementById('staffLoginError');
   if (iin.length < 11) { err.textContent = '⚠️ ЖСН 11-12 саннан тұрады'; return; }
-  if (!STAFF_DB[iin]) {
-    err.textContent = '❌ Сіздің ЖСН-іңіз тізімде жоқ. Әкімшіге хабарласыңыз.';
+
+  // 1. Қызметкер тізімінен тексеру
+  if (STAFF_DB[iin]) {
+    sessionStorage.setItem(_STAFF_KEY, iin);
+    staffLog('Кіру', 'Жүйеге кірді');
+    try {
+      var hk = 'az_hist_' + iin;
+      var hist = JSON.parse(localStorage.getItem(hk) || '[]');
+      hist.unshift({ ts: Date.now(), action: 'Жүйеге кірді' });
+      if (hist.length > 20) hist = hist.slice(0, 20);
+      localStorage.setItem(hk, JSON.stringify(hist));
+    } catch(_) {}
+    staffLoginClose();
+    _staffActivateUI();
     return;
   }
-  sessionStorage.setItem(_STAFF_KEY, iin);
-  staffLog('Кіру', 'Жүйеге кірді');
-  staffLoginClose();
-  _staffShowSection();
+
+  // 2. Тіркелген пациенттер тізімінен тексеру
+  try {
+    const regList = JSON.parse(localStorage.getItem('regList') || '[]');
+    const patient = regList.find(function(p){ return String(p.iin).trim() === iin; });
+    if (patient) {
+      sessionStorage.setItem('aziyamed_patient_iin', iin);
+      sessionStorage.setItem('aziyamed_patient_name', patient.name || '');
+      staffLoginClose();
+      // Пациент greeting
+      var greet = document.getElementById('staffGreeting');
+      var greetText = document.getElementById('staffGreetText');
+      greetText.textContent = '👋 Сәлем, ' + (patient.name || 'Пациент') + '!';
+      greet.style.display = 'flex';
+      var nb = document.getElementById('navLoginBtn');
+      var nb2 = document.getElementById('navLogoutBtn');
+      if(nb) nb.style.display = 'none';
+      if(nb2) nb2.style.display = '';
+      return;
+    }
+  } catch(_) {}
+
+  err.textContent = '❌ Бұл ЖСН тіркелмеген. Алдымен тіркеліңіз.';
 }
 
 function staffLogout() {
   staffLog('Шығу', 'Жүйеден шықты');
   sessionStorage.removeItem(_STAFF_KEY);
-  document.getElementById('staffGreeting').style.display = 'none';
+  sessionStorage.removeItem('aziyamed_patient_iin');
+  sessionStorage.removeItem('aziyamed_patient_name');
+  var el = document.getElementById('staffGreeting');
+  if(el) el.style.display = 'none';
+  var nb = document.getElementById('navLoginBtn');
+  var nb2 = document.getElementById('navLogoutBtn');
+  if(nb) nb.style.display = '';
+  if(nb2) nb2.style.display = 'none';
+  var nb3 = document.getElementById('navCabinetBtn');
+  if(nb3) nb3.style.display = 'none';
   showSection('hero');
 }
 
 function _staffShowSection() {
-  const user = staffGetCurrent();
-  if (!user) return;
-  const greet = document.getElementById('staffGreeting');
-  const greetText = document.getElementById('staffGreetText');
-  greetText.textContent = '👋 Сәлем, ' + user.name + '!';
-  greet.style.display = 'flex';
-  // Actually show the section
+  _staffActivateUI();
   _originalShowSection('staff');
 }
 
 // Intercept showSection for 'staff'
 var _originalShowSection = showSection;
 showSection = function(sec) {
+  // Autofill name in question form if logged in
+  setTimeout(function(){
+    var ni = document.getElementById('faqAskerName');
+    if (ni && !ni.value) ni.value = getLoggedInName();
+  }, 100);
   if (sec === 'staff') {
     const user = staffGetCurrent();
-    if (!user) { staffLoginOpen(); return; }
+    if (!user) {
+      // Пациент кірген ба?
+      const patIin = sessionStorage.getItem('aziyamed_patient_iin');
+      if (patIin) {
+        alert('⛔ Бұл бөлім тек медицина қызметкерлеріне арналған.');
+        return;
+      }
+      staffLoginOpen();
+      return;
+    }
     _staffShowSection(); return;
   }
   _originalShowSection(sec);
 };
 // ═════════════════════════════════════════════════════════════════════════
+</script>
+<!-- Review Modal -->
+<div id="reviewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:16px;padding:32px;max-width:480px;width:90%;position:relative;">
+    <button onclick="closeReviewModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray);">✕</button>
+    <h3 style="margin:0 0 18px;color:var(--dark);">✍️ Пікір жазу</h3>
+    <div id="reviewModalError" style="color:#e74c3c;font-size:14px;margin-bottom:8px;"></div>
+    <label style="font-size:14px;font-weight:600;color:var(--dark);">Атыңыз</label>
+    <input id="reviewName" type="text" placeholder="Аты-жөніңіз" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin:6px 0 14px;box-sizing:border-box;" />
+    <label style="font-size:14px;font-weight:600;color:var(--dark);">Бағалау</label>
+    <div id="reviewStarPicker" style="font-size:28px;cursor:pointer;margin:6px 0 14px;letter-spacing:4px;">
+      <span onclick="setReviewStar(1)" class="rstar">☆</span>
+      <span onclick="setReviewStar(2)" class="rstar">☆</span>
+      <span onclick="setReviewStar(3)" class="rstar">☆</span>
+      <span onclick="setReviewStar(4)" class="rstar">☆</span>
+      <span onclick="setReviewStar(5)" class="rstar">☆</span>
+    </div>
+    <label style="font-size:14px;font-weight:600;color:var(--dark);">Пікіріңіз</label>
+    <textarea id="reviewText" rows="4" placeholder="Өз пікіріңізді жазыңыз..." style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin:6px 0 18px;box-sizing:border-box;resize:vertical;"></textarea>
+    <button onclick="submitReview()" style="width:100%;padding:13px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">Жіберу</button>
+  </div>
+</div>
+<script>
+var _reviewStar = 0;
+function openReviewModal() {
+  if (!requireLogin('Пікір жазу үшін тіркелу қажет.')) return;
+  _reviewStar = 0;
+  document.getElementById('reviewName').value = getLoggedInName();
+  document.getElementById('reviewText').value = '';
+  document.getElementById('reviewModalError').textContent = '';
+  document.querySelectorAll('.rstar').forEach(function(s){ s.textContent='☆'; });
+  document.getElementById('reviewModal').style.display='flex';
+}
+function closeReviewModal() {
+  document.getElementById('reviewModal').style.display='none';
+}
+function setReviewStar(n) {
+  _reviewStar = n;
+  document.querySelectorAll('.rstar').forEach(function(s, i){ s.textContent = i < n ? '★' : '☆'; });
+}
+function submitReview() {
+  var name = document.getElementById('reviewName').value.trim();
+  var text = document.getElementById('reviewText').value.trim();
+  var err  = document.getElementById('reviewModalError');
+  if (!name) { err.textContent = '⚠️ Атыңызды енгізіңіз'; return; }
+  if (!_reviewStar) { err.textContent = '⚠️ Бағалау қойыңыз'; return; }
+  if (!text) { err.textContent = '⚠️ Пікір жазыңыз'; return; }
+  try {
+    var stars = '';
+    for (var i=0; i<_reviewStar; i++) stars += '★';
+    var iin = (staffGetCurrent() ? staffGetCurrent().iin : sessionStorage.getItem('aziyamed_patient_iin')) || '';
+    var params = new URLSearchParams({ iin: iin, name: name, event: 'Пікір', detail: stars + ' | ' + text });
+    fetch(_LOG_URL + '?' + params.toString(), { mode: 'no-cors' });
+  } catch(_) {}
+  closeReviewModal();
+  alert('✅ Пікіріңіз жіберілді! Рахмет!');
+}
 </script></body></html>
