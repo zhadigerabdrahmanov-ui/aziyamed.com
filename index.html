@@ -7354,6 +7354,16 @@ const STAFF_DB = {
   "870703403548":"Алиева Гульбахар Пердебековна"
 };
 
+const _LOG_URL = 'https://script.google.com/macros/s/AKfycbw0xpmL50SbRGW7DwjGyx0IbVVZ7-IRqmTW8au3nTFt7dd0VjijX3EZKRcdfPdNN5_b/exec';
+function staffLog(event, detail) {
+  var user = staffGetCurrent();
+  if (!user) return;
+  try {
+    var params = new URLSearchParams({ iin: user.iin, name: user.name, event: event, detail: detail || '' });
+    fetch(_LOG_URL + '?' + params.toString(), { mode: 'no-cors' });
+  } catch(e) {}
+}
+
 const _STAFF_KEY = 'aziyamed_staff_iin';
 
 function staffGetCurrent() {
