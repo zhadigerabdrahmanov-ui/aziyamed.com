@@ -2131,6 +2131,7 @@ html.dark .kz-tile { opacity:0.22; }
 }
 
 </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
 <body>
 
@@ -3673,6 +3674,42 @@ html.dark .kz-tile { opacity:0.22; }
     <div class="staff-grid reveal">
 
       <!-- РПН тізімін өңдеу — карточка -->
+      <!-- ПАЦИЕНТТЕР КАРТАСЫ -->
+      <div class="staff-task-card" id="taskPatientMap">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskPatientMapBody')">
+          <div class="staff-task-left">
+            <span class="staff-task-icon">🗺</span>
+            <div>
+              <div class="staff-task-title">Пациенттер картасы</div>
+              <div class="staff-task-desc">ИИН немесе аты-жөн бойынша пациентті іздеп, үй мекенжайын картада көрсетеді</div>
+            </div>
+          </div>
+          <span class="staff-task-arrow">▼</span>
+        </div>
+        <div class="staff-task-body" id="taskPatientMapBody" style="display:none;">
+
+          <div style="font-size:.82rem;color:var(--gray);margin-bottom:12px;">
+            ⚠️ Деректер «Толық ИИН жасау» бөлімінде файл өңделгеннен кейін қолжетімді болады
+          </div>
+
+          <!-- Search input with autocomplete -->
+          <div style="position:relative;margin-bottom:10px;">
+            <input id="pmSearch" type="text" placeholder="ИИН немесе аты-жөн..."
+              oninput="pmAutocomplete()" onkeydown="if(event.key==='Escape')pmHideList()"
+              style="width:100%;padding:11px 16px;border:2px solid #e0ede6;border-radius:12px;font-size:.9rem;outline:none;box-sizing:border-box;">
+            <div id="pmDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid #e0ede6;border-radius:0 0 12px 12px;z-index:999;max-height:200px;overflow-y:auto;box-shadow:0 8px 20px rgba(0,0,0,.1);"></div>
+          </div>
+
+          <!-- Selected patient info -->
+          <div id="pmInfo" style="display:none;padding:10px 14px;background:#f5faf7;border-radius:10px;margin-bottom:12px;font-size:.85rem;"></div>
+
+          <!-- Map -->
+          <div id="pmMap" style="height:380px;border-radius:14px;overflow:hidden;border:1.5px solid #e0ede6;display:none;"></div>
+          <div id="pmStatus" style="font-size:.82rem;color:var(--gray);margin-top:8px;min-height:18px;"></div>
+
+        </div>
+      </div>
+
       <div class="staff-task-card" id="taskRpn">
         <div class="staff-task-head" onclick="toggleStaffTask('taskRpnBody')">
           <div class="staff-task-left">
@@ -5492,7 +5529,7 @@ function toggleSchedRow(rowId, expandId) {
 }
 
 // ─── STAFF TASKS ─────────────────────────────────────────────────────────────
-var _TOOL_NAMES = {"taskRpnBody": "РПН тазалау", "taskScrPlanBody": "Скрининг жоспар", "taskVaccBody": "Екпе калькулятор", "taskRpnDiffBody": "Тіркелгендер мен шыққандарды анықтау", "taskWhiteCodeBody": "Белый код", "taskDezBody": "Дезинфекция", "taskDez2Body": "Дезинфекция 2", "taskQuartzBody": "Кварц", "taskQuizBody": "Тест", "taskIncidentBody": "Инцидент"};
+var _TOOL_NAMES = {"taskRpnBody": "РПН тазалау", "taskScrPlanBody": "Скрининг жоспар", "taskVaccBody": "Екпе калькулятор", "taskRpnDiffBody": "Тіркелгендер мен шыққандарды анықтау", "taskWhiteCodeBody": "Белый код", "taskDezBody": "Дезинфекция", "taskDez2Body": "Дезинфекция 2", "taskQuartzBody": "Кварц", "taskQuizBody": "Тест", "taskIncidentBody": "Инцидент", "taskPatientMapBody": "Пациенттер картасы"};
 function toggleStaffTask(bodyId) {
   const body = document.getElementById(bodyId);
   if (!body) return;
@@ -7283,6 +7320,122 @@ function staffLog(event, detail) {
   } catch(e) {}
 }
 // ══════════════════════════════════════════════════════════════════════════════
+
+
+// ═══════════════ PATIENT MAP ═══════════════════════════════════════════════
+var _pmMap = null;
+var _pmMarker = null;
+var _pmLeafletLoaded = false;
+
+function _pmLoadLeaflet(cb) {
+  if (window.L) { cb(); return; }
+  var s = document.createElement('script');
+  s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  s.onload = cb;
+  document.head.appendChild(s);
+}
+
+function pmAutocomplete() {
+  const q = (document.getElementById('pmSearch').value || '').trim().toLowerCase();
+  const dd = document.getElementById('pmDropdown');
+  if (!q || q.length < 2 || !rpnCleanData) { dd.style.display='none'; return; }
+
+  const IIN_C = 7, FIO_C = 0;
+  const matches = [];
+  for (var i = 0; i < rpnCleanData.length && matches.length < 8; i++) {
+    const row = rpnCleanData[i];
+    const iin = String(row[IIN_C]||'').trim();
+    const fio = String(row[FIO_C]||'').trim();
+    if (iin.includes(q) || fio.toLowerCase().includes(q)) matches.push({iin, fio, row});
+  }
+  if (!matches.length) { dd.style.display='none'; return; }
+
+  dd.innerHTML = matches.map(function(m) {
+    return '<div onclick="pmSelect(this)" data-iin="'+m.iin+'" data-fio="'+m.fio.replace(/"/g,'&quot;')+'" data-addr="'+String(m.row[3]||'').replace(/"/g,'&quot;')+'" data-tel="'+String(m.row[4]||'').replace(/"/g,'&quot;')+'"'
+      + ' style="padding:9px 14px;cursor:pointer;border-bottom:1px solid #f0f0f0;font-size:.85rem;">'
+      + '<span style="font-weight:700;">'+m.fio+'</span> <span style="color:var(--gray);font-family:monospace;font-size:.8rem;">'+m.iin+'</span>'
+      + '</div>';
+  }).join('');
+  dd.style.display = 'block';
+}
+
+function pmHideList() { document.getElementById('pmDropdown').style.display='none'; }
+
+function pmSelect(el) {
+  const fio  = el.dataset.fio;
+  const iin  = el.dataset.iin;
+  const addr = el.dataset.addr;
+  const tel  = el.dataset.tel;
+  document.getElementById('pmSearch').value = fio;
+  pmHideList();
+
+  const info = document.getElementById('pmInfo');
+  info.style.display = 'block';
+  info.innerHTML = '<b>👤 '+fio+'</b><br>'
+    + '🪪 ИИН: <span style="font-family:monospace;">'+iin+'</span><br>'
+    + '🏠 Мекенжайы: '+(addr||'—')+'<br>'
+    + '📞 Телефон: '+(tel||'—');
+
+  if (!addr || addr.trim() === '—' || addr.trim() === '') {
+    document.getElementById('pmStatus').textContent = '⚠️ Мекенжай жоқ';
+    return;
+  }
+  pmGeocode(addr, fio, iin);
+}
+
+function pmGeocode(addr, fio, iin) {
+  const status = document.getElementById('pmStatus');
+  status.textContent = '⏳ Мекенжай іздестірілуде...';
+
+  // Build query: add "Сарыағаш" context if not present
+  const query = addr + (addr.toLowerCase().includes('шымкент') || addr.toLowerCase().includes('сарыаг') ? '' : ', Сарыағаш, Казахстан');
+
+  fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query) + '&limit=1', {
+    headers: { 'Accept-Language': 'ru' }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data) {
+    if (!data || !data.length) {
+      // retry without extra context
+      return fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(addr) + '&limit=1', { headers: { 'Accept-Language': 'ru' } }).then(function(r){ return r.json(); });
+    }
+    return data;
+  })
+  .then(function(data) {
+    if (!data || !data.length) {
+      status.textContent = '❌ Мекенжай картадан табылмады: ' + addr;
+      return;
+    }
+    const lat = parseFloat(data[0].lat);
+    const lon = parseFloat(data[0].lon);
+    status.textContent = '✅ Табылды: ' + data[0].display_name;
+    pmShowMap(lat, lon, fio, iin, addr);
+  })
+  .catch(function(e) { status.textContent = '❌ Қате: ' + e.message; });
+}
+
+function pmShowMap(lat, lon, fio, iin, addr) {
+  const mapEl = document.getElementById('pmMap');
+  mapEl.style.display = 'block';
+
+  _pmLoadLeaflet(function() {
+    if (!_pmMap) {
+      _pmMap = L.map('pmMap').setView([lat, lon], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap',
+        maxZoom: 19
+      }).addTo(_pmMap);
+    } else {
+      _pmMap.setView([lat, lon], 15);
+      if (_pmMarker) _pmMap.removeLayer(_pmMarker);
+    }
+    _pmMarker = L.marker([lat, lon]).addTo(_pmMap)
+      .bindPopup('<b>'+fio+'</b><br><span style="font-family:monospace;">'+iin+'</span><br>'+addr)
+      .openPopup();
+    setTimeout(function(){ _pmMap.invalidateSize(); }, 200);
+  });
+}
+// ═══════════════════════════════════════════════════════════════════════════
 
 // ═══════════════ STAFF AUTH ═══════════════════════════════════════════════
 const STAFF_DB = {
