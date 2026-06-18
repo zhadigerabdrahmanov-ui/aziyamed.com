@@ -2217,10 +2217,10 @@ html.dark .kz-tile { opacity:0.22; }
             <button class="lang-btn" onclick="setLang('ru')">РУС</button>
             <button class="lang-btn" onclick="setLang('en')">ENG</button>
           </div>
-          <button class="reg-open-btn" onclick="openReg()" style="font-size:11px;padding:5px 13px;">👤 Тіркелу</button>
-          <button id="navLoginBtn" class="reg-open-btn" onclick="staffLoginOpen()" style="font-size:11px;padding:5px 13px;background:var(--green);color:#fff;border:none;margin-top:4px;">🔑 Кіру</button>
-          <button id="navLogoutBtn" onclick="staffLogout()" style="display:none;font-size:11px;padding:5px 13px;background:#e74c3c;color:#fff;border:none;border-radius:8px;margin-top:4px;cursor:pointer;">🚪 Шығу</button>
-          <button id="navCabinetBtn" onclick="openCabinet()" style="display:none;font-size:11px;padding:5px 13px;background:#3498db;color:#fff;border:none;border-radius:8px;margin-top:4px;cursor:pointer;">🗂 Жеке кабинет</button>
+          <button class="reg-open-btn" onclick="openReg()" data-i18n="nav_reg" style="font-size:11px;padding:5px 13px;">👤 Тіркелу</button>
+          <button id="navLoginBtn" class="reg-open-btn" onclick="staffLoginOpen()" data-i18n="nav_login" style="font-size:11px;padding:5px 13px;background:var(--green);color:#fff;border:none;margin-top:4px;">🔑 Кіру</button>
+          <button id="navLogoutBtn" onclick="staffLogout()" data-i18n="nav_logout" style="display:none;font-size:11px;padding:5px 13px;background:#e74c3c;color:#fff;border:none;border-radius:8px;margin-top:4px;cursor:pointer;">🚪 Шығу</button>
+          <button id="navCabinetBtn" onclick="openCabinet()" data-i18n="nav_cabinet" style="display:none;font-size:11px;padding:5px 13px;background:#3498db;color:#fff;border:none;border-radius:8px;margin-top:4px;cursor:pointer;">🗂 Жеке кабинет</button>
         </div>
         <div id="accredBadgeWrap" class="accred-badge-wrap" style="position:relative;top:auto;left:auto;transform:none;width:105px;height:105px;flex-shrink:0;margin-left:6px;">
           <img id="accredBadge" src="accred-kk.png" alt="I санат аккредитация" class="accred-badge-img" style="width:105px;height:105px;" onerror="this.closest('#accredBadgeWrap').style.display='none'">
@@ -4695,6 +4695,7 @@ const T = {
     comp4_title:"Шағымдар мен ұсыныстар", comp4_text:"Сіздің шағымыңыз немесе ұсынысыңыз болса, бізге хабарласыңыз. Барлық өтініш 3 жұмыс күні ішінде қаралады.",
     comp_more_btn:"Пациенттерді қолдау және ішкі аудит ↗",
     visitor_label:"Кірушілер есептеуіш", visitor_today:"Бүгін", visitor_total:"Барлығы",
+    nav_reg:"👤 Тіркелу", nav_login:"🔑 Кіру", nav_logout:"🚪 Шығу", nav_cabinet:"🗂 Жеке кабинет",
     gallery_title:"Орталықтың ішкі бөлмелері",
   },
   ru: {
@@ -4821,6 +4822,7 @@ const T = {
     comp4_title:"Жалобы и предложения", comp4_text:"Если у вас есть жалоба или предложение, свяжитесь с нами. Все обращения рассматриваются в течение 3 рабочих дней.",
     comp_more_btn:"Поддержка пациентов и внутренний аудит ↗",
     visitor_label:"Счётчик посетителей", visitor_today:"Сегодня", visitor_total:"Всего",
+    nav_reg:"👤 Регистрация", nav_login:"🔑 Войти", nav_logout:"🚪 Выйти", nav_cabinet:"🗂 Личный кабинет",
     gallery_title:"Интерьер центра",
   },
   en: {
@@ -4936,6 +4938,7 @@ const T = {
     comp4_title:"Complaints & Suggestions",comp4_text:"All requests are reviewed within 3 business days.",
     comp_more_btn:"Patient Support & Internal Audit ↗",
     visitor_label:"Visitor Counter",visitor_today:"Today",visitor_total:"Total",
+    nav_reg:"👤 Register", nav_login:"🔑 Login", nav_logout:"🚪 Logout", nav_cabinet:"🗂 My Cabinet",
     gallery_title:"Interior of the Center",
     sec_structure_org:"Organizational Chart",
   }
@@ -7832,6 +7835,8 @@ function staffLoginSubmit() {
       var nb2 = document.getElementById('navLogoutBtn');
       if(nb) nb.style.display = 'none';
       if(nb2) nb2.style.display = '';
+      var nb3 = document.getElementById('navCabinetBtn');
+      if(nb3) nb3.style.display = '';
       return;
     }
   } catch(_) {}
