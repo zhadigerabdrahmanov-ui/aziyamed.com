@@ -7400,19 +7400,45 @@ function staffLoginSubmit() {
   const iin = document.getElementById('staffIinInput').value.trim();
   const err = document.getElementById('staffLoginError');
   if (iin.length < 11) { err.textContent = '⚠️ ЖСН 11-12 саннан тұрады'; return; }
-  if (!STAFF_DB[iin]) {
-    err.textContent = '❌ Сіздің ЖСН-іңіз тізімде жоқ. Әкімшіге хабарласыңыз.';
+
+  // 1. Қызметкер тізімінен тексеру
+  if (STAFF_DB[iin]) {
+    sessionStorage.setItem(_STAFF_KEY, iin);
+    staffLog('Кіру', 'Жүйеге кірді');
+    staffLoginClose();
+    _staffActivateUI();
     return;
   }
-  sessionStorage.setItem(_STAFF_KEY, iin);
-  staffLog('Кіру', 'Жүйеге кірді');
-  staffLoginClose();
-  _staffActivateUI();  // тек UI жаңарту, бет ауыспайды
+
+  // 2. Тіркелген пациенттер тізімінен тексеру
+  try {
+    const regList = JSON.parse(localStorage.getItem('regList') || '[]');
+    const patient = regList.find(function(p){ return String(p.iin).trim() === iin; });
+    if (patient) {
+      sessionStorage.setItem('aziyamed_patient_iin', iin);
+      sessionStorage.setItem('aziyamed_patient_name', patient.name || '');
+      staffLoginClose();
+      // Пациент greeting
+      var greet = document.getElementById('staffGreeting');
+      var greetText = document.getElementById('staffGreetText');
+      greetText.textContent = '👋 Сәлем, ' + (patient.name || 'Пациент') + '!';
+      greet.style.display = 'flex';
+      var nb = document.getElementById('navLoginBtn');
+      var nb2 = document.getElementById('navLogoutBtn');
+      if(nb) nb.style.display = 'none';
+      if(nb2) nb2.style.display = '';
+      return;
+    }
+  } catch(_) {}
+
+  err.textContent = '❌ Бұл ЖСН тіркелмеген. Алдымен тіркеліңіз.';
 }
 
 function staffLogout() {
   staffLog('Шығу', 'Жүйеден шықты');
   sessionStorage.removeItem(_STAFF_KEY);
+  sessionStorage.removeItem('aziyamed_patient_iin');
+  sessionStorage.removeItem('aziyamed_patient_name');
   var el = document.getElementById('staffGreeting');
   if(el) el.style.display = 'none';
   var nb = document.getElementById('navLoginBtn');
@@ -7445,7 +7471,16 @@ var _originalShowSection = showSection;
 showSection = function(sec) {
   if (sec === 'staff') {
     const user = staffGetCurrent();
-    if (!user) { staffLoginOpen(); return; }
+    if (!user) {
+      // Пациент кірген ба?
+      const patIin = sessionStorage.getItem('aziyamed_patient_iin');
+      if (patIin) {
+        alert('⛔ Бұл бөлім тек медицина қызметкерлеріне арналған.');
+        return;
+      }
+      staffLoginOpen();
+      return;
+    }
     _staffShowSection(); return;
   }
   _originalShowSection(sec);
