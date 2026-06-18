@@ -6701,10 +6701,12 @@ function calcScreening() {
     }
     var headers = typeof rpnHeaders !== 'undefined' ? rpnHeaders : [];
     // Find columns
-    var yearCol   = colIdx(headers, ['год рождения','туған жыл','birth year','год']);
-    var genderCol = colIdx(headers, ['пол','жынысы','жыныс','gender','sex']);
-    var nameCol   = colIdx(headers, ['фио','аты','ф.и.о','name']);
-    var iinCol    = colIdx(headers, ['иин','жсн','iin']);
+    var yearCol      = colIdx(headers, ['год рождения','туған жыл','birth year','год']);
+    var genderCol    = colIdx(headers, ['пол','жынысы','жыныс','gender','sex']);
+    var nameCol      = colIdx(headers, ['фио','аты','ф.и.о','name']);
+    var iinCol       = colIdx(headers, ['иин','жсн','iin']);
+    var phoneCol     = colIdx(headers, ['контактн','телефон','phone','байланыс','связь']);
+    var uchastokCol  = colIdx(headers, ['участ','учас']);
 
     // fallback by position (based on known RPN file structure)
     if(yearCol  ===-1) yearCol   = 10;
@@ -6724,8 +6726,10 @@ function calcScreening() {
       var scrs = getScreenings(age, female);
       if(!scrs.length) return;
       patients.push({
-        iin:  String(row[iinCol]  || ''),
-        name: String(row[nameCol] || ''),
+        iin:      String(row[iinCol]       || ''),
+        name:     String(row[nameCol]      || ''),
+        phone:    phoneCol    >= 0 ? String(row[phoneCol]    || '') : '',
+        uchastok: uchastokCol >= 0 ? String(row[uchastokCol] || '') : '',
         by: by, age: age, female: female,
         scrs: scrs
       });
@@ -6805,10 +6809,10 @@ function calcScreening() {
 
   window.splanExportCSV2 = function(){
     var d = window._splanData; if(!d) return;
-    var rows = [['Ай','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','Скрининг түрлері']];
+    var rows = [['Ай','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','УЧАСКЕ','ТЕЛЕФОН','Скрининг түрлері']];
     d.monthBuckets.forEach(function(bucket,mi){
       bucket.forEach(function(p){
-        rows.push([MONTHS_KZ[mi]+' '+d.year, p.name, p.iin, p.by, p.female?'Ж':'Е', p.age, p.scrs.map(function(s){return s.label;}).join(' | ')]);
+        rows.push([MONTHS_KZ[mi]+' '+d.year, p.name, p.iin, p.by, p.female?'Ж':'Е', p.age, p.uchastok||'', p.phone||'', p.scrs.map(function(s){return s.label;}).join(' | ')]);
       });
     });
     var csv = rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
@@ -6826,8 +6830,8 @@ function calcScreening() {
         sum.push([MONTHS_KZ[mi]+' '+d.year, b.length, tc.cvd, tc.breast, tc.cervix, tc.stroke, tc.colon]);
       });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sum), 'Жалпы жоспар');
-      var det = [['АЙ','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','СКРИНИНГ ТҮРЛЕРІ']];
-      d.monthBuckets.forEach(function(b,mi){ b.forEach(function(p){ det.push([MONTHS_KZ[mi]+' '+d.year,p.name,p.iin,p.by,p.female?'Ж':'Е',p.age,p.scrs.map(function(s){return s.label;}).join('; ')]); }); });
+      var det = [['АЙ','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','УЧАСКЕ','ТЕЛЕФОН','СКРИНИНГ ТҮРЛЕРІ']];
+      d.monthBuckets.forEach(function(b,mi){ b.forEach(function(p){ det.push([MONTHS_KZ[mi]+' '+d.year,p.name,p.iin,p.by,p.female?'Ж':'Е',p.age,p.uchastok||'',p.phone||'',p.scrs.map(function(s){return s.label;}).join('; ')]); }); });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(det), 'Толық тізім');
       XLSX.writeFile(wb, 'scrining-jospy-'+d.year+'.xlsx');
     }
