@@ -2216,7 +2216,8 @@ html.dark .kz-tile { opacity:0.22; }
             <button class="lang-btn" onclick="setLang('en')">ENG</button>
           </div>
           <button class="reg-open-btn" onclick="openReg()" style="font-size:11px;padding:5px 13px;">👤 Тіркелу</button>
-          <button class="reg-open-btn" onclick="staffLoginOpen()" style="font-size:11px;padding:5px 13px;background:var(--green);color:#fff;border:none;margin-top:4px;">🔑 Кіру</button>
+          <button id="navLoginBtn" class="reg-open-btn" onclick="staffLoginOpen()" style="font-size:11px;padding:5px 13px;background:var(--green);color:#fff;border:none;margin-top:4px;">🔑 Кіру</button>
+          <button id="navLogoutBtn" onclick="staffLogout()" style="display:none;font-size:11px;padding:5px 13px;background:#e74c3c;color:#fff;border:none;border-radius:8px;margin-top:4px;cursor:pointer;">🚪 Шығу</button>
         </div>
         <div id="accredBadgeWrap" class="accred-badge-wrap" style="position:relative;top:auto;left:auto;transform:none;width:105px;height:105px;flex-shrink:0;margin-left:6px;">
           <img id="accredBadge" src="accred-kk.png" alt="I санат аккредитация" class="accred-badge-img" style="width:105px;height:105px;" onerror="this.closest('#accredBadgeWrap').style.display='none'">
@@ -7400,7 +7401,12 @@ function staffLoginSubmit() {
 function staffLogout() {
   staffLog('Шығу', 'Жүйеден шықты');
   sessionStorage.removeItem(_STAFF_KEY);
-  document.getElementById('staffGreeting').style.display = 'none';
+  var el = document.getElementById('staffGreeting');
+  if(el) el.style.display = 'none';
+  var nb = document.getElementById('navLoginBtn');
+  var nb2 = document.getElementById('navLogoutBtn');
+  if(nb) nb.style.display = '';
+  if(nb2) nb2.style.display = 'none';
   showSection('hero');
 }
 
@@ -7411,6 +7417,10 @@ function _staffShowSection() {
   const greetText = document.getElementById('staffGreetText');
   greetText.textContent = '👋 Сәлем, ' + user.name + '!';
   greet.style.display = 'flex';
+  var nb = document.getElementById('navLoginBtn');
+  var nb2 = document.getElementById('navLogoutBtn');
+  if(nb) nb.style.display = 'none';
+  if(nb2) nb2.style.display = '';
   // Actually show the section
   _originalShowSection('staff');
 }
