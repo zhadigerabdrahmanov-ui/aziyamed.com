@@ -4942,7 +4942,7 @@ const T = {
 };
 
 // ─── CORE ────────────────────────────────────────────────────────────────────
-const PAGE_SECTIONS = ['about','structure','patients','news','reviews','faq','osms','incident','tmkkk','compliance','staff'];
+const PAGE_SECTIONS = ['about','structure','patients','news','reviews','faq','osms','incident','tmkkk','compliance','staff','cabinet'];
 let currentLang = localStorage.getItem('aziyamed_lang') || 'kk';
 
 function setLang(lang) {
@@ -7368,8 +7368,6 @@ function parseIIN(iin) {
 
 function openCabinet() {
   _originalShowSection('cabinet');
-  var el = document.getElementById('cabinet');
-  if (el) el.style.display = '';
   renderCabinet();
 }
 
