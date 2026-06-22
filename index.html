@@ -2819,7 +2819,7 @@ html.dark .kz-tile { opacity:0.22; }
           </div>
           <div>
             <div style="font-size:.8rem;color:var(--gray);margin-bottom:4px;">🕐 Вызов қабылдау уақыты</div>
-            <div style="font-size:1rem;font-weight:700;color:var(--dark);">Дүйсенбі – Жұма: 08:00 – 12:00</div>
+            <div style="font-size:1rem;font-weight:700;color:var(--dark);">Дүйсенбі – Жұма: 08:00 – 18:00</div>
           </div>
         </div>
 
@@ -7966,6 +7966,8 @@ showSection = function(sec) {
   }
   _originalShowSection(sec);
   if (sec === 'blog') setTimeout(renderBlogList, 80);
+  var _contactsEl = document.getElementById('contacts');
+  if (_contactsEl) _contactsEl.style.display = (sec === 'hero') ? '' : 'none';
 };
 // ═════════════════════════════════════════════════════════════════════════
 </script>
