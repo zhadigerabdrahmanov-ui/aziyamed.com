@@ -2132,6 +2132,15 @@ html.dark .kz-tile { opacity:0.22; }
   .rpndiff-upload-row { grid-template-columns:1fr; }
 }
 
+
+  .nav-dropdown { position:relative; display:inline-block; }
+  .nav-dropdown > .nav-link::after { content:" ▾"; font-size:.7em; }
+  .nav-dropdown-menu { display:none; position:absolute; top:100%; left:0; background:var(--white); border-radius:10px; box-shadow:0 4px 20px rgba(0,0,0,.12); min-width:160px; z-index:1000; padding:6px 0; }
+  .nav-dropdown:hover .nav-dropdown-menu { display:block; }
+  .nav-dropdown-menu a { display:block; padding:10px 18px; color:var(--dark); font-size:.88rem; font-weight:600; text-decoration:none; white-space:nowrap; }
+  .nav-dropdown-menu a:hover { background:var(--light); color:var(--green); }
+  html.dark .nav-dropdown-menu { background:#1e2837; }
+  html.dark .nav-dropdown-menu a:hover { background:#2a3547; }
 </style>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
@@ -2191,7 +2200,13 @@ html.dark .kz-tile { opacity:0.22; }
     <div class="header-right" style="flex:1;">
       <nav>
         <a href="#" onclick="showSection('hero');return false;"    data-i18n="nav_home"     class="nav-link" data-section="hero">Басты бет</a>
-        <a href="#" onclick="showSection('about');return false;"   data-i18n="nav_about"    class="nav-link" data-section="about">Біз туралы</a>
+        <div class="nav-dropdown">
+          <a href="#" onclick="showSection('about');return false;" data-i18n="nav_about" class="nav-link" data-section="about">Біз туралы</a>
+          <div class="nav-dropdown-menu">
+            <a href="#" onclick="showSection('about');return false;" data-i18n="nav_about">Біз туралы</a>
+            <a href="#" onclick="showSection('blog');return false;" data-i18n="nav_blog">Басшы блогы</a>
+          </div>
+        </div>
         <a href="#" onclick="showSection('structure');return false;" data-i18n="nav_structure" class="nav-link" data-section="structure">Құрылымы</a>
         <a href="#" onclick="showSection('news');return false;"    data-i18n="nav_news"     class="nav-link" data-section="news">Жаңалықтар</a>
         <a href="#" onclick="showSection('patients');return false;" data-i18n="nav_patients" class="nav-link" data-section="patients">Пациенттерге</a>
@@ -4689,7 +4704,7 @@ const T = {
     comp4_title:"Шағымдар мен ұсыныстар", comp4_text:"Сіздің шағымыңыз немесе ұсынысыңыз болса, бізге хабарласыңыз. Барлық өтініш 3 жұмыс күні ішінде қаралады.",
     comp_more_btn:"Пациенттерді қолдау және ішкі аудит ↗",
     visitor_label:"Кірушілер есептеуіш", visitor_today:"Бүгін", visitor_total:"Барлығы",
-    nav_reg:"👤 Тіркелу", nav_login:"🔑 Кіру", nav_logout:"🚪 Шығу", nav_cabinet:"🗂 Жеке кабинет",
+    nav_reg:"👤 Тіркелу", nav_login:"🔑 Кіру", nav_logout:"🚪 Шығу", nav_cabinet:"🗂 Жеке кабинет", nav_blog:"Басшы блогы",
     gallery_title:"Орталықтың ішкі бөлмелері",
   },
   ru: {
@@ -4816,7 +4831,7 @@ const T = {
     comp4_title:"Жалобы и предложения", comp4_text:"Если у вас есть жалоба или предложение, свяжитесь с нами. Все обращения рассматриваются в течение 3 рабочих дней.",
     comp_more_btn:"Поддержка пациентов и внутренний аудит ↗",
     visitor_label:"Счётчик посетителей", visitor_today:"Сегодня", visitor_total:"Всего",
-    nav_reg:"👤 Регистрация", nav_login:"🔑 Войти", nav_logout:"🚪 Выйти", nav_cabinet:"🗂 Личный кабинет",
+    nav_reg:"👤 Регистрация", nav_login:"🔑 Войти", nav_logout:"🚪 Выйти", nav_cabinet:"🗂 Личный кабинет", nav_blog:"Блог руководителя",
     gallery_title:"Интерьер центра",
   },
   en: {
@@ -4932,14 +4947,14 @@ const T = {
     comp4_title:"Complaints & Suggestions",comp4_text:"All requests are reviewed within 3 business days.",
     comp_more_btn:"Patient Support & Internal Audit ↗",
     visitor_label:"Visitor Counter",visitor_today:"Today",visitor_total:"Total",
-    nav_reg:"👤 Register", nav_login:"🔑 Login", nav_logout:"🚪 Logout", nav_cabinet:"🗂 My Cabinet",
+    nav_reg:"👤 Register", nav_login:"🔑 Login", nav_logout:"🚪 Logout", nav_cabinet:"🗂 My Cabinet", nav_blog:"Director's Blog",
     gallery_title:"Interior of the Center",
     sec_structure_org:"Organizational Chart",
   }
 };
 
 // ─── CORE ────────────────────────────────────────────────────────────────────
-const PAGE_SECTIONS = ['about','structure','patients','news','reviews','faq','osms','incident','tmkkk','compliance','staff','cabinet'];
+const PAGE_SECTIONS = ['about','structure','patients','news','blog','reviews','faq','osms','incident','tmkkk','compliance','staff','cabinet'];
 let currentLang = localStorage.getItem('aziyamed_lang') || 'kk';
 
 function setLang(lang) {
@@ -7882,6 +7897,7 @@ showSection = function(sec) {
     _staffShowSection(); return;
   }
   _originalShowSection(sec);
+  if (sec === 'blog') setTimeout(renderBlogList, 80);
 };
 // ═════════════════════════════════════════════════════════════════════════
 </script>
@@ -7941,4 +7957,155 @@ function submitReview() {
   closeReviewModal();
   alert('✅ Пікіріңіз жіберілді! Рахмет!');
 }
+</script>
+<section id="blog" class="page-section" style="background:var(--light);padding-top:80px;padding-bottom:80px;">
+  <div class="section-inner">
+    <div class="section-head center reveal" style="margin-bottom:40px;">
+      <h2>Басшының <span>блогы</span></h2>
+      <p class="section-desc">ЖШС «Азия мед-МО» басшысы Аманбаева Перизат Ерсинбаевнаның жазбалары</p>
+    </div>
+    <div id="blogAddBtn" style="display:none;text-align:right;margin-bottom:20px;">
+      <button onclick="openBlogEditor()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">✏️ Жаңа жазба қосу</button>
+    </div>
+    <div id="blogList" style="max-width:800px;margin:0 auto;"></div>
+  </div>
+</section>
+
+<!-- Blog editor modal -->
+<div id="blogEditorModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:var(--white);border-radius:16px;padding:32px;max-width:560px;width:92%;position:relative;max-height:90vh;overflow-y:auto;">
+    <button onclick="closeBlogEditor()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray);">✕</button>
+    <h3 style="margin:0 0 20px;color:var(--dark);" id="blogEditorTitle">✏️ Жаңа жазба</h3>
+    <input id="blogPostId" type="hidden" value="">
+    <label style="font-size:13px;font-weight:600;color:var(--dark);">Тақырып</label>
+    <input id="blogTitleInput" type="text" placeholder="Жазба тақырыбы" style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin:6px 0 14px;box-sizing:border-box;">
+    <label style="font-size:13px;font-weight:600;color:var(--dark);">Мәтін</label>
+    <textarea id="blogTextInput" rows="6" placeholder="Жазба мазмұны..." style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin:6px 0 14px;box-sizing:border-box;resize:vertical;"></textarea>
+    <label style="font-size:13px;font-weight:600;color:var(--dark);">Фото (URL немесе base64)</label>
+    <div style="display:flex;gap:8px;margin:6px 0 4px;">
+      <input id="blogImgUrl" type="text" placeholder="Фото URL (міндетті емес)" style="flex:1;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:13px;box-sizing:border-box;">
+      <label style="padding:10px 14px;background:#f5faf7;border:1px solid #ddd;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap;">📎 Файл<input type="file" accept="image/*" onchange="blogLoadImage(this)" style="display:none;"></label>
+    </div>
+    <div id="blogImgPreview" style="margin:8px 0 14px;"></div>
+    <div id="blogEditorError" style="color:#e74c3c;font-size:13px;margin-bottom:8px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="saveBlogPost()" style="flex:1;padding:12px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">Сақтау</button>
+      <button id="blogDeleteBtn" onclick="deleteBlogPost()" style="display:none;padding:12px 18px;background:#e74c3c;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;">🗑 Өшіру</button>
+    </div>
+  </div>
+</div>
+<script>
+// ═══════════════ BLOG ═══════════════════════════════════════════════════════
+const BLOG_KEY = 'aziyamed_blog_posts';
+const BLOG_DIRECTOR_IIN = '890628400669'; // Аманбаева Перизат
+
+function isBlogAdmin() {
+  var su = staffGetCurrent();
+  return su && su.iin === BLOG_DIRECTOR_IIN;
+}
+
+function renderBlogList() {
+  var list = document.getElementById('blogList');
+  var addBtn = document.getElementById('blogAddBtn');
+  if (!list) return;
+  if (addBtn) addBtn.style.display = isBlogAdmin() ? 'block' : 'none';
+  
+  var posts = [];
+  try { posts = JSON.parse(localStorage.getItem(BLOG_KEY) || '[]'); } catch(_) {}
+  
+  if (!posts.length) {
+    list.innerHTML = '<div style="text-align:center;color:#aaa;padding:60px 0;font-size:1rem;">Әзірше жазба жоқ</div>';
+    return;
+  }
+  
+  list.innerHTML = posts.slice().reverse().map(function(p) {
+    var imgHtml = p.img ? '<img src="'+p.img+'" style="width:100%;max-height:360px;object-fit:cover;border-radius:12px;margin-bottom:16px;" onerror="this.style.display='none'">' : '';
+    var editBtn = isBlogAdmin() ? '<button onclick="openBlogEditor(''+p.id+'')" style="margin-top:12px;padding:6px 14px;background:transparent;border:1.5px solid var(--green);color:var(--green-dark);border-radius:8px;font-size:.8rem;cursor:pointer;">✏️ Өңдеу</button>' : '';
+    var d = new Date(p.ts).toLocaleDateString('kk-KZ', {year:'numeric',month:'long',day:'numeric'});
+    return '<div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.07);">'
+      + imgHtml
+      + '<div style="font-size:.8rem;color:#aaa;margin-bottom:8px;">📅 ' + d + '</div>'
+      + '<h3 style="margin:0 0 12px;color:var(--green-dark);font-size:1.2rem;">' + p.title + '</h3>'
+      + '<div style="font-size:.95rem;color:var(--dark);line-height:1.8;white-space:pre-wrap;">' + p.text + '</div>'
+      + editBtn
+      + '</div>';
+  }).join('');
+}
+
+function openBlogEditor(id) {
+  document.getElementById('blogEditorError').textContent = '';
+  document.getElementById('blogImgPreview').innerHTML = '';
+  if (id) {
+    var posts = [];
+    try { posts = JSON.parse(localStorage.getItem(BLOG_KEY) || '[]'); } catch(_) {}
+    var p = posts.find(function(x){ return x.id == id; });
+    if (!p) return;
+    document.getElementById('blogEditorTitle').textContent = '✏️ Жазбаны өңдеу';
+    document.getElementById('blogPostId').value = p.id;
+    document.getElementById('blogTitleInput').value = p.title;
+    document.getElementById('blogTextInput').value = p.text;
+    document.getElementById('blogImgUrl').value = p.img || '';
+    document.getElementById('blogDeleteBtn').style.display = '';
+    if (p.img) document.getElementById('blogImgPreview').innerHTML = '<img src="'+p.img+'" style="max-height:120px;border-radius:8px;">';
+  } else {
+    document.getElementById('blogEditorTitle').textContent = '✏️ Жаңа жазба';
+    document.getElementById('blogPostId').value = '';
+    document.getElementById('blogTitleInput').value = '';
+    document.getElementById('blogTextInput').value = '';
+    document.getElementById('blogImgUrl').value = '';
+    document.getElementById('blogDeleteBtn').style.display = 'none';
+  }
+  document.getElementById('blogEditorModal').style.display = 'flex';
+}
+
+function closeBlogEditor() {
+  document.getElementById('blogEditorModal').style.display = 'none';
+}
+
+function blogLoadImage(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('blogImgUrl').value = e.target.result;
+    document.getElementById('blogImgPreview').innerHTML = '<img src="'+e.target.result+'" style="max-height:120px;border-radius:8px;">';
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveBlogPost() {
+  var title = document.getElementById('blogTitleInput').value.trim();
+  var text  = document.getElementById('blogTextInput').value.trim();
+  var img   = document.getElementById('blogImgUrl').value.trim();
+  var err   = document.getElementById('blogEditorError');
+  if (!title) { err.textContent = '⚠️ Тақырып жазыңыз'; return; }
+  if (!text)  { err.textContent = '⚠️ Мәтін жазыңыз'; return; }
+  
+  var posts = [];
+  try { posts = JSON.parse(localStorage.getItem(BLOG_KEY) || '[]'); } catch(_) {}
+  var existingId = document.getElementById('blogPostId').value;
+  
+  if (existingId) {
+    posts = posts.map(function(p) {
+      return p.id == existingId ? { id: p.id, ts: p.ts, title: title, text: text, img: img } : p;
+    });
+  } else {
+    posts.push({ id: Date.now(), ts: Date.now(), title: title, text: text, img: img });
+  }
+  localStorage.setItem(BLOG_KEY, JSON.stringify(posts));
+  closeBlogEditor();
+  renderBlogList();
+}
+
+function deleteBlogPost() {
+  var id = document.getElementById('blogPostId').value;
+  if (!id || !confirm('Жазбаны өшіресіз бе?')) return;
+  var posts = [];
+  try { posts = JSON.parse(localStorage.getItem(BLOG_KEY) || '[]'); } catch(_) {}
+  posts = posts.filter(function(p){ return p.id != id; });
+  localStorage.setItem(BLOG_KEY, JSON.stringify(posts));
+  closeBlogEditor();
+  renderBlogList();
+}
+// ════════════════════════════════════════════════════════════════════════════
 </script></body></html>
