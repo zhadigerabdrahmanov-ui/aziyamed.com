@@ -2141,6 +2141,14 @@ html.dark .kz-tile { opacity:0.22; }
   .nav-dropdown-menu a:hover { background:var(--light); color:var(--green); }
   html.dark .nav-dropdown-menu { background:#1e2837; }
   html.dark .nav-dropdown-menu a:hover { background:#2a3547; }
+
+  .price-cat-btn { padding:6px 14px; border:1.5px solid var(--border); border-radius:20px; font-size:.82rem; font-weight:600; cursor:pointer; background:var(--white); color:var(--dark); transition:all .2s; }
+  .price-cat-btn:hover { border-color:var(--green); color:var(--green); }
+  .price-cat-btn.active { background:var(--green); color:#fff; border-color:var(--green); }
+  #priceTable tbody tr:nth-child(even) { background:rgba(0,0,0,.03); }
+  #priceTable tbody tr:hover { background:rgba(34,164,85,.07); }
+  #priceTable td { padding:9px 14px; border-bottom:1px solid var(--border); }
+  html.dark #priceTable tbody tr:nth-child(even) { background:rgba(255,255,255,.04); }
 </style>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
@@ -2859,50 +2867,42 @@ html.dark .kz-tile { opacity:0.22; }
         <div style="font-size:1.1rem;font-weight:800;color:var(--dark);margin-bottom:6px;">💰 Ақылы медициналық қызметтер</div>
         <div style="font-size:.85rem;color:var(--gray);">Төмендегі қызметтер МӘМС/ГОБМП бойынша өтемделмейді және ақылы негізде көрсетіледі.</div>
       </div>
-      <div class="services-grid" id="paidServicesGrid">
-        <div class="service-card reveal">
-          <div class="service-icon">🩸</div>
-          <div class="service-name">Жалпы қан анализі</div>
-          <div class="service-desc">Кешенді қан анализі, нәтиже 1 жұмыс күні ішінде</div>
-        </div>
-        <div class="service-card reveal">
-          <div class="service-icon">🔬</div>
-          <div class="service-name">Биохимиялық анализ</div>
-          <div class="service-desc">Глюкоза, холестерин, бауыр ферменттері және т.б.</div>
-        </div>
-        <div class="service-card reveal">
-          <div class="service-icon">🫀</div>
-          <div class="service-name">ЭКГ</div>
-          <div class="service-desc">Жүрек электрокардиографиясы, дәрігер қорытындысымен</div>
-        </div>
-        <div class="service-card reveal">
-          <div class="service-icon">🔊</div>
-          <div class="service-name">УДЗ (ультрадыбыстық зерттеу)</div>
-          <div class="service-desc">Іш қуысы, қалқанша без, бүйрек, жамбас мүшелері</div>
-        </div>
-        <div class="service-card reveal">
-          <div class="service-icon">💉</div>
-          <div class="service-name">Инъекция / тамшылатқыш</div>
-          <div class="service-desc">Бұлшықет ішіне, көктамыр ішіне егу процедуралары</div>
-        </div>
-        <div class="service-card reveal">
-          <div class="service-icon">📋</div>
-          <div class="service-name">Анықтама / сертификат</div>
-          <div class="service-desc">Жұмысқа, оқуға, жүргізуші куәлігіне медициналық анықтама</div>
-        </div>
-        <div class="service-card reveal">
-          <div class="service-icon">🧪</div>
-          <div class="service-name">ПЦР / экспресс-тест</div>
-          <div class="service-desc">Инфекциялық аурулардың жылдам диагностикасы</div>
-        </div>
-        <div class="service-card reveal">
-          <div class="service-icon">👁️</div>
-          <div class="service-name">Офтальмолог</div>
-          <div class="service-desc">Көру өткірлігін тексеру, көзілдірік рецептін жазу</div>
-        </div>
+
+      <!-- Category tabs -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px;" id="priceCatTabs">
+        <button onclick="filterPriceTab('all')" id="pcat-all" class="price-cat-btn active">Барлығы</button>
+        <button onclick="filterPriceTab('consult')" id="pcat-consult" class="price-cat-btn">🩺 Консультация</button>
+        <button onclick="filterPriceTab('lab')" id="pcat-lab" class="price-cat-btn">🧪 Зертхана</button>
+        <button onclick="filterPriceTab('uzd')" id="pcat-uzd" class="price-cat-btn">🔊 УДЗ</button>
+        <button onclick="filterPriceTab('rentgen')" id="pcat-rentgen" class="price-cat-btn">☢️ Рентген</button>
+        <button onclick="filterPriceTab('fiz')" id="pcat-fiz" class="price-cat-btn">💆 Физиотерапия</button>
+        <button onclick="filterPriceTab('gyn')" id="pcat-gyn" class="price-cat-btn">🌸 Гинекология</button>
+        <button onclick="filterPriceTab('surg')" id="pcat-surg" class="price-cat-btn">🔪 Хирургия</button>
+        <button onclick="filterPriceTab('stat')" id="pcat-stat" class="price-cat-btn">🏥 Стационар</button>
       </div>
-      <div style="margin-top:24px;padding:16px 20px;background:rgba(34,164,85,.07);border-radius:14px;border-left:4px solid var(--green);">
-        <div style="font-weight:700;font-size:.9rem;margin-bottom:6px;">📞 Бағасы туралы толық ақпарат алу үшін:</div>
+
+      <!-- Search -->
+      <div style="margin-bottom:16px;">
+        <input id="priceSearch" type="text" placeholder="🔍 Қызмет атауын іздеу..." oninput="filterPriceSearch()" style="width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.9rem;background:var(--white);color:var(--dark);box-sizing:border-box;">
+      </div>
+
+      <!-- Price table -->
+      <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border);">
+        <table id="priceTable" style="width:100%;border-collapse:collapse;font-size:.88rem;">
+          <thead>
+            <tr style="background:var(--green);color:#fff;">
+              <th style="padding:10px 14px;text-align:left;font-weight:700;">Қызмет атауы</th>
+              <th style="padding:10px 14px;text-align:right;font-weight:700;white-space:nowrap;">Бағасы (₸)</th>
+            </tr>
+          </thead>
+          <tbody id="priceTableBody">
+          </tbody>
+        </table>
+      </div>
+      <div id="priceNoResult" style="display:none;text-align:center;padding:24px;color:var(--gray);font-size:.9rem;">Нәтиже табылмады</div>
+
+      <div style="margin-top:20px;padding:16px 20px;background:rgba(34,164,85,.07);border-radius:14px;border-left:4px solid var(--green);">
+        <div style="font-weight:700;font-size:.9rem;margin-bottom:6px;">📞 Қосымша ақпарат:</div>
         <div style="font-size:.85rem;color:var(--gray);">+7 (702) 083-55-56 &nbsp;·&nbsp; <a href="https://wa.me/77020835556" target="_blank" style="color:var(--green);font-weight:700;">WhatsApp арқылы жазу</a></div>
       </div>
     </div><!-- /panel-paid -->
@@ -5090,6 +5090,7 @@ function toggleA11y() {
 }
 
 function showPatientsTab(tab) {
+  if (tab === 'paid') setTimeout(renderPriceTable, 60);
   document.querySelectorAll('.doctors-tab').forEach(b => b.classList.toggle('active', b.id === 'tab-'+tab));
   document.querySelectorAll('.doctors-panel').forEach(p => p.style.display = p.id === 'panel-'+tab ? 'block' : 'none');
 }
@@ -8218,4 +8219,147 @@ function submitHomeCall(e) {
   document.getElementById('hcSymptoms').value = '';
   ok.style.display = 'block';
 }
+
+// ===== PRICE LIST =====
+const PRICE_DATA = [
+  // КОНСУЛЬТАЦИЯ
+  {cat:'consult', name:'Терапевт кеңесі', price:'5 000'},
+  {cat:'consult', name:'Кардиолог кеңесі', price:'5 000'},
+  {cat:'consult', name:'Ревматолог кеңесі', price:'5 000'},
+  {cat:'consult', name:'Гинеколог кеңесі', price:'5 000'},
+  {cat:'consult', name:'Педиатр кеңесі', price:'5 000'},
+  {cat:'consult', name:'Нутрициолог кеңесі', price:'5 000'},
+  {cat:'consult', name:'Невропатолог кеңесі', price:'5 000'},
+  {cat:'consult', name:'Хирург кеңесі', price:'5 000'},
+  {cat:'consult', name:'Уролог кеңесі', price:'5 000'},
+  {cat:'consult', name:'Невропатолог (қайталама)', price:'3 000'},
+  {cat:'consult', name:'Гинеколог (қайталама)', price:'3 000'},
+  {cat:'consult', name:'Дәрігер үйге шақыру', price:'15 000'},
+  // ЗЕРТХАНА
+  {cat:'lab', name:'Жалпы қан анализі (ОАК, 34 параметр)', price:'1 750'},
+  {cat:'lab', name:'Жалпы қан анализі (ОАК + СОЭ)', price:'1 950'},
+  {cat:'lab', name:'Жалпы зәр анализі (ОАМ)', price:'1 500'},
+  {cat:'lab', name:'Биохимиялық анализ (АЛТ, АСТ, билирубин)', price:'1 300+'},
+  {cat:'lab', name:'Қан тобы + резус-фактор', price:'2 150'},
+  {cat:'lab', name:'Глюкоза (қан)', price:'1 300'},
+  {cat:'lab', name:'Холестерин жалпы', price:'1 300'},
+  {cat:'lab', name:'ТТГ (қалқанша без гормоны)', price:'2 000+'},
+  {cat:'lab', name:'ПЦР тест (COVID/грипп)', price:'5 000+'},
+  {cat:'lab', name:'Гепатит В антигені (HBsAg)', price:'1 600'},
+  {cat:'lab', name:'Гепатит С антиденелері', price:'1 600'},
+  {cat:'lab', name:'ВИЧ антиденелері', price:'1 600'},
+  {cat:'lab', name:'Копрограмма', price:'1 950'},
+  {cat:'lab', name:'Нечипоренко бойынша зәр', price:'1 500'},
+  {cat:'lab', name:'Зимницкий бойынша зәр', price:'1 750'},
+  {cat:'lab', name:'С-реактивті белок (СРБ)', price:'1 300'},
+  {cat:'lab', name:'Ревматоидтық фактор (РФ)', price:'1 300'},
+  {cat:'lab', name:'ТТГ, Т3, Т4 кешені', price:'5 000+'},
+  {cat:'lab', name:'CA-125 (аналық без онкомаркері)', price:'3 000+'},
+  {cat:'lab', name:'PSA (простата онкомаркері)', price:'3 000+'},
+  // УДЗ
+  {cat:'uzd', name:'Маммография', price:'4 000'},
+  {cat:'uzd', name:'УДЗ — іш қуысы мүшелері (бауыр, өт, ұйқы безі, көкбауыр)', price:'5 000'},
+  {cat:'uzd', name:'УДЗ — бауыр + өт қабы', price:'3 000'},
+  {cat:'uzd', name:'УДЗ — іш қуысы + бүйрек кешені', price:'8 000'},
+  {cat:'uzd', name:'УДЗ — ер адам несепжыныс жүйесі (бүйрек, қуық, простата)', price:'5 000'},
+  {cat:'uzd', name:'УДЗ — әйел несепжыныс жүйесі (бүйрек, қуық)', price:'5 000'},
+  {cat:'uzd', name:'УДЗ — барлық мүшелер кешені', price:'8 000'},
+  {cat:'uzd', name:'УДЗ — бүйрек (допплерография)', price:'3 000–7 000'},
+  {cat:'uzd', name:'УДЗ — жатыр (вагиналды)', price:'6 000'},
+  {cat:'uzd', name:'УДЗ — жатыр (абдоминалды)', price:'3 500'},
+  {cat:'uzd', name:'УДЗ — жүктілік I триместр (9 аптаға дейін)', price:'3 500'},
+  {cat:'uzd', name:'УДЗ — жүктілік II триместр', price:'4 000'},
+  {cat:'uzd', name:'УДЗ — жүктілік III триместр', price:'4 500'},
+  {cat:'uzd', name:'УДЗ — қалқанша без', price:'3 000'},
+  {cat:'uzd', name:'УДЗ — сүт безі', price:'5 000'},
+  {cat:'uzd', name:'УДЗ — нейросонография', price:'3 500'},
+  // РЕНТГЕН
+  {cat:'rentgen', name:'Флюорография (1 проекция)', price:'1 500'},
+  {cat:'rentgen', name:'Кеуде клеткасы рентгені (1 проекция)', price:'3 000'},
+  {cat:'rentgen', name:'Кеуде клеткасы рентгені (2 проекция)', price:'3 000'},
+  {cat:'rentgen', name:'Бас сүйек рентгені (2 проекция)', price:'3 000'},
+  {cat:'rentgen', name:'Мойын омыртқасы рентгені', price:'3 000'},
+  {cat:'rentgen', name:'Кеуде омыртқасы рентгені', price:'3 000'},
+  {cat:'rentgen', name:'Бел омыртқасы рентгені', price:'3 000'},
+  {cat:'rentgen', name:'Иық буыны рентгені', price:'3 000'},
+  {cat:'rentgen', name:'Тізе буыны рентгені', price:'3 000'},
+  {cat:'rentgen', name:'Аяқ рентгені', price:'3 000'},
+  {cat:'rentgen', name:'Қол рентгені', price:'3 000'},
+  {cat:'rentgen', name:'Жамбас рентгені', price:'3 000'},
+  // ФИЗИОТЕРАПИЯ
+  {cat:'fiz', name:'Жалпы массаж (ересек)', price:'7 000'},
+  {cat:'fiz', name:'Массаж — мойын + жауырын аймағы', price:'2 500'},
+  {cat:'fiz', name:'Массаж — арқа', price:'3 000'},
+  {cat:'fiz', name:'Массаж — бел', price:'2 500'},
+  {cat:'fiz', name:'Массаж — аяқ', price:'2 500'},
+  {cat:'fiz', name:'Массаж — қол', price:'2 500'},
+  {cat:'fiz', name:'Массаж — бет', price:'1 500'},
+  {cat:'fiz', name:'Банка массажы', price:'3 000'},
+  {cat:'fiz', name:'Балалар массажы (1 жасқа дейін)', price:'3 500'},
+  {cat:'fiz', name:'Балалар массажы (1–4 жас)', price:'4 000'},
+  {cat:'fiz', name:'Балалар массажы (4–10 жас)', price:'4 500'},
+  {cat:'fiz', name:'УВЧ-терапия (ересек)', price:'1 000'},
+  {cat:'fiz', name:'УВЧ-терапия (бала)', price:'500'},
+  {cat:'fiz', name:'УЗТ-терапия (ересек)', price:'1 000'},
+  {cat:'fiz', name:'УЗТ-терапия (бала)', price:'500'},
+  {cat:'fiz', name:'Электрофорез 0,5%', price:'1 000'},
+  {cat:'fiz', name:'ИРТ (акупунктура)', price:'2 000'},
+  {cat:'fiz', name:'Невролог кешені (ИРТ+2 массаж+2 аппарат, тіркелген)', price:'5 000'},
+  {cat:'fiz', name:'Невролог кешені (ИРТ+2 массаж+2 аппарат, тіркелмеген)', price:'7 000'},
+  // ГИНЕКОЛОГИЯ
+  {cat:'gyn', name:'Гинеколог кеңесі', price:'5 000'},
+  {cat:'gyn', name:'Гинеколог (қайталама)', price:'3 000'},
+  {cat:'gyn', name:'ВМС орнату (спиральмен)', price:'6 000'},
+  {cat:'gyn', name:'ВМС орнату (спиральсыз)', price:'4 000'},
+  {cat:'gyn', name:'ВМС алу', price:'2 000'},
+  {cat:'gyn', name:'Санация', price:'1 000'},
+  {cat:'gyn', name:'Кольпоскопия', price:'5 000'},
+  {cat:'gyn', name:'Плазмалифтинг', price:'15 000'},
+  {cat:'gyn', name:'Плазмагель', price:'20 000'},
+  {cat:'gyn', name:'Гинекологиялық чекап', price:'42 500'},
+  // ХИРУРГИЯ
+  {cat:'surg', name:'Хирург кеңесі', price:'5 000'},
+  {cat:'surg', name:'Гипс салу (жылжымаған сынық)', price:'5 000'},
+  {cat:'surg', name:'Гипс салу (жылжыған сынық)', price:'10 000'},
+  {cat:'surg', name:'Тырнақ алу', price:'4 000'},
+  {cat:'surg', name:'Тігістерді алу', price:'2 000'},
+  {cat:'surg', name:'Атерома алу', price:'5 000'},
+  {cat:'surg', name:'Абсцесті ашу', price:'5 000'},
+  {cat:'surg', name:'Гипс алу', price:'2 000'},
+  {cat:'surg', name:'Гематома пункциясы', price:'5 000'},
+  {cat:'surg', name:'Липома алу', price:'5 000'},
+  {cat:'surg', name:'Таңу (перевязка)', price:'2 000'},
+  // СТАЦИОНАР
+  {cat:'stat', name:'Стационар — 1 күн (невропатолог + кардиолог + терапевт)', price:'12 000'},
+];
+
+var _currentPriceCat = 'all';
+function filterPriceTab(cat) {
+  _currentPriceCat = cat;
+  document.querySelectorAll('.price-cat-btn').forEach(b => b.classList.remove('active'));
+  var btn = document.getElementById('pcat-' + cat);
+  if (btn) btn.classList.add('active');
+  renderPriceTable();
+}
+function filterPriceSearch() { renderPriceTable(); }
+function renderPriceTable() {
+  var q = (document.getElementById('priceSearch').value || '').toLowerCase();
+  var rows = PRICE_DATA.filter(function(r) {
+    var catOk = _currentPriceCat === 'all' || r.cat === _currentPriceCat;
+    var qOk = !q || r.name.toLowerCase().includes(q);
+    return catOk && qOk;
+  });
+  var tbody = document.getElementById('priceTableBody');
+  var noRes = document.getElementById('priceNoResult');
+  if (!rows.length) {
+    tbody.innerHTML = '';
+    noRes.style.display = '';
+    return;
+  }
+  noRes.style.display = 'none';
+  tbody.innerHTML = rows.map(function(r) {
+    return '<tr><td>' + r.name + '</td><td style="text-align:right;font-weight:700;color:var(--green);white-space:nowrap;">' + r.price + ' ₸</td></tr>';
+  }).join('');
+}
+
 </script></body></html>
