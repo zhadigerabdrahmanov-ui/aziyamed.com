@@ -4449,6 +4449,19 @@ html.dark .kz-tile { opacity:0.22; }
 </section>
 
 <!-- PARTNERS -->
+
+<section id="blog" class="page-section" style="background:var(--light);padding-top:80px;padding-bottom:80px;">
+  <div class="section-inner">
+    <div class="section-head center reveal" style="margin-bottom:40px;">
+      <h2>Басшының <span>блогы</span></h2>
+      <p class="section-desc">ЖШС «Азия мед-МО» басшысы Аманбаева Перизат Ерсинбаевнаның жазбалары</p>
+    </div>
+    <div id="blogAddBtn" style="display:none;text-align:right;margin-bottom:20px;">
+      <button onclick="openBlogEditor()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">✏️ Жаңа жазба қосу</button>
+    </div>
+    <div id="blogList" style="max-width:800px;margin:0 auto;"></div>
+  </div>
+</section>
 <div class="partners-bar">
   <div class="partners-inner">
     <div class="partner-label" data-i18n="partners_label">Серіктес ұйымдар</div>
@@ -4484,18 +4497,6 @@ html.dark .kz-tile { opacity:0.22; }
 </div>
 
 <!-- FOOTER -->
-<section id="blog" class="page-section" style="background:var(--light);padding-top:80px;padding-bottom:80px;">
-  <div class="section-inner">
-    <div class="section-head center reveal" style="margin-bottom:40px;">
-      <h2>Басшының <span>блогы</span></h2>
-      <p class="section-desc">ЖШС «Азия мед-МО» басшысы Аманбаева Перизат Ерсинбаевнаның жазбалары</p>
-    </div>
-    <div id="blogAddBtn" style="display:none;text-align:right;margin-bottom:20px;">
-      <button onclick="openBlogEditor()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">✏️ Жаңа жазба қосу</button>
-    </div>
-    <div id="blogList" style="max-width:800px;margin:0 auto;"></div>
-  </div>
-</section>
 <footer>
   <div class="footer-inner">
     <div class="footer-brand">
@@ -8087,18 +8088,23 @@ function renderBlogList() {
     // Default post
     list.innerHTML = `
       <div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
-        <img src="director.jpg" alt="Аманбаева Перизат Ерсинбаевна" style="width:100%;max-height:400px;object-fit:cover;object-position:top;border-radius:12px;margin-bottom:20px;" onerror="this.style.display='none'">
-        <div style="font-size:.8rem;color:#aaa;margin-bottom:8px;">📅 ${new Date().toLocaleDateString('kk-KZ', {year:'numeric',month:'long',day:'numeric'})}</div>
-        <h3 style="margin:0 0 16px;color:var(--green-dark);font-size:1.2rem;">Құрметті ЖШС "Азия мед-МО" пациенттері!</h3>
-        <div style="font-size:.95rem;color:var(--dark);line-height:1.9;">
-          <p style="margin:0 0 14px;">Біздің пациенттерге қызмет көрсету сапасын одан әрі жақсарту мақсатында, әр аптада мен ЖШС "Азия мед-МО" медициналық орталығының басшысы ретінде, тіркелген тұрғындарды жеке қабылдаймын және олардың сұрақтарына алдын-ала жасалған кесте бойынша жауап беруге дайынмын.</p>
-          <p style="margin:0 0 14px;">Азаматтың әрбір проблемасы жеке қаралатын болады, ал қабылданатын барлық шешімдер заңнамаға қатаң сәйкес болады.</p>
-          <p style="margin:0 0 14px;">Біздің мақсатымыз — тіркелген тұрғындарға сапалы медициналық көмек көрсете отырып, туындайтын мәселелерді "осында және қазір" қағидаты бойынша шешу.</p>
-          <p style="margin:0;font-weight:700;">📞 Жеке қабылдауға жазылу үшін: <a href="tel:+77020835556" style="color:var(--green);">+7 702 083 55 56</a></p>
-        </div>
-        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;">
-          <img src="director.jpg" style="width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:top;" onerror="this.style.display='none'">
-          <div><div style="font-weight:700;font-size:.9rem;">Аманбаева Перизат Ерсинбаевна</div><div style="font-size:.8rem;color:var(--gray);">ЖШС «Азия мед-МО» басшысы</div></div>
+        <div style="display:flex;gap:28px;align-items:flex-start;flex-wrap:wrap;">
+          <div style="flex:0 0 auto;max-width:280px;">
+            <img src="director.jpg" alt="Аманбаева Перизат Ерсинбаевна" style="width:100%;height:auto;border-radius:12px;display:block;" onerror="this.style.display='none'">
+          </div>
+          <div style="flex:1;min-width:220px;">
+            <div style="font-size:.8rem;color:#aaa;margin-bottom:8px;">📅 ${new Date().toLocaleDateString('kk-KZ', {year:'numeric',month:'long',day:'numeric'})}</div>
+            <h3 style="margin:0 0 16px;color:var(--green-dark);font-size:1.2rem;">Құрметті ЖШС "Азия мед-МО" пациенттері!</h3>
+            <div style="font-size:.95rem;color:var(--dark);line-height:1.9;">
+              <p style="margin:0 0 14px;">Біздің пациенттерге қызмет көрсету сапасын одан әрі жақсарту мақсатында, әр аптада мен ЖШС "Азия мед-МО" медициналық орталығының басшысы ретінде, тіркелген тұрғындарды жеке қабылдаймын және олардың сұрақтарына алдын-ала жасалған кесте бойынша жауап беруге дайынмын.</p>
+              <p style="margin:0 0 14px;">Азаматтың әрбір проблемасы жеке қаралатын болады, ал қабылданатын барлық шешімдер заңнамаға қатаң сәйкес болады.</p>
+              <p style="margin:0 0 14px;">Біздің мақсатымыз — тіркелген тұрғындарға сапалы медициналық көмек көрсете отырып, туындайтын мәселелерді "осында және қазір" қағидаты бойынша шешу.</p>
+              <p style="margin:0;font-weight:700;">📞 Жеке қабылдауға жазылу үшін: <a href="tel:+77020835556" style="color:var(--green);">+7 702 083 55 56</a></p>
+            </div>
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;">
+              <div><div style="font-weight:700;font-size:.9rem;">Аманбаева Перизат Ерсинбаевна</div><div style="font-size:.8rem;color:var(--gray);">ЖШС «Азия мед-МО» басшысы</div></div>
+            </div>
+          </div>
         </div>
       </div>`;
     return;
