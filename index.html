@@ -8084,22 +8084,21 @@ function renderBlogList() {
   try { posts = JSON.parse(localStorage.getItem(BLOG_KEY) || '[]'); } catch(_) {}
   
   if (!posts.length) {
-    // Default welcome post
+    // Default post
     list.innerHTML = `
       <div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
         <img src="director.jpg" alt="Аманбаева Перизат Ерсинбаевна" style="width:100%;max-height:400px;object-fit:cover;object-position:top;border-radius:12px;margin-bottom:20px;" onerror="this.style.display='none'">
         <div style="font-size:.8rem;color:#aaa;margin-bottom:8px;">📅 ${new Date().toLocaleDateString('kk-KZ', {year:'numeric',month:'long',day:'numeric'})}</div>
-        <h3 style="margin:0 0 16px;color:var(--green-dark);font-size:1.2rem;">Сайтымызға қош келдіңіздер!</h3>
+        <h3 style="margin:0 0 16px;color:var(--green-dark);font-size:1.2rem;">Құрметті ЖШС "Азия мед-МО" пациенттері!</h3>
         <div style="font-size:.95rem;color:var(--dark);line-height:1.9;">
-          <p style="margin:0 0 12px;">Құрметті пациенттер мен сайт қонақтары!</p>
-          <p style="margin:0 0 12px;">ЖШС «Азия мед-МО» медициналық орталығының ресми сайтына қош келдіңіздер! Мен — орталық басшысы Аманбаева Перизат Ерсинбаевна.</p>
-          <p style="margin:0 0 12px;">Біздің орталық халыққа сапалы, қолжетімді және қауіпсіз медициналық көмек көрсетуді басты мақсат етіп қойған. Ұлттық аккредиттеуден сәтті өткен, заманауи жабдықталған орталығымыз сіздің денсаулығыңыз үшін жұмыс жасайды.</p>
-          <p style="margin:0 0 12px;">Сайтта сіз дәрігерлер кестесін, скрининг ақпаратын, МӘМС қызметтері туралы мәліметтерді таба аласыз. Барлық сұрақтарыңызды осы блог арқылы немесе байланыс бетіндегі форма арқылы жіберуіңізге болады.</p>
-          <p style="margin:0;">Сізге мықты денсаулық тілеймін!</p>
+          <p style="margin:0 0 14px;">Біздің пациенттерге қызмет көрсету сапасын одан әрі жақсарту мақсатында, әр аптада мен ЖШС "Азия мед-МО" медициналық орталығының басшысы ретінде, тіркелген тұрғындарды жеке қабылдаймын және олардың сұрақтарына алдын-ала жасалған кесте бойынша жауап беруге дайынмын.</p>
+          <p style="margin:0 0 14px;">Азаматтың әрбір проблемасы жеке қаралатын болады, ал қабылданатын барлық шешімдер заңнамаға қатаң сәйкес болады.</p>
+          <p style="margin:0 0 14px;">Біздің мақсатымыз — тіркелген тұрғындарға сапалы медициналық көмек көрсете отырып, туындайтын мәселелерді "осында және қазір" қағидаты бойынша шешу.</p>
+          <p style="margin:0;font-weight:700;">📞 Жеке қабылдауға жазылу үшін: <a href="tel:+77020835556" style="color:var(--green);">+7 702 083 55 56</a></p>
         </div>
         <div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;">
-          <div style="width:40px;height:40px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">А</div>
-          <div><div style="font-weight:700;color:var(--dark);font-size:.9rem;">Аманбаева Перизат Ерсинбаевна</div><div style="font-size:.8rem;color:var(--gray);">ЖШС «Азия мед-МО» басшысы</div></div>
+          <img src="director.jpg" style="width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:top;" onerror="this.style.display='none'">
+          <div><div style="font-weight:700;font-size:.9rem;">Аманбаева Перизат Ерсинбаевна</div><div style="font-size:.8rem;color:var(--gray);">ЖШС «Азия мед-МО» басшысы</div></div>
         </div>
       </div>`;
     return;
@@ -8109,12 +8108,14 @@ function renderBlogList() {
     var imgHtml = p.img ? `<img src="${p.img}" style="width:100%;max-height:360px;object-fit:cover;border-radius:12px;margin-bottom:16px;" onerror="this.style.display='none'">` : '';
     var editBtn = isBlogAdmin() ? `<button onclick="openBlogEditor('${p.id}')" style="margin-top:12px;padding:6px 14px;background:transparent;border:1.5px solid var(--green);color:var(--green-dark);border-radius:8px;font-size:.8rem;cursor:pointer;">✏️ Өңдеу</button>` : '';
     var d = new Date(p.ts).toLocaleDateString('kk-KZ', {year:'numeric',month:'long',day:'numeric'});
+    var commentsHtml = renderBlogComments(p.id);
     return '<div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.07);">'
       + imgHtml
       + '<div style="font-size:.8rem;color:#aaa;margin-bottom:8px;">📅 ' + d + '</div>'
       + '<h3 style="margin:0 0 12px;color:var(--green-dark);font-size:1.2rem;">' + p.title + '</h3>'
       + '<div style="font-size:.95rem;color:var(--dark);line-height:1.8;white-space:pre-wrap;">' + p.text + '</div>'
       + editBtn
+      + commentsHtml
       + '</div>';
   }).join('');
 }
@@ -8359,6 +8360,84 @@ function renderPriceTable() {
   tbody.innerHTML = rows.map(function(r) {
     return '<tr><td>' + r.name + '</td><td style="text-align:right;font-weight:700;color:var(--green);white-space:nowrap;">' + r.price + ' ₸</td></tr>';
   }).join('');
+}
+
+
+// ===== BLOG COMMENTS =====
+const BLOG_COMMENTS_KEY = 'aziyamed_blog_comments';
+
+function getBlogComments(postId) {
+  try { return JSON.parse(localStorage.getItem(BLOG_COMMENTS_KEY) || '{}'); } catch(_) { return {}; }
+}
+
+function renderBlogComments(postId) {
+  var all = getBlogComments();
+  var comments = all[postId] || [];
+  var commentsHtml = comments.map(function(c, i) {
+    var quoteHtml = c.quote ? `<div style="border-left:3px solid #b0d8c0;padding:8px 14px;margin-bottom:8px;font-size:.85rem;color:#555;font-style:italic;background:#f5fdf8;border-radius:0 6px 6px 0;">${c.quote}</div>` : '';
+    var dt = new Date(c.ts).toLocaleDateString('kk-KZ') + ' ' + new Date(c.ts).toLocaleTimeString('kk-KZ',{hour:'2-digit',minute:'2-digit'});
+    return `<div style="border:1px solid #e8e8e8;border-radius:8px;padding:14px 16px;margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-weight:700;font-size:.9rem;">${c.name||'Қонақ'}</span>
+        <span style="font-size:.8rem;color:#aaa;">${dt}</span>
+      </div>
+      ${quoteHtml}
+      <div style="font-size:.9rem;color:var(--dark);">${c.text}</div>
+      <div style="text-align:right;margin-top:8px;">
+        <button onclick="blogReply('${postId}',${i})" style="padding:5px 14px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:.82rem;cursor:pointer;">Жауап</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  return `<div style="margin-top:24px;border-top:2px solid #f0f0f0;padding-top:20px;">
+    <div style="font-size:.75rem;font-weight:800;letter-spacing:.08em;color:#888;text-transform:uppercase;margin-bottom:14px;">💬 Комментарийлер${comments.length ? ' (' + comments.length + ')' : ''}</div>
+    ${commentsHtml || '<div style="font-size:.85rem;color:#bbb;margin-bottom:14px;">Комментарий жоқ. Бірінші болып жазыңыз!</div>'}
+    <div id="blogReplyQuote_${postId}" style="display:none;border-left:3px solid var(--green);padding:8px 12px;margin-bottom:8px;background:#f5fdf8;border-radius:0 6px 6px 0;font-size:.85rem;color:#555;"></div>
+    <div style="display:flex;gap:8px;align-items:flex-start;">
+      <textarea id="blogCommentInput_${postId}" rows="2" placeholder="Комментарий жазыңыз..." style="flex:1;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:.9rem;resize:vertical;box-sizing:border-box;"></textarea>
+      <button onclick="submitBlogComment('${postId}')" style="padding:10px 18px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;white-space:nowrap;">Жіберу</button>
+    </div>
+  </div>`;
+}
+
+function blogReply(postId, commentIdx) {
+  var all = getBlogComments();
+  var comments = all[postId] || [];
+  var c = comments[commentIdx];
+  if (!c) return;
+  var quoteEl = document.getElementById('blogReplyQuote_' + postId);
+  if (quoteEl) {
+    quoteEl.style.display = '';
+    quoteEl.innerHTML = '<strong>' + (c.name||'Қонақ') + '-ға жауап:</strong><br>' + c.text.substring(0,120) + (c.text.length>120?'...':'');
+    quoteEl.dataset.quote = (c.name||'Қонақ') + ': ' + c.text.substring(0,120) + (c.text.length>120?'...':'');
+  }
+  var input = document.getElementById('blogCommentInput_' + postId);
+  if (input) input.focus();
+}
+
+function submitBlogComment(postId) {
+  var input = document.getElementById('blogCommentInput_' + postId);
+  var text = input ? input.value.trim() : '';
+  if (!text) return;
+
+  var name = 'Қонақ';
+  var patient = sessionStorage.getItem('aziyamed_patient_name');
+  var staff = staffGetCurrent();
+  if (patient) name = patient;
+  else if (staff) name = staff.name || 'Қызметкер';
+
+  var quoteEl = document.getElementById('blogReplyQuote_' + postId);
+  var quote = (quoteEl && quoteEl.dataset.quote) ? quoteEl.dataset.quote : '';
+
+  var all = getBlogComments();
+  if (!all[postId]) all[postId] = [];
+  all[postId].push({ ts: Date.now(), name: name, text: text, quote: quote });
+  localStorage.setItem(BLOG_COMMENTS_KEY, JSON.stringify(all));
+
+  // Reset
+  if (input) input.value = '';
+  if (quoteEl) { quoteEl.style.display = 'none'; quoteEl.dataset.quote = ''; }
+  renderBlogList();
 }
 
 </script></body></html>
