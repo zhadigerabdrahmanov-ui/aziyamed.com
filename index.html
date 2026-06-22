@@ -8106,8 +8106,8 @@ function renderBlogList() {
   }
   
   list.innerHTML = posts.slice().reverse().map(function(p) {
-    var imgHtml = p.img ? '<img src="'+p.img+'" style="width:100%;max-height:360px;object-fit:cover;border-radius:12px;margin-bottom:16px;" onerror="this.style.display='none'">' : '';
-    var editBtn = isBlogAdmin() ? '<button onclick="openBlogEditor(''+p.id+'')" style="margin-top:12px;padding:6px 14px;background:transparent;border:1.5px solid var(--green);color:var(--green-dark);border-radius:8px;font-size:.8rem;cursor:pointer;">✏️ Өңдеу</button>' : '';
+    var imgHtml = p.img ? `<img src="${p.img}" style="width:100%;max-height:360px;object-fit:cover;border-radius:12px;margin-bottom:16px;" onerror="this.style.display='none'">` : '';
+    var editBtn = isBlogAdmin() ? `<button onclick="openBlogEditor('${p.id}')" style="margin-top:12px;padding:6px 14px;background:transparent;border:1.5px solid var(--green);color:var(--green-dark);border-radius:8px;font-size:.8rem;cursor:pointer;">✏️ Өңдеу</button>` : '';
     var d = new Date(p.ts).toLocaleDateString('kk-KZ', {year:'numeric',month:'long',day:'numeric'});
     return '<div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.07);">'
       + imgHtml
