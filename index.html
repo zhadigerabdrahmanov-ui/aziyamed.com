@@ -2733,6 +2733,9 @@ html.dark .kz-tile { opacity:0.22; }
       <button class="doctors-tab" id="tab-paid" onclick="showPatientsTab('paid')">
         <span class="ti">💰</span><span class="tl">Ақылы қызметтер</span>
       </button>
+      <button class="doctors-tab" id="tab-homecall" onclick="showPatientsTab('homecall')">
+        <span class="ti">🏠</span><span class="tl">Үйге дәрігер шақыру</span>
+      </button>
       <a href="https://damumed.kz/#/" target="_blank" class="doctors-tab damumed-tab">
         <span class="ti">📋</span><span class="tl">Damumed арқылы жазылу</span>
       </a>
@@ -2786,6 +2789,71 @@ html.dark .kz-tile { opacity:0.22; }
 
 
     <!-- PANEL: Ақылы қызметтер -->
+    <div id="panel-homecall" class="doctors-panel">
+      <div style="max-width:700px;margin:0 auto;">
+
+        <!-- Нұсқаулық -->
+        <div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+          <h3 style="color:var(--green-dark);margin:0 0 16px;">🏠 Үйге дәрігер шақыру — нұсқаулық</h3>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="min-width:32px;height:32px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;">1</div>
+              <div><strong>Телефон арқылы хабарласыңыз</strong><br><span style="color:var(--gray);font-size:.9rem;">Жұмыс уақытында ресепшнге қоңырау шалыңыз немесе төмендегі форманы толтырыңыз.</span></div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="min-width:32px;height:32px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;">2</div>
+              <div><strong>Науқастың аты-жөні мен мекенжайын айтыңыз</strong><br><span style="color:var(--gray);font-size:.9rem;">Дәрігер белгілі уақытта үйіңізге келеді.</span></div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="min-width:32px;height:32px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;">3</div>
+              <div><strong>Дәрігерді күтіңіз</strong><br><span style="color:var(--gray);font-size:.9rem;">Вызов тіркелгеннен кейін дәрігер сізбен байланысады.</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Байланыс -->
+        <div style="background:#e8f8ef;border-radius:16px;padding:20px 28px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:24px;align-items:center;">
+          <div>
+            <div style="font-size:.8rem;color:var(--gray);margin-bottom:4px;">📞 Байланыс телефоны</div>
+            <a href="tel:+77020835556" style="font-size:1.4rem;font-weight:800;color:var(--green-dark);text-decoration:none;">+7 (702) 083-55-56</a>
+          </div>
+          <div>
+            <div style="font-size:.8rem;color:var(--gray);margin-bottom:4px;">🕐 Вызов қабылдау уақыты</div>
+            <div style="font-size:1rem;font-weight:700;color:var(--dark);">Дүйсенбі – Жұма: 08:00 – 12:00</div>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <div style="background:#fff;border-radius:16px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+          <h3 style="color:var(--green-dark);margin:0 0 18px;">📝 Онлайн өтінім</h3>
+          <form onsubmit="submitHomeCall(event)">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+              <div>
+                <label style="font-size:13px;font-weight:600;color:var(--dark);">Аты-жөні *</label>
+                <input id="hcName" type="text" placeholder="Науқастың аты-жөні" required style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;">
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;color:var(--dark);">Телефон *</label>
+                <input id="hcPhone" type="tel" placeholder="+7 (___) ___-__-__" required style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;">
+              </div>
+            </div>
+            <div style="margin-bottom:14px;">
+              <label style="font-size:13px;font-weight:600;color:var(--dark);">Мекенжайы *</label>
+              <input id="hcAddress" type="text" placeholder="Көше, үй №, пәтер №" required style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;">
+            </div>
+            <div style="margin-bottom:14px;">
+              <label style="font-size:13px;font-weight:600;color:var(--dark);">Шағым / белгілері</label>
+              <textarea id="hcSymptoms" rows="3" placeholder="Аурудың белгілерін сипаттаңыз..." style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-top:4px;box-sizing:border-box;resize:vertical;"></textarea>
+            </div>
+            <div id="hcError" style="color:#e74c3c;font-size:13px;margin-bottom:8px;"></div>
+            <div id="hcSuccess" style="display:none;color:var(--green);font-weight:700;margin-bottom:8px;">✅ Өтініміңіз қабылданды! Жақын арада байланысамыз.</div>
+            <button type="submit" style="width:100%;padding:13px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">📤 Өтінім жіберу</button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+
     <div id="panel-paid" class="doctors-panel">
       <div style="padding:8px 0 20px;">
         <div style="font-size:1.1rem;font-weight:800;color:var(--dark);margin-bottom:6px;">💰 Ақылы медициналық қызметтер</div>
@@ -8014,7 +8082,24 @@ function renderBlogList() {
   try { posts = JSON.parse(localStorage.getItem(BLOG_KEY) || '[]'); } catch(_) {}
   
   if (!posts.length) {
-    list.innerHTML = '<div style="text-align:center;color:#aaa;padding:60px 0;font-size:1rem;">Әзірше жазба жоқ</div>';
+    // Default welcome post
+    list.innerHTML = `
+      <div style="background:#fff;border-radius:16px;padding:28px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+        <img src="director.jpg" alt="Аманбаева Перизат Ерсинбаевна" style="width:100%;max-height:400px;object-fit:cover;object-position:top;border-radius:12px;margin-bottom:20px;" onerror="this.style.display='none'">
+        <div style="font-size:.8rem;color:#aaa;margin-bottom:8px;">📅 ${new Date().toLocaleDateString('kk-KZ', {year:'numeric',month:'long',day:'numeric'})}</div>
+        <h3 style="margin:0 0 16px;color:var(--green-dark);font-size:1.2rem;">Сайтымызға қош келдіңіздер!</h3>
+        <div style="font-size:.95rem;color:var(--dark);line-height:1.9;">
+          <p style="margin:0 0 12px;">Құрметті пациенттер мен сайт қонақтары!</p>
+          <p style="margin:0 0 12px;">ЖШС «Азия мед-МО» медициналық орталығының ресми сайтына қош келдіңіздер! Мен — орталық басшысы Аманбаева Перизат Ерсинбаевна.</p>
+          <p style="margin:0 0 12px;">Біздің орталық халыққа сапалы, қолжетімді және қауіпсіз медициналық көмек көрсетуді басты мақсат етіп қойған. Ұлттық аккредиттеуден сәтті өткен, заманауи жабдықталған орталығымыз сіздің денсаулығыңыз үшін жұмыс жасайды.</p>
+          <p style="margin:0 0 12px;">Сайтта сіз дәрігерлер кестесін, скрининг ақпаратын, МӘМС қызметтері туралы мәліметтерді таба аласыз. Барлық сұрақтарыңызды осы блог арқылы немесе байланыс бетіндегі форма арқылы жіберуіңізге болады.</p>
+          <p style="margin:0;">Сізге мықты денсаулық тілеймін!</p>
+        </div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid #f0f0f0;display:flex;align-items:center;gap:12px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">А</div>
+          <div><div style="font-weight:700;color:var(--dark);font-size:.9rem;">Аманбаева Перизат Ерсинбаевна</div><div style="font-size:.8rem;color:var(--gray);">ЖШС «Азия мед-МО» басшысы</div></div>
+        </div>
+      </div>`;
     return;
   }
   
@@ -8108,4 +8193,27 @@ function deleteBlogPost() {
   renderBlogList();
 }
 // ════════════════════════════════════════════════════════════════════════════
+
+function submitHomeCall(e) {
+  e.preventDefault();
+  var name     = document.getElementById('hcName').value.trim();
+  var phone    = document.getElementById('hcPhone').value.trim();
+  var address  = document.getElementById('hcAddress').value.trim();
+  var symptoms = document.getElementById('hcSymptoms').value.trim();
+  var err = document.getElementById('hcError');
+  var ok  = document.getElementById('hcSuccess');
+  err.textContent = '';
+  ok.style.display = 'none';
+  if (!name || !phone || !address) { err.textContent = '⚠️ Міндетті өрістерді толтырыңыз'; return; }
+  try {
+    var detail = 'Мекенжай: ' + address + (symptoms ? ' | Белгілер: ' + symptoms : '');
+    var params = new URLSearchParams({ iin: phone, name: name, event: 'Үйге вызов', detail: detail });
+    fetch(_LOG_URL + '?' + params.toString(), { mode: 'no-cors' });
+  } catch(_) {}
+  document.getElementById('hcName').value = '';
+  document.getElementById('hcPhone').value = '';
+  document.getElementById('hcAddress').value = '';
+  document.getElementById('hcSymptoms').value = '';
+  ok.style.display = 'block';
+}
 </script></body></html>
