@@ -4280,6 +4280,25 @@ html.dark .kz-tile { opacity:0.22; }
         </div>
       </div>
 
+
+      <div class="staff-task-card" id="taskDezSummary" style="border:2px solid rgba(240,120,48,0.3);">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskDezSummaryBody')" style="background:linear-gradient(135deg,rgba(240,120,48,0.06),rgba(240,120,48,0.02));">
+          <div class="staff-task-left">
+            <span class="staff-task-icon">📊</span>
+            <div>
+              <div class="staff-task-title" style="color:var(--orange);">Жалпы қорытынды — барлық тазалау түрлері бойынша</div>
+              <div class="staff-task-desc">3 тазалаудың кез келгенінде өзгеріс болса, қорытынды автоматты жаңарады</div>
+            </div>
+          </div>
+          <span class="staff-task-chevron" style="color:var(--orange);">▼</span>
+        </div>
+        <div class="staff-task-body" id="taskDezSummaryBody" style="display:none;">
+          <div id="dezSummaryContent">
+            <div class="dez-result-empty">Кестелерді ашыңыз — қорытынды автоматты шығады</div>
+          </div>
+        </div>
+      </div>
+
       <!-- КВАРЦ КАЛЬКУЛЯТОРЫ -->
       <div class="staff-task-card" id="taskQuartz">
         <div class="staff-task-head" onclick="toggleStaffTask('taskQuartzBody')">
@@ -5769,7 +5788,7 @@ function toggleSchedRow(rowId, expandId) {
 }
 
 // ─── STAFF TASKS ─────────────────────────────────────────────────────────────
-var _TOOL_NAMES = {"taskRpnBody": "РПН тазалау", "taskScrPlanBody": "Скрининг жоспар", "taskVaccBody": "Екпе калькулятор", "taskRpnDiffBody": "Тіркелгендер мен шыққандарды анықтау", "taskWhiteCodeBody": "Белый код", "taskDezBody": "Дезинфекция", "taskDez2Body": "Дезинфекция 2", "taskQuartzBody": "Кварц", "taskQuizBody": "Тест", "taskIncidentBody": "Инцидент", "taskPatientMapBody": "Пациенттер картасы", "taskDez3Body": "Ағымды 5 күн", "taskDez4Body": "Аптасына дайындау", "taskDez5Body": "Айына дайындау"};
+var _TOOL_NAMES = {"taskRpnBody": "РПН тазалау", "taskScrPlanBody": "Скрининг жоспар", "taskVaccBody": "Екпе калькулятор", "taskRpnDiffBody": "Тіркелгендер мен шыққандарды анықтау", "taskWhiteCodeBody": "Белый код", "taskDezBody": "Дезинфекция", "taskDez2Body": "Дезинфекция 2", "taskQuartzBody": "Кварц", "taskQuizBody": "Тест", "taskIncidentBody": "Инцидент", "taskPatientMapBody": "Пациенттер картасы", "taskDez3Body": "Ағымды 5 күн", "taskDez4Body": "Аптасына дайындау", "taskDez5Body": "Айына дайындау", "taskDezSummaryBody": "Жалпы қорытынды"};
 function toggleStaffTask(bodyId) {
   const body = document.getElementById(bodyId);
   if (!body) return;
@@ -6195,6 +6214,7 @@ function resetDez2() {
       '<td style="padding:8px 6px;text-align:center;color:#2563eb;">' + totalCont + '</td>' +
       '<td style="padding:8px 6px;text-align:center;color:var(--green);">' + totalTab + '</td>' +
     '</tr>';
+    setTimeout(renderDezSummary, 20);
   }
 
   function dezDailyUpdate(idx, val) {
@@ -6296,6 +6316,7 @@ function resetDez2() {
       '<td style="padding:8px 6px;text-align:center;color:#2563eb;">' + totalCont + '</td>' +
       '<td style="padding:8px 6px;text-align:center;color:var(--green);">' + totalTab + '</td>' +
     '</tr>';
+    setTimeout(renderDezSummary, 20);
   }
 
   function dezWeeklyUpdate(idx, val) {
@@ -6353,6 +6374,7 @@ function resetDez2() {
       '<td style="padding:8px 6px;text-align:center;color:#2563eb;">' + totalCont + '</td>' +
       '<td style="padding:8px 6px;text-align:center;color:var(--green);">' + totalTab + '</td>' +
     '</tr>';
+    setTimeout(renderDezSummary, 20);
   }
 
   function dezMonthlyUpdate(idx, val) {
@@ -6363,6 +6385,94 @@ function resetDez2() {
     dezMonthlyData = DEZ_MONTHLY_DEFAULT.map(function(r){ return {n:r.n, name:r.name, s4:r.s4, k:r.k}; });
     renderDezMonthlyTable();
   }
+
+  function renderDezSummary() {
+    var el = document.getElementById('dezSummaryContent');
+    if (!el) return;
+
+    // Calc daily totals
+    var dS=0, dDaily=0, d5d=0, dCont=0, dTab=0;
+    dezDailyData.forEach(function(r){
+      var s=parseFloat(r.s)||0, daily=dezRound2(s*0.2), d5=dezRound2(daily*5), cont=dezCeil5(d5), tab=dezTablets(cont);
+      dS+=s; dDaily+=daily; d5d+=d5; dCont+=cont; dTab+=tab;
+    });
+
+    // Calc weekly totals
+    var wS4=0, wOnce=0, wCont=0, wTab=0;
+    dezWeeklyData.forEach(function(r){
+      var s4=parseFloat(r.s4)||0, once=dezRound2(s4*0.1), cont=dezCeil5(once), tab=dezTablets(cont);
+      wS4+=s4; wOnce+=once; wCont+=cont; wTab+=tab;
+    });
+
+    // Calc monthly totals
+    var mS4=0, mOnce=0, mCont=0, mTab=0;
+    dezMonthlyData.forEach(function(r){
+      var s4=parseFloat(r.s4)||0, once=dezRound2(s4*0.1), cont=dezCeil5(once), tab=dezTablets(cont);
+      mS4+=s4; mOnce+=once; mCont+=cont; mTab+=tab;
+    });
+
+    var r2 = dezRound2;
+    var thStyle = 'padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--gray);border-bottom:2px solid rgba(240,120,48,0.25);white-space:nowrap;';
+    var tdStyle = 'padding:8px 10px;text-align:center;font-size:13px;border-bottom:1px solid rgba(0,0,0,0.06);';
+    var tdName  = 'padding:8px 12px;font-size:13px;font-weight:700;border-bottom:1px solid rgba(0,0,0,0.06);';
+
+    var html = '<div style="overflow-x:auto;">' +
+      '<table style="width:100%;border-collapse:collapse;">' +
+      '<thead><tr style="background:rgba(240,120,48,0.07);">' +
+        '<th style="' + thStyle + 'text-align:left;">Тазалау түрі</th>' +
+        '<th style="' + thStyle + '">Бөлме<br>саны</th>' +
+        '<th style="' + thStyle + '">Жалпы<br>аудан, м²</th>' +
+        '<th style="' + thStyle + '">Бір рет/<br>күндік, л</th>' +
+        '<th style="' + thStyle + '">5 күн/<br>апта/ай, л</th>' +
+        '<th style="' + thStyle + '">Ыдыс<br>(дөңг.), л</th>' +
+        '<th style="' + thStyle + '">Mega-Хлор<br>таблетка, дана</th>' +
+      '</tr></thead>' +
+      '<tbody>' +
+      '<tr>' +
+        '<td style="' + tdName + '">🧹 Ағымды тазалау<br><span style="font-size:11px;color:var(--gray);font-weight:400;">5 күндік дайындау (күніне 2 рет)</span></td>' +
+        '<td style="' + tdStyle + '">' + dezDailyData.length + '</td>' +
+        '<td style="' + tdStyle + '">' + r2(dS) + '</td>' +
+        '<td style="' + tdStyle + 'color:var(--orange);font-weight:700;">' + r2(dDaily) + '</td>' +
+        '<td style="' + tdStyle + 'font-weight:700;">' + r2(d5d) + '</td>' +
+        '<td style="' + tdStyle + 'color:#2563eb;font-weight:700;">' + dCont + '</td>' +
+        '<td style="' + tdStyle + 'color:var(--green);font-weight:800;">' + dTab + '</td>' +
+      '</tr>' +
+      '<tr style="background:rgba(0,0,0,0.015);">' +
+        '<td style="' + tdName + '">📅 Ауқымды тазалау<br><span style="font-size:11px;color:var(--gray);font-weight:400;">Аптасына 1 рет (Q=52)</span></td>' +
+        '<td style="' + tdStyle + '">' + dezWeeklyData.length + '</td>' +
+        '<td style="' + tdStyle + '">' + r2(wS4) + '</td>' +
+        '<td style="' + tdStyle + 'color:var(--orange);font-weight:700;">' + r2(wOnce) + '</td>' +
+        '<td style="' + tdStyle + 'font-weight:700;">—</td>' +
+        '<td style="' + tdStyle + 'color:#2563eb;font-weight:700;">' + wCont + '</td>' +
+        '<td style="' + tdStyle + 'color:var(--green);font-weight:800;">' + wTab + '</td>' +
+      '</tr>' +
+      '<tr>' +
+        '<td style="' + tdName + '">🗓️ Ауқымды тазалау<br><span style="font-size:11px;color:var(--gray);font-weight:400;">Айына 1 рет (Q=12)</span></td>' +
+        '<td style="' + tdStyle + '">' + dezMonthlyData.length + '</td>' +
+        '<td style="' + tdStyle + '">' + r2(mS4) + '</td>' +
+        '<td style="' + tdStyle + 'color:var(--orange);font-weight:700;">' + r2(mOnce) + '</td>' +
+        '<td style="' + tdStyle + 'font-weight:700;">—</td>' +
+        '<td style="' + tdStyle + 'color:#2563eb;font-weight:700;">' + mCont + '</td>' +
+        '<td style="' + tdStyle + 'color:var(--green);font-weight:800;">' + mTab + '</td>' +
+      '</tr>' +
+      '<tr style="background:linear-gradient(135deg,rgba(240,120,48,0.1),rgba(240,120,48,0.06));font-size:14px;">' +
+        '<td style="padding:12px 12px;font-weight:800;color:var(--orange);">ЖАЛПЫ ҚОРЫТЫНДЫ</td>' +
+        '<td style="padding:12px 10px;text-align:center;font-weight:800;">' + (dezDailyData.length + dezWeeklyData.length + dezMonthlyData.length) + '</td>' +
+        '<td style="padding:12px 10px;text-align:center;font-weight:800;">—</td>' +
+        '<td style="padding:12px 10px;text-align:center;font-weight:800;color:var(--orange);">—</td>' +
+        '<td style="padding:12px 10px;text-align:center;font-weight:800;">—</td>' +
+        '<td style="padding:12px 10px;text-align:center;font-weight:800;color:#2563eb;">' + (dCont + wCont + mCont) + ' л</td>' +
+        '<td style="padding:12px 10px;text-align:center;font-weight:900;font-size:18px;color:var(--green);">' + (dTab + wTab + mTab) + ' дана</td>' +
+      '</tr>' +
+      '</tbody></table></div>' +
+      '<div style="margin-top:12px;padding:12px 16px;background:rgba(34,164,85,0.07);border-radius:10px;font-size:12px;color:var(--gray);">' +
+        '💡 <b>Ескерту:</b> «5 күн/апта/ай» бағанасы — бір рет дайындауға қажет ыдыс. ' +
+        'Жылдық қажеттілік: ағымды × 52 апта, апталық × 52, айлық × 12.' +
+      '</div>';
+    el.innerHTML = html;
+  }
+
+
 
   function dezDailyCSV() {
     var rows = [['№','Кабинет/бөлме','Аудан S м2','K %','Күндік шығын л','5 күндік л','Ыдыс л','Mega-Хлор дана']];
@@ -6443,6 +6553,7 @@ function resetDez2() {
       if (id === 'taskDez3Body') { setTimeout(renderDezDailyTable, 50); }
       if (id === 'taskDez4Body') { setTimeout(renderDezWeeklyTable, 50); }
       if (id === 'taskDez5Body') { setTimeout(renderDezMonthlyTable, 50); }
+      if (id === 'taskDezSummaryBody') { setTimeout(renderDezSummary, 50); }
     };
   })();
 
