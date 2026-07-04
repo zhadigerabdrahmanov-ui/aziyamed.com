@@ -6512,9 +6512,9 @@ function resetDez2() {
       var s=parseFloat(r.s)||0, daily=dezRound2(s*0.2), d5=dezRound2(daily*5), cont=dezCeil5(d5), tab=dezTablets(cont);
       rows.push([r.n,r.name,s,'0.015%',daily,d5,cont,tab]);
     });
-    var csv = rows.map(function(r){return r.join(',');}).join('\n');
-    var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-    a.download='agymdy_5kun.csv'; a.click();
+    var csv = rows.map(function(r){return r.join('\t');}).join('\r\n');
+    var a=document.createElement('a'); a.href='data:text/plain;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+    a.download='agymdy_5kun.tsv'; a.click();
   }
   function dezWeeklyCSV() {
     var rows = [['№','Кабинет/бөлме','Аудан S4 м2','K %','Бір рет л','Ыдыс л','Mega-Хлор дана']];
@@ -6522,9 +6522,9 @@ function resetDez2() {
       var s4=parseFloat(r.s4)||0, once=dezRound2(s4*0.1), cont=dezCeil5(once), tab=dezTablets(cont);
       rows.push([r.n,r.name,s4,dezRound2(r.k*100)+'%',once,cont,tab]);
     });
-    var csv = rows.map(function(r){return r.join(',');}).join('\n');
-    var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-    a.download='auqymdy_aptasyna.csv'; a.click();
+    var csv = rows.map(function(r){return r.join('\t');}).join('\r\n');
+    var a=document.createElement('a'); a.href='data:text/plain;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+    a.download='auqymdy_aptasyna.tsv'; a.click();
   }
   function dezMonthlyCSV() {
     var rows = [['№','Кабинет/бөлме','Аудан S4 м2','K %','Бір рет л','Ыдыс л','Mega-Хлор дана']];
@@ -6532,9 +6532,9 @@ function resetDez2() {
       var s4=parseFloat(r.s4)||0, once=dezRound2(s4*0.1), cont=dezCeil5(once), tab=dezTablets(cont);
       rows.push([r.n,r.name,s4,dezRound2(r.k*100)+'%',once,cont,tab]);
     });
-    var csv = rows.map(function(r){return r.join(',');}).join('\n');
-    var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-    a.download='auqymdy_ayyna.csv'; a.click();
+    var csv = rows.map(function(r){return r.join('\t');}).join('\r\n');
+    var a=document.createElement('a'); a.href='data:text/plain;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+    a.download='auqymdy_ayyna.tsv'; a.click();
   }
 
   function dezDailyPrint() {
