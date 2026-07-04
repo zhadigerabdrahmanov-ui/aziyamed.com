@@ -6390,87 +6390,119 @@ function resetDez2() {
     var el = document.getElementById('dezSummaryContent');
     if (!el) return;
 
-    // Calc daily totals
+    // Daily totals
     var dS=0, dDaily=0, d5d=0, dCont=0, dTab=0;
     dezDailyData.forEach(function(r){
       var s=parseFloat(r.s)||0, daily=dezRound2(s*0.2), d5=dezRound2(daily*5), cont=dezCeil5(d5), tab=dezTablets(cont);
       dS+=s; dDaily+=daily; d5d+=d5; dCont+=cont; dTab+=tab;
     });
+    // Annual: 246 working days / 5 = ~49 preparations
+    var dAnnBatch = 49;
+    var dAnnCont = dCont * dAnnBatch;
+    var dAnnTab  = dTab  * dAnnBatch;
 
-    // Calc weekly totals
+    // Weekly totals
     var wS4=0, wOnce=0, wCont=0, wTab=0;
     dezWeeklyData.forEach(function(r){
       var s4=parseFloat(r.s4)||0, once=dezRound2(s4*0.1), cont=dezCeil5(once), tab=dezTablets(cont);
       wS4+=s4; wOnce+=once; wCont+=cont; wTab+=tab;
     });
+    var wAnnCont = wCont * 52;
+    var wAnnTab  = wTab  * 52;
 
-    // Calc monthly totals
+    // Monthly totals
     var mS4=0, mOnce=0, mCont=0, mTab=0;
     dezMonthlyData.forEach(function(r){
       var s4=parseFloat(r.s4)||0, once=dezRound2(s4*0.1), cont=dezCeil5(once), tab=dezTablets(cont);
       mS4+=s4; mOnce+=once; mCont+=cont; mTab+=tab;
     });
+    var mAnnCont = mCont * 12;
+    var mAnnTab  = mTab  * 12;
 
     var r2 = dezRound2;
-    var thStyle = 'padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--gray);border-bottom:2px solid rgba(240,120,48,0.25);white-space:nowrap;';
-    var tdStyle = 'padding:8px 10px;text-align:center;font-size:13px;border-bottom:1px solid rgba(0,0,0,0.06);';
-    var tdName  = 'padding:8px 12px;font-size:13px;font-weight:700;border-bottom:1px solid rgba(0,0,0,0.06);';
+    var totalAnnTab = dAnnTab + wAnnTab + mAnnTab;
+    var totalAnnCont = dAnnCont + wAnnCont + mAnnCont;
 
-    var html = '<div style="overflow-x:auto;">' +
+    var th = 'padding:8px 8px;text-align:center;font-size:11px;font-weight:700;color:var(--gray);border-bottom:2px solid rgba(240,120,48,0.25);white-space:nowrap;';
+    var td = 'padding:8px 8px;text-align:center;font-size:13px;border-bottom:1px solid rgba(0,0,0,0.06);';
+    var tn = 'padding:8px 12px;font-size:13px;font-weight:700;border-bottom:1px solid rgba(0,0,0,0.06);';
+
+    var html =
+      '<div style="overflow-x:auto;">' +
       '<table style="width:100%;border-collapse:collapse;">' +
-      '<thead><tr style="background:rgba(240,120,48,0.07);">' +
-        '<th style="' + thStyle + 'text-align:left;">Тазалау түрі</th>' +
-        '<th style="' + thStyle + '">Бөлме<br>саны</th>' +
-        '<th style="' + thStyle + '">Жалпы<br>аудан, м²</th>' +
-        '<th style="' + thStyle + '">Бір рет/<br>күндік, л</th>' +
-        '<th style="' + thStyle + '">5 күн/<br>апта/ай, л</th>' +
-        '<th style="' + thStyle + '">Ыдыс<br>(дөңг.), л</th>' +
-        '<th style="' + thStyle + '">Mega-Хлор<br>таблетка, дана</th>' +
-      '</tr></thead>' +
+      '<thead>' +
+        '<tr style="background:rgba(240,120,48,0.07);">' +
+          '<th style="' + th + 'text-align:left;" rowspan="2">Тазалау түрі</th>' +
+          '<th style="' + th + '" rowspan="2">Бөлме<br>саны</th>' +
+          '<th style="' + th + '" rowspan="2">Жалпы<br>аудан, м²</th>' +
+          '<th colspan="3" style="' + th + 'border-right:2px solid rgba(240,120,48,0.3);padding-bottom:4px;">БІР РАУАНДА (дайындауға)</th>' +
+          '<th colspan="3" style="' + th + 'background:rgba(34,164,85,0.08);padding-bottom:4px;">ЖЫЛДЫҚ ҚАЖЕТТІЛІК</th>' +
+        '</tr>' +
+        '<tr style="background:rgba(240,120,48,0.04);">' +
+          '<th style="' + th + 'font-size:10px;">Бір рет/<br>күндік, л</th>' +
+          '<th style="' + th + 'font-size:10px;">Ыдыс, л</th>' +
+          '<th style="' + th + 'font-size:10px;border-right:2px solid rgba(240,120,48,0.3);">Mega-Хлор<br>дана</th>' +
+          '<th style="' + th + 'font-size:10px;background:rgba(34,164,85,0.05);">Жиілік<br>(рет/жыл)</th>' +
+          '<th style="' + th + 'font-size:10px;background:rgba(34,164,85,0.05);">Ыдыс, л</th>' +
+          '<th style="' + th + 'font-size:10px;background:rgba(34,164,85,0.05);">Mega-Хлор<br>дана</th>' +
+        '</tr>' +
+      '</thead>' +
       '<tbody>' +
       '<tr>' +
-        '<td style="' + tdName + '">🧹 Ағымды тазалау<br><span style="font-size:11px;color:var(--gray);font-weight:400;">5 күндік дайындау (күніне 2 рет)</span></td>' +
-        '<td style="' + tdStyle + '">' + dezDailyData.length + '</td>' +
-        '<td style="' + tdStyle + '">' + r2(dS) + '</td>' +
-        '<td style="' + tdStyle + 'color:var(--orange);font-weight:700;">' + r2(dDaily) + '</td>' +
-        '<td style="' + tdStyle + 'font-weight:700;">' + r2(d5d) + '</td>' +
-        '<td style="' + tdStyle + 'color:#2563eb;font-weight:700;">' + dCont + '</td>' +
-        '<td style="' + tdStyle + 'color:var(--green);font-weight:800;">' + dTab + '</td>' +
+        '<td style="' + tn + '">🧹 Ағымды тазалау<br><span style="font-size:11px;color:var(--gray);font-weight:400;">5 күндік дайындау (күніне 2 рет)</span></td>' +
+        '<td style="' + td + '">' + dezDailyData.length + '</td>' +
+        '<td style="' + td + '">' + r2(dS) + '</td>' +
+        '<td style="' + td + 'color:var(--orange);font-weight:700;">' + r2(d5d) + '</td>' +
+        '<td style="' + td + 'color:#2563eb;font-weight:700;">' + dCont + '</td>' +
+        '<td style="' + td + 'color:var(--green);font-weight:800;border-right:2px solid rgba(240,120,48,0.3);">' + dTab + '</td>' +
+        '<td style="' + td + 'background:rgba(34,164,85,0.04);">49 рет<br><span style="font-size:10px;color:var(--gray);">(246 күн ÷ 5)</span></td>' +
+        '<td style="' + td + 'color:#2563eb;font-weight:700;background:rgba(34,164,85,0.04);">' + dAnnCont + '</td>' +
+        '<td style="' + td + 'color:var(--green);font-weight:800;background:rgba(34,164,85,0.04);">' + dAnnTab + '</td>' +
       '</tr>' +
       '<tr style="background:rgba(0,0,0,0.015);">' +
-        '<td style="' + tdName + '">📅 Ауқымды тазалау<br><span style="font-size:11px;color:var(--gray);font-weight:400;">Аптасына 1 рет (Q=52)</span></td>' +
-        '<td style="' + tdStyle + '">' + dezWeeklyData.length + '</td>' +
-        '<td style="' + tdStyle + '">' + r2(wS4) + '</td>' +
-        '<td style="' + tdStyle + 'color:var(--orange);font-weight:700;">' + r2(wOnce) + '</td>' +
-        '<td style="' + tdStyle + 'font-weight:700;">—</td>' +
-        '<td style="' + tdStyle + 'color:#2563eb;font-weight:700;">' + wCont + '</td>' +
-        '<td style="' + tdStyle + 'color:var(--green);font-weight:800;">' + wTab + '</td>' +
+        '<td style="' + tn + '">📅 Ауқымды тазалау<br><span style="font-size:11px;color:var(--gray);font-weight:400;">Аптасына 1 рет</span></td>' +
+        '<td style="' + td + '">' + dezWeeklyData.length + '</td>' +
+        '<td style="' + td + '">' + r2(wS4) + '</td>' +
+        '<td style="' + td + 'color:var(--orange);font-weight:700;">' + r2(wOnce) + '</td>' +
+        '<td style="' + td + 'color:#2563eb;font-weight:700;">' + wCont + '</td>' +
+        '<td style="' + td + 'color:var(--green);font-weight:800;border-right:2px solid rgba(240,120,48,0.3);">' + wTab + '</td>' +
+        '<td style="' + td + 'background:rgba(34,164,85,0.04);">52 рет<br><span style="font-size:10px;color:var(--gray);">(аптасына 1 рет)</span></td>' +
+        '<td style="' + td + 'color:#2563eb;font-weight:700;background:rgba(34,164,85,0.04);">' + wAnnCont + '</td>' +
+        '<td style="' + td + 'color:var(--green);font-weight:800;background:rgba(34,164,85,0.04);">' + wAnnTab + '</td>' +
       '</tr>' +
       '<tr>' +
-        '<td style="' + tdName + '">🗓️ Ауқымды тазалау<br><span style="font-size:11px;color:var(--gray);font-weight:400;">Айына 1 рет (Q=12)</span></td>' +
-        '<td style="' + tdStyle + '">' + dezMonthlyData.length + '</td>' +
-        '<td style="' + tdStyle + '">' + r2(mS4) + '</td>' +
-        '<td style="' + tdStyle + 'color:var(--orange);font-weight:700;">' + r2(mOnce) + '</td>' +
-        '<td style="' + tdStyle + 'font-weight:700;">—</td>' +
-        '<td style="' + tdStyle + 'color:#2563eb;font-weight:700;">' + mCont + '</td>' +
-        '<td style="' + tdStyle + 'color:var(--green);font-weight:800;">' + mTab + '</td>' +
+        '<td style="' + tn + '">🗓️ Ауқымды тазалау<br><span style="font-size:11px;color:var(--gray);font-weight:400;">Айына 1 рет</span></td>' +
+        '<td style="' + td + '">' + dezMonthlyData.length + '</td>' +
+        '<td style="' + td + '">' + r2(mS4) + '</td>' +
+        '<td style="' + td + 'color:var(--orange);font-weight:700;">' + r2(mOnce) + '</td>' +
+        '<td style="' + td + 'color:#2563eb;font-weight:700;">' + mCont + '</td>' +
+        '<td style="' + td + 'color:var(--green);font-weight:800;border-right:2px solid rgba(240,120,48,0.3);">' + mTab + '</td>' +
+        '<td style="' + td + 'background:rgba(34,164,85,0.04);">12 рет<br><span style="font-size:10px;color:var(--gray);">(айына 1 рет)</span></td>' +
+        '<td style="' + td + 'color:#2563eb;font-weight:700;background:rgba(34,164,85,0.04);">' + mAnnCont + '</td>' +
+        '<td style="' + td + 'color:var(--green);font-weight:800;background:rgba(34,164,85,0.04);">' + mAnnTab + '</td>' +
       '</tr>' +
-      '<tr style="background:linear-gradient(135deg,rgba(240,120,48,0.1),rgba(240,120,48,0.06));font-size:14px;">' +
-        '<td style="padding:12px 12px;font-weight:800;color:var(--orange);">ЖАЛПЫ ҚОРЫТЫНДЫ</td>' +
-        '<td style="padding:12px 10px;text-align:center;font-weight:800;">' + (dezDailyData.length + dezWeeklyData.length + dezMonthlyData.length) + '</td>' +
-        '<td style="padding:12px 10px;text-align:center;font-weight:800;">—</td>' +
-        '<td style="padding:12px 10px;text-align:center;font-weight:800;color:var(--orange);">—</td>' +
-        '<td style="padding:12px 10px;text-align:center;font-weight:800;">—</td>' +
-        '<td style="padding:12px 10px;text-align:center;font-weight:800;color:#2563eb;">' + (dCont + wCont + mCont) + ' л</td>' +
-        '<td style="padding:12px 10px;text-align:center;font-weight:900;font-size:18px;color:var(--green);">' + (dTab + wTab + mTab) + ' дана</td>' +
+      '<tr style="background:linear-gradient(135deg,rgba(34,164,85,0.12),rgba(34,164,85,0.07));font-size:14px;">' +
+        '<td colspan="5" style="padding:14px 12px;font-weight:800;color:var(--dark);font-size:13px;">ЖЫЛДЫҚ ЖАЛПЫ ҚОРЫТЫНДЫ<br><span style="font-size:11px;font-weight:400;color:var(--gray);">барлық тазалау түрлері бойынша</span></td>' +
+        '<td style="padding:14px 8px;text-align:center;border-right:2px solid rgba(240,120,48,0.3);">—</td>' +
+        '<td style="padding:14px 8px;text-align:center;font-size:12px;color:var(--gray);">49+52+12=113 рет</td>' +
+        '<td style="padding:14px 10px;text-align:center;font-weight:800;font-size:15px;color:#2563eb;">' + totalAnnCont + ' л</td>' +
+        '<td style="padding:14px 10px;text-align:center;font-weight:900;font-size:20px;color:var(--green);">' + totalAnnTab + ' дана</td>' +
       '</tr>' +
       '</tbody></table></div>' +
-      '<div style="margin-top:12px;padding:12px 16px;background:rgba(34,164,85,0.07);border-radius:10px;font-size:12px;color:var(--gray);">' +
-        '💡 <b>Ескерту:</b> «5 күн/апта/ай» бағанасы — бір рет дайындауға қажет ыдыс. ' +
-        'Жылдық қажеттілік: ағымды × 52 апта, апталық × 52, айлық × 12.' +
+      '<div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">' +
+        '<div style="padding:14px 16px;background:rgba(240,120,48,0.07);border-radius:12px;text-align:center;">' +
+          '<div style="font-size:11px;color:var(--gray);margin-bottom:4px;">ЖЫЛДЫҚ ЫДЫС САНЫ</div>' +
+          '<div style="font-size:28px;font-weight:900;color:#2563eb;">' + totalAnnCont + ' л</div>' +
+        '</div>' +
+        '<div style="padding:14px 16px;background:rgba(34,164,85,0.08);border-radius:12px;text-align:center;">' +
+          '<div style="font-size:11px;color:var(--gray);margin-bottom:4px;">ЖЫЛДЫҚ MEGA-ХЛОР ТАБЛЕТКА</div>' +
+          '<div style="font-size:28px;font-weight:900;color:var(--green);">' + totalAnnTab + ' дана</div>' +
+        '</div>' +
       '</div>';
+
     el.innerHTML = html;
   }
+
 
 
 
