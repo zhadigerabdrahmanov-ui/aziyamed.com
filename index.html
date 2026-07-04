@@ -4184,6 +4184,7 @@ html.dark .kz-tile { opacity:0.22; }
                   <th style="padding:8px 6px;text-align:center;font-size:11px;color:var(--gray);border-bottom:1.5px solid rgba(0,0,0,0.08);">№</th>
                   <th style="padding:8px 6px;text-align:left;font-size:11px;color:var(--gray);border-bottom:1.5px solid rgba(0,0,0,0.08);">Кабинет/бөлме</th>
                   <th style="padding:8px 6px;text-align:center;font-size:11px;color:var(--gray);border-bottom:1.5px solid rgba(0,0,0,0.08);">Аудан S, м²<br><span style="font-weight:400;font-style:italic;">(өзгертуге болады)</span></th>
+                  <th style="padding:8px 6px;text-align:center;font-size:11px;color:var(--gray);border-bottom:1.5px solid rgba(0,0,0,0.08);">Конц. K, %</th>
                   <th style="padding:8px 6px;text-align:center;font-size:11px;color:var(--gray);border-bottom:1.5px solid rgba(0,0,0,0.08);">Күндік шығын<br>(2 рет/күн), л</th>
                   <th style="padding:8px 6px;text-align:center;font-size:11px;color:var(--gray);border-bottom:1.5px solid rgba(0,0,0,0.08);">5 күндік<br>көлем, л</th>
                   <th style="padding:8px 6px;text-align:center;font-size:11px;color:var(--gray);border-bottom:1.5px solid rgba(0,0,0,0.08);">Ыдыс<br>(дөңгелект.), л</th>
@@ -6176,6 +6177,7 @@ function resetDez2() {
           '</div>' +
           (breakdown ? '<div id="dezBreak_' + idx + '" style="display:none;margin-top:6px;padding:8px 10px;background:rgba(240,120,48,0.06);border:1px solid rgba(240,120,48,0.2);border-radius:8px;text-align:left;">' + breakdown + '</div>' : '') +
         '</td>' +
+        '<td style="padding:6px 6px;text-align:center;font-size:12px;color:var(--gray);">0.015%</td>' +
         '<td style="padding:6px 6px;text-align:center;color:var(--orange);font-weight:700;">' + daily + '</td>' +
         '<td style="padding:6px 6px;text-align:center;font-weight:700;">' + d5 + '</td>' +
         '<td style="padding:6px 6px;text-align:center;font-weight:700;color:#2563eb;">' + cont + '</td>' +
@@ -6187,6 +6189,7 @@ function resetDez2() {
     if (tfoot) tfoot.innerHTML = '<tr style="background:rgba(240,120,48,0.08);font-weight:800;">' +
       '<td colspan="2" style="padding:8px 8px;font-size:12px;">БАРЛЫҒЫ</td>' +
       '<td style="padding:8px 6px;text-align:center;">' + dezRound2(totalS) + '</td>' +
+      '<td></td>' +
       '<td style="padding:8px 6px;text-align:center;color:var(--orange);">' + dezRound2(totalDaily) + '</td>' +
       '<td style="padding:8px 6px;text-align:center;">' + dezRound2(total5d) + '</td>' +
       '<td style="padding:8px 6px;text-align:center;color:#2563eb;">' + totalCont + '</td>' +
@@ -6262,7 +6265,7 @@ function resetDez2() {
       var once = dezRound2(s4 * 0.1);
       var cont = dezCeil5(once);
       var tab = dezTablets(cont);
-      var kPct = r.k;
+      var kPct = dezRound2(r.k * 100);
       totalS4 += s4; totalOnce += once; totalCont += cont; totalTab += tab;
       var stripe = idx % 2 === 1 ? 'background:rgba(0,0,0,0.02);' : '';
       var breakdown = dezBuildS4Breakdown(DEZ_WEEKLY_DEFAULT, idx);
@@ -6319,7 +6322,7 @@ function resetDez2() {
       var once = dezRound2(s4 * 0.1);
       var cont = dezCeil5(once);
       var tab = dezTablets(cont);
-      var kPct = r.k;
+      var kPct = dezRound2(r.k * 100);
       totalS4 += s4; totalOnce += once; totalCont += cont; totalTab += tab;
       var stripe = idx % 2 === 1 ? 'background:rgba(0,0,0,0.02);' : '';
       var breakdown = dezBuildS4Breakdown(DEZ_MONTHLY_DEFAULT, idx);
@@ -6362,10 +6365,10 @@ function resetDez2() {
   }
 
   function dezDailyCSV() {
-    var rows = [['№','Кабинет/бөлме','Аудан S м2','Күндік шығын л','5 күндік л','Ыдыс л','Mega-Хлор дана']];
+    var rows = [['№','Кабинет/бөлме','Аудан S м2','K %','Күндік шығын л','5 күндік л','Ыдыс л','Mega-Хлор дана']];
     dezDailyData.forEach(function(r) {
       var s=parseFloat(r.s)||0, daily=dezRound2(s*0.2), d5=dezRound2(daily*5), cont=dezCeil5(d5), tab=dezTablets(cont);
-      rows.push([r.n,r.name,s,daily,d5,cont,tab]);
+      rows.push([r.n,r.name,s,'0.015%',daily,d5,cont,tab]);
     });
     var csv = rows.map(function(r){return r.join(',');}).join('\n');
     var a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
@@ -6395,13 +6398,13 @@ function resetDez2() {
   function dezDailyPrint() {
     var rows = dezDailyData.map(function(r,i) {
       var s=parseFloat(r.s)||0, daily=dezRound2(s*0.2), d5=dezRound2(daily*5), cont=dezCeil5(d5), tab=dezTablets(cont);
-      return '<tr style="border-bottom:1px solid #eee;"><td style="padding:5px 8px;text-align:center;">' + r.n + '</td><td style="padding:5px 8px;">' + r.name + '</td><td style="padding:5px 8px;text-align:center;">' + s + '</td><td style="padding:5px 8px;text-align:center;">' + daily + '</td><td style="padding:5px 8px;text-align:center;font-weight:700;">' + d5 + '</td><td style="padding:5px 8px;text-align:center;">' + cont + '</td><td style="padding:5px 8px;text-align:center;font-weight:700;">' + tab + '</td></tr>';
+      return '<tr style="border-bottom:1px solid #eee;"><td style="padding:5px 8px;text-align:center;">' + r.n + '</td><td style="padding:5px 8px;">' + r.name + '</td><td style="padding:5px 8px;text-align:center;">' + s + '</td><td style="padding:5px 8px;text-align:center;">0.015%</td><td style="padding:5px 8px;text-align:center;">' + daily + '</td><td style="padding:5px 8px;text-align:center;font-weight:700;">' + d5 + '</td><td style="padding:5px 8px;text-align:center;">' + cont + '</td><td style="padding:5px 8px;text-align:center;font-weight:700;">' + tab + '</td></tr>';
     }).join('');
     var w = window.open('','_blank');
     w.document.write('<html><head><title>Ағымды тазалау — 5 күндік дайындау кестесі</title><style>body{font-family:Arial,sans-serif;font-size:12px;} table{border-collapse:collapse;width:100%;} th{background:#f97316;color:#fff;padding:6px 8px;text-align:center;} h2{font-size:14px;} @media print{button{display:none;}}</style></head><body>' +
       '<h2>Ағымды тазалау — 5 күндік дайындау кестесі</h2>' +
       '<p style="font-size:11px;color:#666;">Күніне 2 рет тазалау | N=0,1 л/м² | 1 таблетка = 10 л</p>' +
-      '<table><thead><tr><th>№</th><th>Кабинет/бөлме</th><th>S, м²</th><th>Күндік, л</th><th>5 күндік, л</th><th>Ыдыс, л</th><th>Mega-Хлор</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<table><thead><tr><th>№</th><th>Кабинет/бөлме</th><th>S, м²</th><th>K, %</th><th>Күндік, л</th><th>5 күндік, л</th><th>Ыдыс, л</th><th>Mega-Хлор</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       '<br><button onclick="window.print()">Басып шығару</button></body></html>');
     w.document.close();
   }
