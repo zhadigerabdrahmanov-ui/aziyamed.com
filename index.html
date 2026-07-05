@@ -1468,6 +1468,7 @@
   .staff-task-head:hover { background:rgba(34,164,85,0.05); }
   .staff-task-left { display:flex; align-items:center; gap:14px; }
   .staff-task-icon { font-size:32px; flex-shrink:0; }
+  .staff-task-info { flex:1; min-width:0; }
   .staff-task-title { font-size:16px; font-weight:700; color:var(--dark); margin-bottom:2px; }
   .staff-task-desc { font-size:13px; color:var(--gray); }
   .staff-task-chevron { font-size:18px; color:var(--green); transition:transform .25s; flex-shrink:0; }
@@ -4508,6 +4509,47 @@ html.dark .kz-tile { opacity:0.22; }
       </div>
       <button onclick="openKuralPanel('sanat')" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);">✕</button>
     </div>
+    <!-- ═══ ЖАЛПЫ ФОРМА — 4 ҚҰЖАТ БІРДЕСТЕН ═══ -->
+    <div style="background:linear-gradient(135deg,rgba(20,184,166,0.07),rgba(20,184,166,0.02));border:1.5px solid rgba(20,184,166,0.25);border-radius:16px;padding:20px;margin-bottom:18px;">
+      <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:18px;">📋</span> Жалпы деректер — барлық 4 құжатқа
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--gray);display:block;margin-bottom:4px;">Фамилия</label>
+          <input id="allFam" type="text" placeholder="Иванов" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--gray);display:block;margin-bottom:4px;">Имя</label>
+          <input id="allIm" type="text" placeholder="Иван" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--gray);display:block;margin-bottom:4px;">Отчество</label>
+          <input id="allOtch" type="text" placeholder="Иванович" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--gray);display:block;margin-bottom:4px;">Туған күні (дата рождения)</label>
+          <input id="allDob" type="text" placeholder="01.01.2015" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--gray);display:block;margin-bottom:4px;">Жынысы (для справки кожвенеролога)</label>
+          <div style="display:flex;align-items:center;gap:16px;padding:10px 14px;background:#fff;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);height:40px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;">
+              <input type="radio" name="allGender" value="он" checked style="accent-color:#14b8a6;"> Ер (он)
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;">
+              <input type="radio" name="allGender" value="она" style="accent-color:#14b8a6;"> Әйел (она)
+            </label>
+          </div>
+        </div>
+      </div>
+      <button onclick="generateAllDocs()" style="width:100%;padding:13px 28px;background:linear-gradient(135deg,#14b8a6,#0d9488);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:0.3px;box-shadow:0 4px 12px rgba(20,184,166,0.35);">
+        🖨️ 4 құжатты бірдестен генерациялау
+      </button>
+    </div>
+
     <div style="padding:8px 4px 4px;">
 
       <div class="staff-task-card" id="taskMazok" style="border-left:3px solid rgba(34,164,85,0.5);">
@@ -5201,6 +5243,23 @@ html.dark .kz-tile { opacity:0.22; }
           </select>
         </div>
         <div class="reg-field"><label>Телефон нөмірі *</label><input type="tel" name="phone" required placeholder="+7 (___) ___-__-__"></div>
+
+        <!-- ФОТО (МІНДЕТТІ) -->
+        <div class="reg-field">
+          <label>📷 Профиль фотосы * <span style="font-size:11px;color:#e65100;font-weight:400;">(міндетті)</span></label>
+          <div id="regPhotoWrap" style="display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px;background:#f9fafb;border:2px dashed #d1d5db;border-radius:12px;cursor:pointer;" onclick="document.getElementById('regPhotoInput').click()">
+            <div id="regPhotoPlaceholder" style="text-align:center;">
+              <div style="font-size:40px;">📷</div>
+              <div style="font-size:13px;color:#6b7280;margin-top:4px;">Фото жүктеу үшін басыңыз</div>
+              <div style="font-size:11px;color:#9ca3af;">JPG, PNG — макс. 5 МБ</div>
+            </div>
+            <img id="regPhotoPreview" src="" alt="" style="display:none;width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--green);">
+            <div id="regPhotoName" style="display:none;font-size:12px;color:var(--green);font-weight:600;"></div>
+          </div>
+          <input type="file" id="regPhotoInput" accept="image/*" style="display:none;" onchange="regPhotoSelected(this)">
+          <div id="regPhotoError" style="color:#c0392b;font-size:12px;margin-top:6px;display:none;">⚠️ Фото жүктеу міндетті!</div>
+        </div>
+
         <button type="submit" class="reg-submit">✅ Тіркелу</button>
       </form>
     </div>
@@ -5865,8 +5924,75 @@ function checkStaffIIN() {
   document.getElementById('staffIINHidden').value = val;
   regShowStep('regStaff');
 }
+// ── ФОТО ТІРКЕЛУ ──
+var _regStaffPhoto = null;
+
+function regPhotoSelected(input) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('Файл өлшемі 5 МБ-тан аспауы керек!'); input.value = ''; return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var size = 300; canvas.width = size; canvas.height = size;
+      var ctx = canvas.getContext('2d');
+      var s = Math.min(img.width, img.height);
+      var sx = (img.width - s) / 2, sy = (img.height - s) / 2;
+      ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
+      _regStaffPhoto = canvas.toDataURL('image/jpeg', 0.88);
+      var prev = document.getElementById('regPhotoPreview');
+      var ph   = document.getElementById('regPhotoPlaceholder');
+      var nm   = document.getElementById('regPhotoName');
+      var wrap = document.getElementById('regPhotoWrap');
+      if (prev) { prev.src = _regStaffPhoto; prev.style.display = 'block'; }
+      if (ph) ph.style.display = 'none';
+      if (nm) { nm.textContent = '✅ ' + file.name; nm.style.display = 'block'; }
+      if (wrap) { wrap.style.borderColor = 'var(--green)'; wrap.style.background = '#f0fdf4'; }
+      var err = document.getElementById('regPhotoError');
+      if (err) err.style.display = 'none';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function staffChangePhoto(input, iin) {
+  var file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('5 МБ-тан аспауы керек!'); input.value = ''; return; }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = new Image();
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      var size = 300; canvas.width = size; canvas.height = size;
+      var ctx = canvas.getContext('2d');
+      var s = Math.min(img.width, img.height);
+      var sx = (img.width - s) / 2, sy = (img.height - s) / 2;
+      ctx.drawImage(img, sx, sy, s, s, 0, 0, size, size);
+      localStorage.setItem('az_photo_' + iin, canvas.toDataURL('image/jpeg', 0.88));
+      // Кабинетті жаңарту
+      if (typeof renderCabinet === 'function') renderCabinet();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function submitReg(e, role) {
   e.preventDefault();
+
+  // Фото міндетті тексеру (тек қызметкер үшін)
+  if (role === 'staff' && !_regStaffPhoto) {
+    var err = document.getElementById('regPhotoError');
+    if (err) err.style.display = 'block';
+    document.getElementById('regPhotoWrap').style.borderColor = '#c0392b';
+    document.getElementById('regPhotoWrap').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
   const fd = new FormData(e.target);
   const data = { role, ts: Date.now() };
   fd.forEach((v, k) => data[k] = v);
@@ -5875,6 +6001,13 @@ function submitReg(e, role) {
     all.push(data);
     localStorage.setItem('regList', JSON.stringify(all));
   } catch(_) {}
+
+  // Фотосын сақтау
+  if (role === 'staff' && _regStaffPhoto && data.iin) {
+    localStorage.setItem('az_photo_' + data.iin, _regStaffPhoto);
+    _regStaffPhoto = null;
+  }
+
   // Google Sheets-ке жіберу
   try {
     const roleLabel = role === 'patient' ? 'Пациент' : 'Қызметкер';
@@ -8581,11 +8714,23 @@ function renderStaffCabinet(box, user) {
     '<h2 style="color:var(--green-dark);margin-bottom:24px;">👤 Жеке кабинет</h2>' +
     // Profile
     '<div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);">' +
-      '<div style="display:flex;align-items:center;gap:18px;margin-bottom:16px;">' +
-        '<div style="width:64px;height:64px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:2rem;">👨‍⚕️</div>' +
-        '<div><div style="font-size:1.2rem;font-weight:800;color:var(--green-dark);">'+user.name+'</div>' +
-        '<div style="font-size:.85rem;color:#6b8c76;">'+(STAFF_ROLES[user.iin]||'Медицина қызметкері')+'</div></div>' +
-      '</div>' +
+      (function(){
+      var photoData = localStorage.getItem('az_photo_' + user.iin);
+      var avatarHtml = photoData
+        ? '<img src="'+photoData+'" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--green);flex-shrink:0;">'
+        : '<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--green),#0d9488);display:flex;align-items:center;justify-content:center;font-size:2.2rem;flex-shrink:0;">👤</div>';
+      return '<div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;">' +
+        '<div style="position:relative;">' +
+          avatarHtml +
+          '<label title="Фото өзгерту" style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.2);">📷<input type="file" accept="image/*" style="display:none;" onchange="staffChangePhoto(this,\''+user.iin+'\')"></label>' +
+        '</div>' +
+        '<div>' +
+          '<div style="font-size:1.25rem;font-weight:800;color:var(--green-dark);">'+user.name+'</div>' +
+          '<div style="font-size:.85rem;color:#6b8c76;">'+(STAFF_ROLES[user.iin]||'Медицина қызметкері')+'</div>' +
+          '<div style="font-size:.75rem;color:#9ca3af;margin-top:2px;">ЖСН: '+user.iin+'</div>' +
+        '</div>' +
+      '</div>';
+    })() +
       '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">' +
         '<div style="background:#f5faf7;border-radius:10px;padding:12px;"><div style="font-size:.75rem;color:#6b8c76;">ЖСН (ИИН)</div><div style="font-weight:700;">'+user.iin+'</div></div>' +
         '<div style="background:#f5faf7;border-radius:10px;padding:12px;"><div style="font-size:.75rem;color:#6b8c76;">Тест тапсыру</div><div style="font-weight:700;color:var(--green);">'+myQuiz.length+' рет</div></div>' +
@@ -9585,6 +9730,89 @@ function toggleStaffFolder(id) {
     return [f, i, o].filter(Boolean).join(' ');
   }
 
+  // ═══ 4 ҚҰЖАТ БІРДЕСТЕН ГЕНЕРАЦИЯЛАУ ═══
+  function generateAllDocs() {
+    var fam  = (document.getElementById('allFam').value||'').trim();
+    var im   = (document.getElementById('allIm').value||'').trim();
+    var otch = (document.getElementById('allOtch').value||'').trim();
+    var dob  = (document.getElementById('allDob').value||'').trim();
+    if (!fam || !im || !dob) { alert('Фамилия, Имя және туған күнін жазыңыз!'); return; }
+
+    var fio = [fam, im, otch].filter(Boolean).join(' ');
+
+    // Extract year from DOB (dd.mm.yyyy)
+    var parts = dob.split('.');
+    var god = parts.length >= 3 ? parts[2] : dob;
+
+    var genderR = document.querySelector('input[name="allGender"]:checked');
+    var gender  = genderR ? genderR.value : 'он';
+
+    var today  = new Date();
+    var minus3 = new Date(today); minus3.setDate(today.getDate()-3);
+    var dateIn  = mazokFormatDate(minus3);
+    var dateOut = mazokFormatDate(today);
+
+    // Increment all 4 counters
+    var mN = parseInt(localStorage.getItem('mazok_counter')||'0') + 1;
+    var gL = parseInt(localStorage.getItem('glist_counter')||'0');
+    var gN1 = gL+1, gN2 = gL+3, gN3 = gL+5;
+    var kN = parseInt(localStorage.getItem('kal_counter')||'0') + 1;
+    var zN = parseInt(localStorage.getItem('kozh_counter')||'0') + 1;
+
+    localStorage.setItem('mazok_counter', String(mN));
+    localStorage.setItem('glist_counter', String(gL+1));
+    localStorage.setItem('kal_counter',   String(kN));
+    localStorage.setItem('kozh_counter',  String(zN));
+
+    // Update counter displays
+    if(typeof mazokUpdateCounter==='function') mazokUpdateCounter();
+    if(typeof glistUpdateCounter==='function') glistUpdateCounter();
+    if(typeof kalUpdateCounter==='function')   kalUpdateCounter();
+    if(typeof kozhUpdateCounter==='function')  kozhUpdateCounter();
+
+    // Build 4 documents
+    var doc1 = mazokBuildForm(mN, fio, god, dateIn, dateOut, 'Мазок из зева и носа');
+
+    var doc2raw = mazokBuildForm(kN, fio, god, dateIn, dateOut, 'Кал');
+    var doc2 = doc2raw
+      .replace('(мазок из зева и носа на стафилококк)', '(Кал на кишечную группу)')
+      .replace('форма №057/у', 'форма №058/у')
+      .replace('форма №057/у', 'форма №058/у')
+      .replace('Мазок из зева и носа', 'Кал');
+
+    var doc3 = glistBuildDoc(gN1, gN2, gN3, fio, dob, 'Бак лаборатория', dateOut);
+
+    var kozhData = kozhBuildText(zN, fio, dob, gender, mazokFormatDate(today));
+    var doc4 = kozhBuildHTML(kozhData);
+
+    var pageBreak = '<div style="page-break-after:always;height:0;"></div>';
+
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+      '<title>4 құжат — ' + fio + '</title>' +
+      '<style>' +
+        '@page{size:A4;margin:10mm;}' +
+        'body{margin:0;padding:0;font-family:Times New Roman,serif;}' +
+        '@media print{.no-print{display:none!important}}' +
+        '.doc-section{page-break-after:always;}' +
+        '.doc-section:last-child{page-break-after:auto;}' +
+      '</style></head><body>' +
+      '<div class="no-print" style="padding:12px;background:#f0fdfa;text-align:center;font-family:Arial,sans-serif;border-bottom:2px solid #14b8a6;">' +
+        '<span style="font-size:14px;font-weight:700;color:#0d9488;margin-right:16px;">📄 4 құжат — ' + fio + '</span>' +
+        '<button onclick="window.print()" style="padding:10px 32px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:800;cursor:pointer;margin-right:8px;">🖨️ Барлығын басып шығару</button>' +
+        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
+      '</div>' +
+      '<div class="doc-section">' + doc1 + '</div>' +
+      '<div class="doc-section">' + doc2 + '</div>' +
+      '<div class="doc-section">' + doc3 + '</div>' +
+      '<div class="doc-section">' + doc4 + '</div>' +
+      '</body></html>';
+
+    var w = window.open('','_blank');
+    if (!w) { alert('Popup блокталған! Браузер параметрлерінде рұқсат етіңіз.'); return; }
+    w.document.write(html);
+    w.document.close();
+  }
+
   function mazokBuildForm(num, fio, god, dateIn, dateOut, material) {
     return '<div style="width:175mm;padding:5mm 8mm 8mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:10pt;page-break-inside:avoid;">' +
       '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:4mm;">' +
@@ -9769,222 +9997,4 @@ function toggleStaffFolder(id) {
     localStorage.setItem('glist_counter', String(last+1));
     glistUpdateCounter();
 
-    var docHtml = glistBuildDoc(n1, n2, n3, fio, dob, org, dateOut);
-
-    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Гельминт — ' + fio + '</title>' +
-      '<style>@page{size:A4;margin:10mm;} body{margin:0;padding:0;} @media print{.no-print{display:none;}}</style>' +
-      '</head><body>' +
-      '<div class="no-print" style="padding:10px;background:#eff6ff;text-align:center;font-family:Arial,sans-serif;">' +
-        '<button onclick="window.print()" style="padding:10px 28px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>' +
-        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
-      '</div>' +
-      docHtml +
-      '</body></html>';
-
-    var w = window.open('','_blank');
-    w.document.write(html);
-    w.document.close();
-
-    var hist = document.getElementById('glistHistory');
-    if (hist) {
-      hist.innerHTML = '<div style="margin-top:10px;padding:10px 14px;background:#eff6ff;border-left:3px solid #2563eb;border-radius:0 8px 8px 0;font-size:13px;">' +
-        '<span style="font-weight:700;color:#2563eb;">✓ Жасалды: №' + n1 + '-' + n2 + '-' + n3 + '</span> — ' + fio + ', ' + dob + ' — ' + dateOut +
-      '</div>' + hist.innerHTML;
-    }
-  }
-
-  function glistPreview() {
-    var fio = glistGetFIO();
-    var dob = (document.getElementById('glistDob').value||'').trim();
-    if (!fio || !dob) { alert('ФИО және туған күнін жазыңыз!'); return; }
-    var last = parseInt(localStorage.getItem('glist_counter')||'0');
-    var n1 = last+1, n2 = last+3, n3 = last+5;
-    var hist = document.getElementById('glistHistory');
-    if (!hist) return;
-    hist.innerHTML = '<div style="margin-top:12px;padding:14px 16px;background:#eff6ff;border:1.5px solid rgba(37,99,235,0.3);border-radius:10px;">' +
-      '<div style="font-size:12px;font-weight:700;color:#2563eb;margin-bottom:6px;">👁 Алдын ала қарау:</div>' +
-      '<div style="font-size:13px;"><b>№' + n1 + '-' + n2 + '-' + n3 + '</b> — ' + fio + ', ' + dob + ' — Яйца гельминтов / Простейшие / Энтеробиоз</div>' +
-    '</div>';
-  }
-
-  function glistInit() {
-    glistInitDate();
-    glistUpdateCounter();
-  }
-
-  // ===== КАЛ НА КИШЕЧНУЮ ГРУППУ =====
-  function kalInitDates() {
-    var today  = new Date();
-    var minus3 = new Date(today); minus3.setDate(today.getDate()-3);
-    var eIn  = document.getElementById('kalDateIn');
-    var eOut = document.getElementById('kalDateOut');
-    if (eIn)  eIn.textContent  = mazokFormatDate(minus3);
-    if (eOut) eOut.textContent = mazokFormatDate(today);
-  }
-  function kalUpdateCounter() {
-    var last = parseInt(localStorage.getItem('kal_counter')||'0');
-    var eL = document.getElementById('kalLastNum');
-    var eN = document.getElementById('kalNextNum');
-    if (eL) eL.textContent = last===0 ? '—' : '№'+last;
-    if (eN) eN.textContent = '№'+(last+1);
-  }
-  function kalResetCounter() {
-    if (!confirm('Счётчикті нөлге қоясыз ба?')) return;
-    localStorage.setItem('kal_counter','0');
-    kalUpdateCounter();
-    var h=document.getElementById('kalHistory'); if(h) h.innerHTML='';
-  }
-  function kalGetFIO() {
-    var f=(document.getElementById('kalFam').value||'').trim();
-    var i=(document.getElementById('kalIm').value||'').trim();
-    var o=(document.getElementById('kalOtch').value||'').trim();
-    return [f,i,o].filter(Boolean).join(' ');
-  }
-  function kalGenerate() {
-    var fio=kalGetFIO();
-    var god=(document.getElementById('kalGod').value||'').trim();
-    if(!fio||!god){alert('ФИО және жыл туған күнін жазыңыз!');return;}
-    var today=new Date(), minus3=new Date(today);
-    minus3.setDate(today.getDate()-3);
-    var dateIn=mazokFormatDate(minus3), dateOut=mazokFormatDate(today);
-    var last=parseInt(localStorage.getItem('kal_counter')||'0');
-    var n=last+1;
-    localStorage.setItem('kal_counter',String(n));
-    kalUpdateCounter();
-    var form = mazokBuildForm(n, fio, god, dateIn, dateOut, 'Кал');
-    // Fix title and form number in the printed doc
-    form = form.replace('Результат микробиологических исследований','Результат микробиологических исследований');
-    form = form.replace('(мазок из зева и носа на стафилококк)','(Кал на кишечную группу)');
-    form = form.replace('форма №057/у','форма №058/у');
-    form = form.replace('Мазок из зева и носа','Кал');
-    var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Кал на кишечную — '+fio+'</title>'+
-      '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;} @media print{.no-print{display:none;}}</style>'+
-      '</head><body>'+
-      '<div class="no-print" style="padding:10px;background:#faf5ff;text-align:center;font-family:Arial,sans-serif;">'+
-        '<button onclick="window.print()" style="padding:10px 28px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>'+
-        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>'+
-      '</div>'+form+'</body></html>';
-    var w=window.open('','_blank'); w.document.write(html); w.document.close();
-    var hist=document.getElementById('kalHistory');
-    if(hist) hist.innerHTML='<div style="margin-top:10px;padding:10px 14px;background:#faf5ff;border-left:3px solid #7c3aed;border-radius:0 8px 8px 0;font-size:13px;">'+
-      '<span style="font-weight:700;color:#7c3aed;">✓ Жасалды: №'+n+'</span> — '+fio+', '+god+' г.р. — '+dateOut+'</div>'+hist.innerHTML;
-  }
-  function kalPreview() {
-    var fio=kalGetFIO();
-    var god=(document.getElementById('kalGod').value||'').trim();
-    if(!fio||!god){alert('ФИО және жыл туған күнін жазыңыз!');return;}
-    var today=new Date(), minus3=new Date(today); minus3.setDate(today.getDate()-3);
-    var last=parseInt(localStorage.getItem('kal_counter')||'0');
-    var hist=document.getElementById('kalHistory'); if(!hist) return;
-    hist.innerHTML='<div style="margin-top:12px;padding:14px 16px;background:#faf5ff;border:1.5px solid rgba(124,58,237,0.3);border-radius:10px;">'+
-      '<div style="font-size:12px;font-weight:700;color:#7c3aed;margin-bottom:6px;">👁 Алдын ала қарау:</div>'+
-      '<div style="font-size:13px;"><b>№'+(last+1)+'</b> — '+fio+', '+god+' г.р. — Кал на кишечную группу — '+mazokFormatDate(minus3)+' / '+mazokFormatDate(today)+'</div>'+
-    '</div>';
-  }
-  function kalInit() { kalInitDates(); kalUpdateCounter(); }
-
-  function rezToggle(id) {
-    var body  = document.getElementById(id);
-    var arrow = document.getElementById(id + 'Arrow');
-    if (!body) return;
-    var open = body.style.display !== 'none';
-    body.style.display = open ? 'none' : '';
-    if (arrow) arrow.style.transform = open ? '' : 'rotate(180deg)';
-    if (!open) {
-      if (id==='rez1') { mazokInitDates(); mazokUpdateCounter(); }
-      if (id==='rez2') { glistInitDate(); glistUpdateCounter(); }
-      if (id==='rez3') { kalInitDates(); kalUpdateCounter(); }
-    }
-  }
-
-  // ===== СПРАВКА КОЖВЕНЕРОЛОГА =====
-  function kozhInitDate() {
-    var el = document.getElementById('kozhDateOut');
-    if (el) el.textContent = mazokFormatDate(new Date());
-  }
-  function kozhUpdateCounter() {
-    var last = parseInt(localStorage.getItem('kozh_counter')||'0');
-    var eL = document.getElementById('kozhLastNum');
-    var eN = document.getElementById('kozhNextNum');
-    if (eL) eL.textContent = last===0 ? '—' : '№'+last;
-    if (eN) eN.textContent = '№'+(last+1);
-  }
-  function kozhResetCounter() {
-    if (!confirm('Счётчикті нөлге қоясыз ба?')) return;
-    localStorage.setItem('kozh_counter','0');
-    kozhUpdateCounter();
-    var h=document.getElementById('kozhHistory'); if(h) h.innerHTML='';
-  }
-  function kozhGetFIO() {
-    var f=(document.getElementById('kozhFam').value||'').trim();
-    var i=(document.getElementById('kozhIm').value||'').trim();
-    var o=(document.getElementById('kozhOtch').value||'').trim();
-    return [f,i,o].filter(Boolean).join(' ');
-  }
-  function kozhGetGender() {
-    var r = document.querySelector('input[name="kozhGender"]:checked');
-    return r ? r.value : 'он(а)';
-  }
-  function kozhBuildText(num, fio, dob, gender, date) {
-    var today = new Date();
-    var dd=String(today.getDate()).padStart(2,'0');
-    var mm=String(today.getMonth()+1).padStart(2,'0');
-    var yyyy=today.getFullYear();
-    return {
-      num: num, fio: fio, dob: dob, gender: gender,
-      date: date, dd: dd, mm: mm, yyyy: yyyy
-    };
-  }
-  function kozhBuildHTML(d) {
-    return '<div style="width:180mm;margin:0 auto;padding:15mm 20mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:12pt;line-height:2;">' +
-      '<div style="text-align:center;font-size:14pt;font-weight:bold;margin-bottom:10mm;">Справка №&nbsp;<u>&nbsp;&nbsp;' + d.num + '&nbsp;&nbsp;</u></div>' +
-      '<div style="text-align:justify;margin-bottom:6mm;">' +
-        '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>' + d.fio + '</b>, ' + d.dob + ' года рождения в том что ' + d.gender +
-        ' действительно «ДУ» у врача кожвенеролога не состоит по архивным данным не значится.' +
-      '</div>' +
-      '<div style="text-align:center;margin-bottom:12mm;">Справка дана для предъявления по месту требования.</div>' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10mm;">' +
-        '<div>Дата &nbsp;<u>&nbsp;&nbsp;' + d.dd + '&nbsp;</u>&nbsp;.&nbsp;<u>&nbsp;' + d.mm + '&nbsp;</u>&nbsp;.&nbsp;' + d.yyyy + '&nbsp;год</div>' +
-        '<div>Врач &nbsp;<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u></div>' +
-      '</div>' +
-    '</div>';
-  }
-  function kozhPreview() {
-    var fio=kozhGetFIO(), dob=(document.getElementById('kozhDob').value||'').trim();
-    if(!fio||!dob){alert('ФИО және туған күнін жазыңыз!');return;}
-    var gender=kozhGetGender(), date=mazokFormatDate(new Date());
-    var last=parseInt(localStorage.getItem('kozh_counter')||'0');
-    var box=document.getElementById('kozhPreviewBox');
-    if(!box) return;
-    var d=kozhBuildText(last+1,fio,dob,gender,date);
-    box.style.display='';
-    box.innerHTML=
-      '<div style="font-size:11px;font-weight:700;color:#dc2626;margin-bottom:8px;">👁 Алдын ала қарау:</div>'+
-      '<b>Справка №'+(last+1)+'</b><br>'+
-      fio+', '+dob+' года рождения в том что <b>'+gender+'</b> действительно «ДУ» у врача кожвенеролога не состоит...<br>'+
-      '<span style="font-size:11px;color:var(--gray);">Дата: '+date+'</span>';
-  }
-  function kozhGenerate() {
-    var fio=kozhGetFIO(), dob=(document.getElementById('kozhDob').value||'').trim();
-    if(!fio||!dob){alert('ФИО және туған күнін жазыңыз!');return;}
-    var gender=kozhGetGender(), date=mazokFormatDate(new Date());
-    var last=parseInt(localStorage.getItem('kozh_counter')||'0');
-    var n=last+1;
-    localStorage.setItem('kozh_counter',String(n));
-    kozhUpdateCounter();
-    var d=kozhBuildText(n,fio,dob,gender,date);
-    var bodyHtml=kozhBuildHTML(d);
-    var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Справка кожвенеролога — '+fio+'</title>'+
-      '<style>@page{size:A4;margin:0;} body{margin:0;padding:0;} @media print{.no-print{display:none;}}</style>'+
-      '</head><body>'+
-      '<div class="no-print" style="padding:10px;background:#fff5f5;text-align:center;font-family:Arial,sans-serif;">'+
-        '<button onclick="window.print()" style="padding:10px 28px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>'+
-        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>'+
-      '</div>'+bodyHtml+'</body></html>';
-    var w=window.open('','_blank'); w.document.write(html); w.document.close();
-    var hist=document.getElementById('kozhHistory');
-    if(hist) hist.innerHTML='<div style="margin-top:10px;padding:10px 14px;background:#fff5f5;border-left:3px solid #dc2626;border-radius:0 8px 8px 0;font-size:13px;">'+
-      '<span style="font-weight:700;color:#dc2626;">✓ Жасалды: №'+n+'</span> — '+fio+', '+dob+' — '+date+'</div>'+hist.innerHTML;
-  }
-  function kozhInit() { kozhInitDate(); kozhUpdateCounter(); }
-</script></bod
+    var docHtml = glistBuildDoc(n1, n2, n3
