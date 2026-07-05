@@ -4609,7 +4609,7 @@ html.dark .kz-tile { opacity:0.22; }
                   <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(34,164,85,0.06);border-radius:10px;border:1px solid rgba(34,164,85,0.2);">
                     <span style="font-size:13px;font-weight:600;color:var(--dark);">Соңғы берілген №:</span>
                     <span id="mazokLastNum" style="font-size:20px;font-weight:900;color:var(--green);">—</span>
-                    <span style="font-size:12px;color:var(--gray);margin-left:4px;">Келесі жазба: <b id="mazokNextNums" style="color:var(--orange);">—</b></span>
+                    <span style="font-size:12px;color:var(--gray);margin-left:4px;">Келесі № : <b id="mazokNextNums" style="color:var(--orange);">—</b></span>
                     <button onclick="mazokResetCounter()" style="margin-left:auto;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(240,120,48,0.3);background:transparent;color:var(--orange);font-size:11px;font-weight:700;cursor:pointer;">Нөлден бастау</button>
                   </div>
 
@@ -4664,6 +4664,75 @@ html.dark .kz-tile { opacity:0.22; }
               </div>
             </div>
             <!-- /МАЗОК ГЕНЕРАТОР -->
+
+            <!-- ГЕЛЬМИНТ АНАЛИЗЫ -->
+            <div class="staff-task-card" id="taskGlist">
+              <div class="staff-task-head" onclick="toggleStaffTask('taskGlistBody')" style="cursor:pointer;">
+                <div class="staff-task-icon">🔬</div>
+                <div class="staff-task-info">
+                  <div class="staff-task-title">Анализ на яйца гельминтов, простейшие, соскоб на энтеробиоз</div>
+                  <div class="staff-task-desc">3 анализ бір бланкте — форма №221/у</div>
+                </div>
+                <div class="staff-task-arrow">▼</div>
+              </div>
+              <div class="staff-task-body" id="taskGlistBody" style="display:none;">
+                <div style="padding:20px 16px;">
+
+                  <!-- СЧЁТЧИК -->
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(37,99,235,0.06);border-radius:10px;border:1px solid rgba(37,99,235,0.2);">
+                    <span style="font-size:13px;font-weight:600;color:var(--dark);">Соңғы берілген №:</span>
+                    <span id="glistLastNum" style="font-size:20px;font-weight:900;color:#2563eb;">—</span>
+                    <span style="font-size:12px;color:var(--gray);margin-left:4px;">Келесі № : <b id="glistNextNums" style="color:var(--orange);">—</b></span>
+                    <button onclick="glistResetCounter()" style="margin-left:auto;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(37,99,235,0.3);background:transparent;color:#2563eb;font-size:11px;font-weight:700;cursor:pointer;">Нөлден бастау</button>
+                  </div>
+
+                  <!-- ФОРМА -->
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
+                    <div>
+                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Фамилия</label>
+                      <input id="glistFam" type="text" placeholder="Иванов" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+                    </div>
+                    <div>
+                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Имя</label>
+                      <input id="glistIm" type="text" placeholder="Иван" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+                    </div>
+                    <div>
+                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Отчество</label>
+                      <input id="glistOtch" type="text" placeholder="Иванович" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+                    </div>
+                    <div>
+                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Туған күні (Дата рождения)</label>
+                      <input id="glistDob" type="text" placeholder="01.01.2015" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+                    </div>
+                    <div>
+                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Бөлімше / Учреждение <span style="font-weight:400;color:var(--gray);font-size:11px;">(міндетті емес)</span></label>
+                      <input id="glistOrg" type="text" placeholder="Мектеп №5" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;box-sizing:border-box;">
+                    </div>
+                    <div style="display:flex;flex-direction:column;justify-content:flex-end;">
+                      <div style="padding:10px 14px;background:rgba(37,99,235,0.04);border-radius:9px;border:1px solid rgba(37,99,235,0.15);">
+                        <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Дата выдачи анализа (авто)</div>
+                        <div id="glistDateOut" style="font-size:15px;font-weight:800;color:#2563eb;"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- БАТЫРМАЛАР -->
+                  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button onclick="glistGenerate()" style="padding:11px 28px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;flex:1;min-width:180px;">
+                      🖨️ Басып шығару / Генерациялау
+                    </button>
+                    <button onclick="glistPreview()" style="padding:11px 20px;background:rgba(37,99,235,0.1);color:#2563eb;border:1.5px solid rgba(37,99,235,0.3);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">
+                      👁 Алдын ала қарау
+                    </button>
+                  </div>
+
+                  <!-- ТАРИХ -->
+                  <div id="glistHistory" style="margin-top:16px;"></div>
+
+                </div>
+              </div>
+            </div>
+            <!-- /ГЕЛЬМИНТ АНАЛИЗЫ -->
 
           </div>
         </div>
@@ -6071,7 +6140,7 @@ function toggleSchedRow(rowId, expandId) {
 }
 
 // ─── STAFF TASKS ─────────────────────────────────────────────────────────────
-var _TOOL_NAMES = {"taskRpnBody": "РПН тазалау", "taskScrPlanBody": "Скрининг жоспар", "taskVaccBody": "Екпе калькулятор", "taskRpnDiffBody": "Тіркелгендер мен шыққандарды анықтау", "taskWhiteCodeBody": "Белый код", "taskDezBody": "Дезинфекция", "taskDez2Body": "Дезинфекция 2", "taskQuartzBody": "Кварц", "taskQuizBody": "Тест", "taskIncidentBody": "Инцидент", "taskPatientMapBody": "Пациенттер картасы", "taskDez3Body": "Ағымды 5 күн", "taskDez4Body": "Аптасына дайындау", "taskDez5Body": "Айына дайындау", "taskDezSummaryBody": "Жалпы қорытынды", "taskJournalsBody": "Журналдар үлгісі", "taskMazokBody": "Мазок генератор"};
+var _TOOL_NAMES = {"taskRpnBody": "РПН тазалау", "taskScrPlanBody": "Скрининг жоспар", "taskVaccBody": "Екпе калькулятор", "taskRpnDiffBody": "Тіркелгендер мен шыққандарды анықтау", "taskWhiteCodeBody": "Белый код", "taskDezBody": "Дезинфекция", "taskDez2Body": "Дезинфекция 2", "taskQuartzBody": "Кварц", "taskQuizBody": "Тест", "taskIncidentBody": "Инцидент", "taskPatientMapBody": "Пациенттер картасы", "taskDez3Body": "Ағымды 5 күн", "taskDez4Body": "Аптасына дайындау", "taskDez5Body": "Айына дайындау", "taskDezSummaryBody": "Жалпы қорытынды", "taskJournalsBody": "Журналдар үлгісі", "taskMazokBody": "Мазок генератор", "taskGlistBody": "Гельминт анализы"};
 function toggleStaffTask(bodyId) {
   const body = document.getElementById(bodyId);
   if (!body) return;
@@ -6870,6 +6939,7 @@ function resetDez2() {
       if (id === 'taskDez5Body') { setTimeout(renderDezMonthlyTable, 50); }
       if (id === 'taskDezSummaryBody') { setTimeout(renderDezSummary, 50); }
     if (id === 'taskMazokBody') { setTimeout(mazokInit, 50); }
+    if (id === 'taskGlistBody') { setTimeout(glistInit, 50); }
     };
   })();
 
@@ -9389,7 +9459,7 @@ function submitBlogComment(postId) {
     var elLast = document.getElementById('mazokLastNum');
     var elNext = document.getElementById('mazokNextNums');
     if (elLast) elLast.textContent = last === 0 ? '—' : '№' + last;
-    if (elNext) elNext.textContent = '№' + (last+1) + ' және №' + (last+2);
+    if (elNext) elNext.textContent = '№' + (last+1);
   }
 
   function mazokResetCounter() {
@@ -9445,31 +9515,28 @@ function submitBlogComment(postId) {
     var dateOut = mazokFormatDate(today);
 
     var last = parseInt(localStorage.getItem('mazok_counter') || '0');
-    var n1 = last + 1, n2 = last + 2;
-    localStorage.setItem('mazok_counter', String(n2));
+    var n1 = last + 1;
+    localStorage.setItem('mazok_counter', String(n1));
     mazokUpdateCounter();
 
-    var form1 = mazokBuildForm(n1, fio, god, dateIn, dateOut, 'Мазок из зева');
-    var form2 = mazokBuildForm(n2, fio, god, dateIn, dateOut, 'Мазок из носа');
+    var form1 = mazokBuildForm(n1, fio, god, dateIn, dateOut, 'Мазок из зева и носа');
 
     var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Мазок — ' + fio + '</title>' +
-      '<style>@page{size:A4;margin:10mm;} body{margin:0;padding:0;} ' +
-      '.page-row{display:flex;gap:5mm;justify-content:center;flex-wrap:wrap;} ' +
+      '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} ' +
       '@media print{button{display:none;}.no-print{display:none;}}' +
       '</style></head><body>' +
       '<div class="no-print" style="padding:10px;background:#f0f9ff;text-align:center;font-family:Arial,sans-serif;">' +
         '<button onclick="window.print()" style="padding:10px 28px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>' +
         '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
       '</div>' +
-      '<div class="page-row">' + form1 + form2 + '</div>' +
+      form1 +
       '</body></html>';
 
     var w = window.open('','_blank');
     w.document.write(html);
     w.document.close();
 
-    // History
-    mazokAddHistory(n1, n2, fio, god, dateOut);
+    mazokAddHistory(n1, fio, god, dateOut);
   }
 
   function mazokPreview() {
@@ -9479,21 +9546,20 @@ function submitBlogComment(postId) {
     var today  = new Date();
     var minus3 = new Date(today); minus3.setDate(today.getDate()-3);
     var last   = parseInt(localStorage.getItem('mazok_counter')||'0');
-    var n1 = last+1, n2 = last+2;
+    var n1 = last + 1;
     var hist = document.getElementById('mazokHistory');
     if (!hist) return;
     hist.innerHTML = '<div style="margin-top:12px;padding:14px 16px;background:#f0fdf4;border:1.5px solid rgba(34,164,85,0.3);border-radius:10px;">' +
       '<div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px;">👁 Алдын ала қарау:</div>' +
-      '<div style="font-size:13px;"><b>№' + n1 + '</b> — ' + fio + ', ' + god + 'г.р. — Мазок из зева — ' + mazokFormatDate(minus3) + ' / ' + mazokFormatDate(today) + '</div>' +
-      '<div style="font-size:13px;margin-top:4px;"><b>№' + n2 + '</b> — ' + fio + ', ' + god + 'г.р. — Мазок из носа — ' + mazokFormatDate(minus3) + ' / ' + mazokFormatDate(today) + '</div>' +
+      '<div style="font-size:13px;"><b>№' + n1 + '</b> — ' + fio + ', ' + god + ' г.р. — Мазок из зева и носа — ' + mazokFormatDate(minus3) + ' / ' + mazokFormatDate(today) + '</div>' +
     '</div>';
   }
 
-  function mazokAddHistory(n1, n2, fio, god, dateOut) {
+  function mazokAddHistory(n1, fio, god, dateOut) {
     var hist = document.getElementById('mazokHistory');
     if (!hist) return;
     var item = '<div style="margin-top:10px;padding:10px 14px;background:#f0fdf4;border-left:3px solid var(--green);border-radius:0 8px 8px 0;font-size:13px;">' +
-      '<span style="font-weight:700;color:var(--green);">✓ Жасалды: №' + n1 + '–' + n2 + '</span> — ' + fio + ', ' + god + ' г.р. — ' + dateOut +
+      '<span style="font-weight:700;color:var(--green);">✓ Жасалды: №' + n1 + '</span> — ' + fio + ', ' + god + ' г.р. — ' + dateOut +
     '</div>';
     hist.innerHTML = item + hist.innerHTML;
   }
@@ -9501,5 +9567,140 @@ function submitBlogComment(postId) {
   function mazokInit() {
     mazokInitDates();
     mazokUpdateCounter();
+  }
+
+  // ===== ГЕЛЬМИНТ / ЭНТЕРОБИОЗ ГЕНЕРАТОР =====
+  function glistInitDate() {
+    var el = document.getElementById('glistDateOut');
+    if (el) el.textContent = mazokFormatDate(new Date());
+  }
+
+  function glistUpdateCounter() {
+    var last = parseInt(localStorage.getItem('glist_counter') || '0');
+    var elLast = document.getElementById('glistLastNum');
+    var elNext = document.getElementById('glistNextNums');
+    if (elLast) elLast.textContent = last === 0 ? '—' : '№' + (last-2) + '–' + last;
+    if (elNext) {
+      var n = last + 1;
+      elNext.textContent = '№' + n + '–' + (n+2);
+    }
+  }
+
+  function glistResetCounter() {
+    if (!confirm('Счётчикті нөлге қоясыз ба?')) return;
+    localStorage.setItem('glist_counter', '0');
+    glistUpdateCounter();
+    var hist = document.getElementById('glistHistory');
+    if (hist) hist.innerHTML = '';
+  }
+
+  function glistGetFIO() {
+    var f = (document.getElementById('glistFam').value||'').trim();
+    var i = (document.getElementById('glistIm').value||'').trim();
+    var o = (document.getElementById('glistOtch').value||'').trim();
+    return [f, i, o].filter(Boolean).join(' ');
+  }
+
+  function glistBuildDoc(n1, n2, n3, fio, dob, org, dateOut) {
+    var orgLine = org ? org : '';
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2,'0');
+    var mm = String(today.getMonth()+1).padStart(2,'0');
+    var yyyy = today.getFullYear();
+    return '<div style="width:180mm;margin:0 auto;padding:5mm 8mm 10mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:10pt;">' +
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:5mm;">' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;width:55%;">Қазақстан Республикасы Денсаулық сақтау министірлігі<br>Министерство здравоохранения Республики Казахстан</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;text-align:center;">ҚҰЖЖ бойынша ұйым коды<br>Код организации по ОКПО<br><br></td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Ұйымнын атауы<br>Наименование организации<br><b>ТОО «Азия-Мед МО»</b></td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Медицинская документация форма №221/у<br>Утверждена приказом министра здравоохранения Республики Казахстан 30 октября 2010г №175</td>' +
+        '</tr>' +
+      '</table>' +
+      '<div style="text-align:center;font-size:13pt;font-weight:bold;margin:4mm 0 1mm;">Анализ &nbsp; №' + n1 + '-' + n2 + '-' + n3 + '</div>' +
+      '<div style="text-align:center;font-size:9.5pt;margin-bottom:5mm;">( на яйца гельминтов, &nbsp; на простейшие, &nbsp; соскоб на энтеробиоз )</div>' +
+      '<div style="margin-bottom:3mm;font-size:10pt;">ТАӘ (ФИО) &nbsp;<u style="letter-spacing:1px;">&nbsp;&nbsp;<b>' + fio + '</b>&nbsp;&nbsp;</u></div>' +
+      '<div style="margin-bottom:3mm;font-size:10pt;">Туған күні (дата рождения) &nbsp;<u>&nbsp;&nbsp;<b>' + dob + '</b>&nbsp;&nbsp;</u></div>' +
+      '<div style="margin-bottom:5mm;font-size:10pt;">Бөлімше (отделение) &nbsp;<u>&nbsp;&nbsp;' + orgLine + '&nbsp;&nbsp;</u> &nbsp;&nbsp; Учереждение &nbsp;<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u></div>' +
+      '<table style="width:100%;border-collapse:collapse;margin-bottom:6mm;">' +
+        '<tr style="background:#f5f5f5;">' +
+          '<th style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:left;font-weight:bold;">Анализ</th>' +
+          '<th style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:center;font-weight:bold;">Результат</th>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:10pt;">Соскоб на энтеробиоз</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:10pt;text-align:center;">отр</td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:10pt;">Кал на яйца гельминты</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:10pt;text-align:center;">отр</td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:10pt;">Простейшие</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:10pt;text-align:center;">отр</td>' +
+        '</tr>' +
+      '</table>' +
+      '<div style="font-size:10pt;display:flex;align-items:flex-end;gap:8mm;">' +
+        '<span><u>&nbsp;&nbsp;' + dd + '&nbsp;&nbsp;</u> . <u>&nbsp;&nbsp;' + mm + '&nbsp;&nbsp;</u> . ' + yyyy + ' жылғы (года)</span>' +
+        '<span style="margin-left:auto;font-size:9pt;color:#555;">талдау берілген күн (дата выдачи анализа) &nbsp;&nbsp;&nbsp; орындаушының қолы (подпись исполнителя) _____________</span>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function glistGenerate() {
+    var fio = glistGetFIO();
+    var dob = (document.getElementById('glistDob').value||'').trim();
+    if (!fio || !dob) { alert('ФИО және туған күнін жазыңыз!'); return; }
+    var org = (document.getElementById('glistOrg').value||'').trim();
+
+    var today   = new Date();
+    var dateOut = mazokFormatDate(today);
+    var last    = parseInt(localStorage.getItem('glist_counter') || '0');
+    var n1 = last+1, n2 = last+2, n3 = last+3;
+    localStorage.setItem('glist_counter', String(n3));
+    glistUpdateCounter();
+
+    var docHtml = glistBuildDoc(n1, n2, n3, fio, dob, org, dateOut);
+
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Гельминт — ' + fio + '</title>' +
+      '<style>@page{size:A4;margin:10mm;} body{margin:0;padding:0;} @media print{.no-print{display:none;}}</style>' +
+      '</head><body>' +
+      '<div class="no-print" style="padding:10px;background:#eff6ff;text-align:center;font-family:Arial,sans-serif;">' +
+        '<button onclick="window.print()" style="padding:10px 28px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>' +
+        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
+      '</div>' +
+      docHtml +
+      '</body></html>';
+
+    var w = window.open('','_blank');
+    w.document.write(html);
+    w.document.close();
+
+    var hist = document.getElementById('glistHistory');
+    if (hist) {
+      hist.innerHTML = '<div style="margin-top:10px;padding:10px 14px;background:#eff6ff;border-left:3px solid #2563eb;border-radius:0 8px 8px 0;font-size:13px;">' +
+        '<span style="font-weight:700;color:#2563eb;">✓ Жасалды: №' + n1 + '–' + n3 + '</span> — ' + fio + ', ' + dob + ' — ' + dateOut +
+      '</div>' + hist.innerHTML;
+    }
+  }
+
+  function glistPreview() {
+    var fio = glistGetFIO();
+    var dob = (document.getElementById('glistDob').value||'').trim();
+    if (!fio || !dob) { alert('ФИО және туған күнін жазыңыз!'); return; }
+    var last = parseInt(localStorage.getItem('glist_counter')||'0');
+    var n1 = last+1, n3 = last+3;
+    var hist = document.getElementById('glistHistory');
+    if (!hist) return;
+    hist.innerHTML = '<div style="margin-top:12px;padding:14px 16px;background:#eff6ff;border:1.5px solid rgba(37,99,235,0.3);border-radius:10px;">' +
+      '<div style="font-size:12px;font-weight:700;color:#2563eb;margin-bottom:6px;">👁 Алдын ала қарау:</div>' +
+      '<div style="font-size:13px;"><b>№' + n1 + '–' + n3 + '</b> — ' + fio + ', ' + dob + ' — Яйца гельминтов / Простейшие / Энтеробиоз</div>' +
+    '</div>';
+  }
+
+  function glistInit() {
+    glistInitDate();
+    glistUpdateCounter();
   }
 </script></body></html>
