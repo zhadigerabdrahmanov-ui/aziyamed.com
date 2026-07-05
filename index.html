@@ -2181,6 +2181,75 @@ html.dark .kz-tile { opacity:0.22; }
       .staff-folder-body { background: rgba(250,250,250,0.5); }
       .staff-folder-body .staff-task-card { border: none; border-bottom: 1px solid rgba(0,0,0,0.05); border-radius: 0; margin-bottom: 0; }
       .staff-folder-body .staff-task-card:last-child { border-bottom: none; }
+
+  /* ── KURALDAR TILES ── */
+  .kuraldar-tiles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+  .kuraldar-tile {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 28px 16px 24px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    border: 2px solid transparent;
+    transition: transform .2s, box-shadow .2s, border-color .2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    min-height: 160px;
+    justify-content: center;
+  }
+  .kuraldar-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.11);
+    border-color: rgba(var(--tile-color),0.35);
+  }
+  .kuraldar-tile.active {
+    border-color: rgba(var(--tile-color),0.6);
+    background: linear-gradient(135deg, rgba(var(--tile-color),0.06), rgba(var(--tile-color),0.02));
+  }
+  .kuraldar-tile-icon {
+    font-size: 36px;
+    width: 64px; height: 64px;
+    border-radius: 16px;
+    background: rgba(var(--tile-color),0.1);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto;
+  }
+  .kuraldar-tile-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1.3;
+  }
+  .kuraldar-tile-desc {
+    font-size: 11px;
+    color: var(--gray);
+    line-height: 1.4;
+  }
+  .kuraldar-panel-content {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 24px 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    animation: panelFadeIn .25s ease;
+  }
+  @keyframes panelFadeIn {
+    from { opacity:0; transform:translateY(10px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  @media(max-width:600px) {
+    .kuraldar-tiles-grid { grid-template-columns: repeat(2, 1fr); gap:12px; }
+    .kuraldar-tile { min-height:130px; padding:20px 10px; }
+    .kuraldar-tile-icon { font-size:28px; width:52px; height:52px; }
+  }
+
 </style>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
@@ -3787,26 +3856,45 @@ html.dark .kz-tile { opacity:0.22; }
 
     <!-- Тапсырмалар торы -->
     <div class="staff-grid reveal">
+<div class="kuraldar-tiles-grid">
+  <div class="kuraldar-tile" id="tileiin" onclick="openKuralPanel('iin')" style="--tile-color:37,99,235;">
+    <div class="kuraldar-tile-icon">🪪</div>
+    <div class="kuraldar-tile-title">Толық ИИН генерациясы</div>
+    <div class="kuraldar-tile-desc">РПН тізімін өңдеу, салыстыру, белый код</div>
+  </div>
+  <div class="kuraldar-tile" id="tileplan" onclick="openKuralPanel('plan')" style="--tile-color:34,164,85;">
+    <div class="kuraldar-tile-icon">📅</div>
+    <div class="kuraldar-tile-title">Жоспар жасау генерациясы</div>
+    <div class="kuraldar-tile-desc">Скрининг және вакцина жоспарлары</div>
+  </div>
+  <div class="kuraldar-tile" id="tiledez" onclick="openKuralPanel('dez')" style="--tile-color:240,120,48;">
+    <div class="kuraldar-tile-icon">🧴</div>
+    <div class="kuraldar-tile-title">Дезинфекция</div>
+    <div class="kuraldar-tile-desc">Дезинфекциялық есептегіштер мен жоспарлар</div>
+  </div>
+  <div class="kuraldar-tile" id="tilesanat" onclick="openKuralPanel('sanat')" style="--tile-color:20,184,166;">
+    <div class="kuraldar-tile-icon">🏕️</div>
+    <div class="kuraldar-tile-title">Санаторияға құжаттар</div>
+    <div class="kuraldar-tile-desc">Мазок, гельминт, кал, кожвенеролог</div>
+  </div>
+  <div class="kuraldar-tile" id="tilejournals" onclick="openKuralPanel('journals')" style="--tile-color:139,92,246;">
+    <div class="kuraldar-tile-icon">📓</div>
+    <div class="kuraldar-tile-title">Журналдар үлгісі</div>
+    <div class="kuraldar-tile-desc">Дезинфекция, екпе, медотвод журналдары</div>
+  </div>
+</div>
 
-      <!-- РПН тізімін өңдеу — карточка -->
-      
-      <!-- 1. ИИН ГЕНЕРАЦИЯСЫ -->
-      <div class="staff-folder" id="folderIin" style="border-color:rgba(37,99,235,0.25);">
-        <div class="staff-folder-head" onclick="toggleStaffFolder('folderIin')" style="background:linear-gradient(135deg,rgba(37,99,235,0.06),rgba(37,99,235,0.02));">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <span style="font-size:22px;">🪪</span>
-            <div>
-              <div style="font-size:14px;font-weight:700;color:var(--dark);">Толық ИИН генерациясы</div>
-              <div style="font-size:11px;color:var(--gray);margin-top:1px;">РПН тізімін өңдеу, салыстыру, белый код</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            
-            <span class="staff-folder-arrow" id="folderIinArrow" style="color:rgba(37,99,235,0.7);transition:transform .3s;">▼</span>
-          </div>
-        </div>
-        <div class="staff-folder-body" id="folderIinBody" style="display:none;">
-          <div style="padding:8px 4px 4px;">
+<div id="kuraldarPanel" style="display:none;margin-top:20px;">
+  <div id="paneliin" class="kuraldar-panel-content" style="display:none;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid rgba(37,99,235,0.15);">
+      <span style="font-size:28px;">🪪</span>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--dark);">Толық ИИН генерациясы</div>
+        <div style="font-size:12px;color:var(--gray);">РПН тізімін өңдеу, салыстыру, белый код</div>
+      </div>
+      <button onclick="openKuralPanel('iin')" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);">✕</button>
+    </div>
+    <div style="padding:8px 4px 4px;">
 <div class="staff-task-card" id="taskRpn">
         <div class="staff-task-head" onclick="toggleStaffTask('taskRpnBody')">
           <div class="staff-task-left">
@@ -4015,25 +4103,17 @@ html.dark .kz-tile { opacity:0.22; }
       <!-- ДЕЗИНФЕКЦИЯ ПАПКАСЫ -->
           </div>
         </div>
+  </div>
+  <div id="panelplan" class="kuraldar-panel-content" style="display:none;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid rgba(34,164,85,0.15);">
+      <span style="font-size:28px;">📅</span>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--dark);">Жоспар жасау генерациясы</div>
+        <div style="font-size:12px;color:var(--gray);">Скрининг және вакцина жоспарлары</div>
       </div>
-
-      <!-- 2. ЖОСПАР ЖАСАУ -->
-      <div class="staff-folder" id="folderPlan" style="border-color:rgba(34,164,85,0.25);">
-        <div class="staff-folder-head" onclick="toggleStaffFolder('folderPlan')" style="background:linear-gradient(135deg,rgba(34,164,85,0.06),rgba(34,164,85,0.02));">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <span style="font-size:22px;">📅</span>
-            <div>
-              <div style="font-size:14px;font-weight:700;color:var(--dark);">Жоспар жасау генерациясы</div>
-              <div style="font-size:11px;color:var(--gray);margin-top:1px;">Скрининг және вакцина жоспарлары</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            
-            <span class="staff-folder-arrow" id="folderPlanArrow" style="color:rgba(34,164,85,0.7);transition:transform .3s;">▼</span>
-          </div>
-        </div>
-        <div class="staff-folder-body" id="folderPlanBody" style="display:none;">
-          <div style="padding:8px 4px 4px;">
+      <button onclick="openKuralPanel('plan')" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);">✕</button>
+    </div>
+    <div style="padding:8px 4px 4px;">
 <div class="staff-task-card" id="taskScrPlan">
         <div class="staff-task-head" onclick="toggleStaffTask('taskScrPlanBody')">
           <div class="staff-task-left">
@@ -4102,26 +4182,17 @@ html.dark .kz-tile { opacity:0.22; }
 
       <!-- РПН САЛЫСТЫРУ -->
           </div>
-        </div>
+  </div>
+  <div id="paneldez" class="kuraldar-panel-content" style="display:none;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid rgba(240,120,48,0.15);">
+      <span style="font-size:28px;">🧴</span>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--dark);">Дезинфекция</div>
+        <div style="font-size:12px;color:var(--gray);">Дезинфекциялық есептегіштер мен жоспарлар</div>
       </div>
-
-      <!-- 3. ДЕЗИНФЕКЦИЯ -->
-      <div class="staff-folder" id="folderDez">
-        <div class="staff-folder-head" onclick="toggleStaffFolder('folderDez')">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <span style="font-size:26px;">🧴</span>
-            <div>
-              <div style="font-size:15px;font-weight:800;color:var(--dark);">Дезинфекция</div>
-              <div style="font-size:12px;color:var(--gray);font-weight:400;margin-top:1px;">Есептегіштер, жылдық қажеттілік, жүктеу файлдары</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:11px;color:var(--gray);font-weight:500;" id="folderDezCount"></span>
-            <span class="staff-folder-arrow" id="folderDezArrow">▼</span>
-          </div>
-        </div>
-        <div class="staff-folder-body" id="folderDezBody" style="display:none;">
-          <div style="padding:8px 4px 4px;">
+      <button onclick="openKuralPanel('dez')" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);">✕</button>
+    </div>
+    <div style="padding:8px 4px 4px;">
             <div class="staff-task-card" id="taskDez">
         <div class="staff-task-head" onclick="toggleStaffTask('taskDezBody')">
           <div class="staff-task-left">
@@ -4427,215 +4498,17 @@ html.dark .kz-tile { opacity:0.22; }
         </div>
       </div>
           </div>
-        </div>
+  </div>
+  <div id="panelsanat" class="kuraldar-panel-content" style="display:none;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid rgba(20,184,166,0.15);">
+      <span style="font-size:28px;">🏕️</span>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--dark);">Санаторияға құжаттар</div>
+        <div style="font-size:12px;color:var(--gray);">Мазок, гельминт, кал, кожвенеролог</div>
       </div>
-      <!-- /ДЕЗИНФЕКЦИЯ ПАПКАСЫ -->
-      
-      <!-- КВАРЦ КАЛЬКУЛЯТОРЫ -->
-      <div class="staff-task-card" id="taskQuartz">
-        <div class="staff-task-head" onclick="toggleStaffTask('taskQuartzBody')">
-          <div class="staff-task-left">
-            <span class="staff-task-icon">💡</span>
-            <div>
-              <div class="staff-task-title" data-i18n="task_quartz_title">Кварц сағатын қанша минутқа қою керек?</div>
-              <div class="staff-task-desc" data-i18n="task_quartz_desc">Бөлме көлемі мен шам қуатына қарай ұсынылатын уақытты есептеу</div>
-            </div>
-          </div>
-          <span class="staff-task-chevron">▼</span>
-        </div>
-        <div class="staff-task-body" id="taskQuartzBody" style="display:none;">
-
-          <!-- ШАМ ТҮРІ -->
-          <div class="dez-params-title">Бактерицидті шам түрі</div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;">
-            <label class="qtz-type-btn" id="qtzBtn_open">
-              <input type="radio" name="qtzType" value="open" checked onchange="calcQuartz()">
-              <span class="qtz-type-icon">☀️</span>
-              <span class="qtz-type-label">Ашық тип (ОБН/ОБП)</span>
-              <span class="qtz-type-norm">2,5 Вт/м³ · 30 мин</span>
-            </label>
-            <label class="qtz-type-btn" id="qtzBtn_recir">
-              <input type="radio" name="qtzType" value="recir" onchange="calcQuartz()">
-              <span class="qtz-type-icon">🔄</span>
-              <span class="qtz-type-label">Рециркулятор (жабық)</span>
-              <span class="qtz-type-norm">1 Вт/м³ · 60 мин</span>
-            </label>
-          </div>
-
-          <!-- ПАРАМЕТРЛЕР -->
-          <div class="dez-params-title">Бөлме параметрлері</div>
-          <div class="dez-grid" style="grid-template-columns:1fr 1fr 1fr;">
-            <div class="dez-field">
-              <label>Ауданы (м²)</label>
-              <span class="dez-sublabel">Бөлменің еден ауданы</span>
-              <input type="number" id="qtzArea" min="0" step="0.1" placeholder="мыс. 20" oninput="calcQuartz()">
-            </div>
-            <div class="dez-field">
-              <label>Биіктігі (м)</label>
-              <span class="dez-sublabel">Төбе биіктігі</span>
-              <input type="number" id="qtzH" min="0" step="0.1" placeholder="мыс. 3" oninput="calcQuartz()">
-            </div>
-            <div class="dez-field">
-              <label>Шам қуаты (Вт)</label>
-              <span class="dez-sublabel">Бактерицидті шамның жалпы қуаты</span>
-              <input type="number" id="qtzW" min="0" step="1" placeholder="мыс. 30" oninput="calcQuartz()">
-            </div>
-          </div>
-
-          <div class="dez-divider"></div>
-
-          <div id="qtzResultWrap">
-            <div class="dez-result-empty">Мәліметтерді енгізіңіз — нәтиже автоматты шығады</div>
-          </div>
-
-          <!-- АНЫҚТАМА КЕСТЕСІ -->
-          <div class="dez-params-title" style="margin-top:22px;">Анықтама: стандартты нормалар (СП 3.1.2.3117-13 / МУ 2.3.796-99)</div>
-          <div style="overflow-x:auto;border-radius:10px;border:1px solid rgba(0,0,0,0.08);">
-            <table class="rpn-table" style="font-size:12px;">
-              <thead><tr>
-                <th>Шам түрі</th>
-                <th>Қажетті қуат</th>
-                <th>Экспозиция</th>
-                <th>Ескерту</th>
-              </tr></thead>
-              <tbody>
-                <tr><td>Ашық тип (ОБН)</td><td>2,5 Вт/м³</td><td>30 мин</td><td>Адамсыз, желдету 15 мин</td></tr>
-                <tr><td>Ашық тип (ОБП)</td><td>2,5 Вт/м³</td><td>30 мин</td><td>Адамсыз, желдету 15 мин</td></tr>
-                <tr><td>Рециркулятор</td><td>1 Вт/м³</td><td>60 мин</td><td>Адаммен бірге жұмыс жасай алады</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div style="margin-top:12px;padding:12px 16px;background:rgba(240,120,48,0.08);border-radius:10px;font-size:12px;color:var(--gray);border-left:3px solid var(--orange);">
-            ⚠️ <strong>Маңызды:</strong> Ашық шамды қолданған кезде бөлмеде адам болмауы тиіс. Жұмыс аяқталғаннан кейін 15-30 минут желдету міндетті.
-          </div>
-
-        </div>
-      </div>
-
-
-
-      <!-- ТЕСТ ЖҮЙЕСІ -->
-      <div class="staff-task-card" id="taskQuiz">
-        <div class="staff-task-head" onclick="toggleStaffTask('taskQuizBody')">
-          <div class="staff-task-left">
-            <span class="staff-task-icon">📝</span>
-            <div>
-              <div class="staff-task-title" data-i18n="task_quiz_title">Қызметкерлерге арналған тест</div>
-              <div class="staff-task-desc" data-i18n="task_quiz_desc">Қол жуу, скрининг, вакцинация, инфекциялық бақылау тақырыптары бойынша</div>
-            </div>
-          </div>
-          <span class="staff-task-chevron">▼</span>
-        </div>
-        <div class="staff-task-body" id="taskQuizBody" style="display:none;">
-
-          <!-- ТАБТАР -->
-          <div class="inc-tabs">
-            <button class="inc-tab active" onclick="quizShowTab('quizTakePane',this)">📝 Тест тапсыру</button>
-            <button class="inc-tab" onclick="quizShowTab('quizReportPane',this);renderQuizReport()">📊 Есеп</button>
-          </div>
-
-          <!-- ТЕСТ ТАПСЫРУ -->
-          <div class="inc-pane active" id="quizTakePane">
-
-            <!-- ЭКРАН 0: АТЫ МЕН ТАҚЫРЫП ТАҢДАУ -->
-            <div id="quizScreen0">
-              <div class="dez-field" style="margin-bottom:16px;">
-                <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--dark);display:block;margin-bottom:5px;">Қызметкердің аты-жөні</label>
-                <input type="text" id="quizEmployeeName" class="quiz-name-field" placeholder="Аты-жөніңізді енгізіңіз...">
-              </div>
-              <div class="dez-params-title">Тест тақырыбын таңдаңыз</div>
-              <div class="quiz-topics" id="quizTopicGrid"></div>
-              <button class="quiz-btn quiz-btn-primary" style="width:100%;margin-top:16px;" onclick="quizStart()">Тестті бастау →</button>
-              <div id="quizStartErr" style="display:none;color:#c62828;font-size:13px;margin-top:8px;"></div>
-            </div>
-
-            <!-- ЭКРАН 1: СҰРАҚТАР -->
-            <div id="quizScreen1" style="display:none;">
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                <span class="quiz-q-num" id="quizQNum"></span>
-                <span style="font-size:12px;color:var(--gray);" id="quizTopicLabel"></span>
-              </div>
-              <div class="quiz-progress-wrap"><div class="quiz-progress-bar" id="quizProgressBar"></div></div>
-              <div class="quiz-q-text" id="quizQText"></div>
-              <div class="quiz-options" id="quizOptions"></div>
-              <div class="quiz-nav">
-                <button class="quiz-btn quiz-btn-outline" onclick="quizPrev()" id="quizPrevBtn">← Алдыңғы</button>
-                <button class="quiz-btn quiz-btn-primary" onclick="quizNext()" id="quizNextBtn" disabled>Келесі →</button>
-              </div>
-            </div>
-
-            <!-- ЭКРАН 2: НӘТИЖЕ -->
-            <div id="quizScreen2" style="display:none;">
-              <div style="text-align:center;padding:10px 0 6px;">
-                <div class="quiz-result-circle" id="quizResultCircle">
-                  <span id="quizResultScore"></span>
-                  <span class="quiz-result-pct" id="quizResultPct"></span>
-                </div>
-                <div class="quiz-result-label" id="quizResultLabel"></div>
-                <div class="quiz-result-sub" id="quizResultSub"></div>
-              </div>
-              <div class="quiz-breakdown" id="quizBreakdown"></div>
-              <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
-                <button class="quiz-btn quiz-btn-primary" style="flex:1;" onclick="quizRetake()">🔄 Қайта тапсыру</button>
-                <button class="quiz-btn quiz-btn-outline" style="flex:1;" onclick="quizBackToMenu()">🏠 Тақырып таңдау</button>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- ЕСЕП -->
-          <div class="inc-pane" id="quizReportPane">
-            <div class="qrep-cards" id="qrepSumCards"></div>
-            <div class="inc-filter-row" style="margin-bottom:14px;">
-              <select id="qrepFltTopic" onchange="renderQuizReport()">
-                <option value="">Барлық тақырып</option>
-              </select>
-              <button class="dez-reset-btn" onclick="quizExportCSV()" style="margin-left:auto;">⬇ CSV</button>
-              <button class="dez-reset-btn" style="border-color:#c62828;color:#c62828;" onclick="quizClearAll()">🗑 Тазалау</button>
-            </div>
-            <div class="dez-params-title">Тақырып бойынша орташа балл</div>
-            <div class="qrep-bar-wrap" id="qrepByTopic" style="margin-bottom:18px;"></div>
-            <div class="dez-params-title">Қызметкер бойынша орташа балл</div>
-            <div class="qrep-bar-wrap" id="qrepByEmp" style="margin-bottom:18px;"></div>
-            <div class="dez-params-title">Барлық нәтижелер</div>
-            <div style="overflow-x:auto;border-radius:10px;border:1px solid rgba(0,0,0,0.08);">
-              <table class="qrep-table">
-                <thead><tr><th>#</th><th>Қызметкер</th><th>Тақырып</th><th>Балл</th><th>Пайыз</th><th>Баға</th><th>Күні</th><th></th></tr></thead>
-                <tbody id="qrepTableBody"></tbody>
-              </table>
-            </div>
-            <div id="qrepEmpty" class="inc-empty" style="display:none;">Нәтиже жоқ</div>
-          </div>
-
-        </div>
-      </div>
-
-
-      <!-- СКРИНИНГ ЖОСПАР ГЕНЕРАТОРЫ -->
-      
-<!-- Болашақта жаңа құралдар осы жерге қосылады -->
-
-      <!-- САНАТОРИЙ / ЛАГЕРЬ ДАЙЫНДЫҚ БӨЛІМІ -->
-      <div style="margin:28px 0 14px;padding:18px 22px;background:linear-gradient(135deg,rgba(34,164,85,0.07),rgba(34,164,85,0.03));border-left:4px solid var(--green);border-radius:0 12px 12px 0;">
-        <div style="font-size:13px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">🏕️ Санаторияға / Лагерьге дайындық</div>
-        <div style="font-size:14px;font-weight:700;color:var(--dark);line-height:1.5;">Балаларды санаторияға және лагерьге жіберу үшін қажетті медициналық құжаттарды автоматты дайындау</div>
-      </div>
-
-      <!-- 4. САНАТОРИЙ ҚҰЖАТТАРЫ -->
-      <div class="staff-folder" id="folderSanat">
-        <div class="staff-folder-head" onclick="toggleStaffFolder('folderSanat')">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <span style="font-size:26px;">🏕️</span>
-            <div>
-              <div style="font-size:15px;font-weight:800;color:var(--dark);">Санаторияға / Лагерьге дайындық</div>
-              <div style="font-size:12px;color:var(--gray);font-weight:400;margin-top:1px;">Құжаттарды автоматты генерациялау</div>
-            </div>
-          </div>
-          <span class="staff-folder-arrow" id="folderSanatArrow">▼</span>
-        </div>
-        <div class="staff-folder-body" id="folderSanatBody" style="display:none;">
-          <div style="padding:8px 4px 4px;">
+      <button onclick="openKuralPanel('sanat')" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);">✕</button>
+    </div>
+    <div style="padding:8px 4px 4px;">
 
             <!-- РЕЗУЛЬТАТ МИКРОБИОЛОГИЧЕСКИХ ИССЛЕДОВАНИЙ -->
             <div class="staff-task-card" id="taskRezultat">
@@ -4791,186 +4664,17 @@ html.dark .kz-tile { opacity:0.22; }
               </div>
             </div>
                   </div>
-                </div>
-
-                <!-- === 3. КАЛ === -->
-                <div>
-                  <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:2px solid rgba(0,0,0,0.06);background:rgba(124,58,237,0.04);user-select:none;">
-                    <span style="font-size:20px;">🧪</span>
-                    <div style="flex:1;">
-                      <div style="font-size:13px;font-weight:700;color:var(--dark);">Кал на кишечную группу</div>
-                      <div style="font-size:11px;color:var(--gray);">Форма №058/у</div>
-                    </div>
-                    
-                  </div>
-                  <div id="rez3">
-                    <div style="padding:20px 16px;">
-
-                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(124,58,237,0.06);border-radius:10px;border:1px solid rgba(124,58,237,0.2);">
-                    <span style="font-size:13px;font-weight:600;color:var(--dark);">Соңғы берілген №:</span>
-                    <span id="kalLastNum" style="font-size:20px;font-weight:900;color:#7c3aed;">—</span>
-                    <span style="font-size:12px;color:var(--gray);margin-left:4px;">Келесі № : <b id="kalNextNum" style="color:var(--orange);">—</b></span>
-                    <button onclick="kalResetCounter()" style="margin-left:auto;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(124,58,237,0.3);background:transparent;color:#7c3aed;font-size:11px;font-weight:700;cursor:pointer;">Нөлден бастау</button>
-                  </div>
-
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
-                    <div>
-                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Фамилия</label>
-                      <input id="kalFam" type="text" placeholder="Иванов" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
-                    </div>
-                    <div>
-                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Имя</label>
-                      <input id="kalIm" type="text" placeholder="Иван" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
-                    </div>
-                    <div>
-                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Отчество</label>
-                      <input id="kalOtch" type="text" placeholder="Иванович" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
-                    </div>
-                    <div>
-                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Год рождения</label>
-                      <input id="kalGod" type="number" placeholder="2015" min="1990" max="2030" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
-                    </div>
-                  </div>
-
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;padding:14px 16px;background:rgba(124,58,237,0.04);border-radius:10px;border:1px solid rgba(124,58,237,0.12);">
-                    <div>
-                      <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Дата поступления анализа (авто)</div>
-                      <div id="kalDateIn" style="font-size:14px;font-weight:700;color:#7c3aed;"></div>
-                      <div style="font-size:10px;color:var(--gray);margin-top:2px;">Бүгіннен 3 күн бұрын</div>
-                    </div>
-                    <div>
-                      <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Дата выдачи анализа (авто)</div>
-                      <div id="kalDateOut" style="font-size:14px;font-weight:700;color:var(--green);"></div>
-                      <div style="font-size:10px;color:var(--gray);margin-top:2px;">Бүгінгі күн</div>
-                    </div>
-                  </div>
-
-                  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <button onclick="kalGenerate()" style="padding:11px 28px;background:#7c3aed;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;flex:1;min-width:180px;">
-                      🖨️ Басып шығару / Генерациялау
-                    </button>
-                    <button onclick="kalPreview()" style="padding:11px 20px;background:rgba(124,58,237,0.1);color:#7c3aed;border:1.5px solid rgba(124,58,237,0.3);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">
-                      👁 Алдын ала қарау
-                    </button>
-                  </div>
-                  <div id="kalHistory" style="margin-top:16px;"></div>
-                </div>
-              </div>
-            </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-            <!-- /РЕЗУЛЬТАТ МИКРОБИОЛОГИЧЕСКИХ ИССЛЕДОВАНИЙ -->
-
-            <!-- СПРАВКА КОЖВЕНЕРОЛОГА -->
-            <div class="staff-task-card" id="taskKozh">
-              <div class="staff-task-head" onclick="toggleStaffTask('taskKozhBody')" style="cursor:pointer;">
-                <div class="staff-task-icon">🩺</div>
-                <div class="staff-task-info">
-                  <div class="staff-task-title">Справка кожвенеролога</div>
-                  <div class="staff-task-desc">«ДУ» у врача кожвенеролога не состоит — авто №, дата</div>
-                </div>
-                <div class="staff-task-arrow">▼</div>
-              </div>
-              <div class="staff-task-body" id="taskKozhBody" style="display:none;">
-                <div style="padding:20px 16px;">
-
-                  <!-- СЧЁТЧИК -->
-                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(220,38,38,0.05);border-radius:10px;border:1px solid rgba(220,38,38,0.18);">
-                    <span style="font-size:13px;font-weight:600;color:var(--dark);">Соңғы берілген №:</span>
-                    <span id="kozhLastNum" style="font-size:20px;font-weight:900;color:#dc2626;">—</span>
-                    <span style="font-size:12px;color:var(--gray);margin-left:4px;">Келесі № : <b id="kozhNextNum" style="color:var(--orange);">—</b></span>
-                    <button onclick="kozhResetCounter()" style="margin-left:auto;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(220,38,38,0.3);background:transparent;color:#dc2626;font-size:11px;font-weight:700;cursor:pointer;">Нөлден бастау</button>
-                  </div>
-
-                  <!-- ФОРМА -->
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
-                    <div>
-                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Фамилия</label>
-                      <input id="kozhFam" type="text" placeholder="Иванов" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
-                    </div>
-                    <div>
-                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Имя</label>
-                      <input id="kozhIm" type="text" placeholder="Иван" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
-                    </div>
-                    <div>
-                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Отчество</label>
-                      <input id="kozhOtch" type="text" placeholder="Иванович" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
-                    </div>
-                    <div>
-                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Дата рождения</label>
-                      <input id="kozhDob" type="text" placeholder="01.01.2015" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
-                    </div>
-                  </div>
-
-                  <!-- ЖЫН / АВТО ДАТА -->
-                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
-                    <div style="padding:12px 16px;background:rgba(0,0,0,0.02);border-radius:10px;border:1px solid rgba(0,0,0,0.1);">
-                      <div style="font-size:12px;font-weight:700;color:var(--gray);margin-bottom:8px;">Жынысы</div>
-                      <div style="display:flex;gap:12px;">
-                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;font-weight:600;">
-                          <input type="radio" name="kozhGender" id="kozhM" value="он" checked style="width:16px;height:16px;accent-color:#dc2626;"> Ер (он)
-                        </label>
-                        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;font-weight:600;">
-                          <input type="radio" name="kozhGender" id="kozhF" value="она" style="width:16px;height:16px;accent-color:#dc2626;"> Әйел (она)
-                        </label>
-                      </div>
-                    </div>
-                    <div style="padding:12px 16px;background:rgba(220,38,38,0.04);border-radius:10px;border:1px solid rgba(220,38,38,0.12);">
-                      <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Дата справки (авто — бүгін)</div>
-                      <div id="kozhDateOut" style="font-size:15px;font-weight:800;color:#dc2626;"></div>
-                    </div>
-                  </div>
-
-                  <!-- АЛДЫН АЛА ҚАРАУ -->
-                  <div id="kozhPreviewBox" style="margin-bottom:16px;display:none;padding:16px 20px;background:#fffbfb;border:1.5px solid rgba(220,38,38,0.2);border-radius:12px;font-family:Times New Roman,serif;font-size:13px;line-height:1.8;">
-                  </div>
-
-                  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <button onclick="kozhGenerate()" style="padding:11px 28px;background:#dc2626;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;flex:1;min-width:180px;">
-                      🖨️ Басып шығару / Генерациялау
-                    </button>
-                    <button onclick="kozhPreview()" style="padding:11px 20px;background:rgba(220,38,38,0.1);color:#dc2626;border:1.5px solid rgba(220,38,38,0.3);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">
-                      👁 Алдын ала қарау
-                    </button>
-                  </div>
-                  <div id="kozhHistory" style="margin-top:16px;"></div>
-
-                </div>
-              </div>
-            </div>
-            <!-- /СПРАВКА КОЖВЕНЕРОЛОГА -->
-
-          </div>
-        </div>
+  </div>
+  <div id="paneljournals" class="kuraldar-panel-content" style="display:none;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid rgba(139,92,246,0.15);">
+      <span style="font-size:28px;">📓</span>
+      <div>
+        <div style="font-size:16px;font-weight:800;color:var(--dark);">Журналдар үлгісі</div>
+        <div style="font-size:12px;color:var(--gray);">Дезинфекция, екпе, медотвод журналдары</div>
       </div>
-      <!-- /САНАТОРИЙ ПАПКАСЫ -->
-
-      <!-- ЖУРНАЛДАР ҮЛГІСІ -->
-      <div style="margin:28px 0 14px;padding:18px 22px;background:linear-gradient(135deg,rgba(37,99,235,0.07),rgba(37,99,235,0.03));border-left:4px solid #2563eb;border-radius:0 12px 12px 0;">
-        <div style="font-size:13px;font-weight:800;color:#2563eb;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">📓 Журналдар үлгісі</div>
-        <div style="font-size:14px;font-weight:700;color:var(--dark);line-height:1.5;">Медициналық орталықтың қызметінде қолданылатын нормативтік журналдар үлгілері — жүктеп алып, толтырып пайдалануға болады</div>
-      </div>
-
-      <!-- 5. ЖУРНАЛДАР -->
-      <div class="staff-folder" id="folderJournals" style="border-color:rgba(139,92,246,0.25);">
-        <div class="staff-folder-head" onclick="toggleStaffFolder('folderJournals')" style="background:linear-gradient(135deg,rgba(139,92,246,0.06),rgba(139,92,246,0.02));">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <span style="font-size:22px;">📓</span>
-            <div>
-              <div style="font-size:14px;font-weight:700;color:var(--dark);">Журналдар үлгісі</div>
-              <div style="font-size:11px;color:var(--gray);margin-top:1px;">Дезинфекция, екпе, медотвод журналдары</div>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            
-            <span class="staff-folder-arrow" id="folderJournalsArrow" style="color:rgba(139,92,246,0.7);transition:transform .3s;">▼</span>
-          </div>
-        </div>
-        <div class="staff-folder-body" id="folderJournalsBody" style="display:none;">
-          <div style="padding:8px 4px 4px;">
+      <button onclick="openKuralPanel('journals')" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);">✕</button>
+    </div>
+    <div style="padding:8px 4px 4px;">
 <div class="staff-task-card" id="taskJournals">
         <div class="staff-task-head" onclick="toggleStaffTask('taskJournalsBody')" style="cursor:pointer;">
           <div class="staff-task-icon">📓</div>
@@ -5062,9 +4766,10 @@ html.dark .kz-tile { opacity:0.22; }
         </div>
       </div>
           </div>
-        </div>
-      </div>
+  </div>
+</div>
 
+    
 
     </div>
   </div>
@@ -9662,7 +9367,45 @@ function submitBlogComment(postId) {
 }
 
 
-  function toggleStaffFolder(id) {
+  
+function openKuralPanel(panelId) {
+  var allPanels = document.querySelectorAll('.kuraldar-panel-content');
+  var allTiles  = document.querySelectorAll('.kuraldar-tile');
+  var panel = document.getElementById('panel' + panelId);
+  var tile  = document.getElementById('tile' + panelId);
+  var wrapper = document.getElementById('kuraldarPanel');
+  if (!panel || !wrapper) return;
+
+  var isOpen = panel.style.display !== 'none';
+
+  // Close all
+  allPanels.forEach(function(p){ p.style.display='none'; });
+  allTiles.forEach(function(t){ t.classList.remove('active'); });
+
+  if (isOpen) {
+    wrapper.style.display = 'none';
+    return;
+  }
+
+  wrapper.style.display = '';
+  panel.style.display = '';
+  if (tile) tile.classList.add('active');
+
+  // Init functions for specific panels
+  if (panelId === 'sanat') {
+    setTimeout(function(){
+      if(typeof mazokInitDates==='function'){ mazokInitDates(); mazokUpdateCounter(); }
+      if(typeof glistInitDate==='function'){ glistInitDate(); glistUpdateCounter(); }
+      if(typeof kalInitDates==='function'){ kalInitDates(); kalUpdateCounter(); }
+    }, 80);
+  }
+
+  setTimeout(function(){
+    wrapper.scrollIntoView({ behavior:'smooth', block:'start' });
+  }, 50);
+}
+
+function toggleStaffFolder(id) {
     var folder = document.getElementById(id);
     var body = document.getElementById(id + 'Body');
     var arrow = document.getElementById(id + 'Arrow');
