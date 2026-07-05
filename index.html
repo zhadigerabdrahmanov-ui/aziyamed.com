@@ -8709,28 +8709,28 @@ function renderStaffCabinet(box, user) {
   }).join('') || '<tr><td colspan="4" style="color:#aaa;text-align:center;padding:12px;">Инцидент тіркелмеген</td></tr>';
 
   var thStyle = 'padding:8px;text-align:left;background:#f5faf7;font-size:.8rem;color:#6b8c76;';
+  var _photoData = localStorage.getItem('az_photo_' + user.iin);
+  var _avatarHtml = _photoData
+    ? '<img src="' + _photoData + '" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--green);flex-shrink:0;">'
+    : '<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--green),#0d9488);display:flex;align-items:center;justify-content:center;font-size:2.2rem;flex-shrink:0;">&#x1F464;</div>';
+  var _profileHtml =
+    '<div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;">' +
+      '<div style="position:relative;">' +
+        _avatarHtml +
+        '<label title="Фото &#x04E9;&#x0437;&#x0433;&#x0435;&#x0440;&#x0442;&#x0443;" style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.2);">&#x1F4F7;<input type="file" accept="image/*" style="display:none;" onchange="staffChangePhoto(this,\'' + user.iin + '\')"></label>' +
+      '</div>' +
+      '<div>' +
+        '<div style="font-size:1.25rem;font-weight:800;color:var(--green-dark);">' + user.name + '</div>' +
+        '<div style="font-size:.85rem;color:#6b8c76;">' + (STAFF_ROLES[user.iin] || 'Медицина қызметкері') + '</div>' +
+        '<div style="font-size:.75rem;color:#9ca3af;margin-top:2px;">ЖСН: ' + user.iin + '</div>' +
+      '</div>' +
+    '</div>';
   box.innerHTML =
     '<div style="max-width:800px;margin:0 auto;">' +
-    '<h2 style="color:var(--green-dark);margin-bottom:24px;">👤 Жеке кабинет</h2>' +
+    '<h2 style="color:var(--green-dark);margin-bottom:24px;">&#x1F464; Жеке кабинет</h2>' +
     // Profile
     '<div style="background:#fff;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.07);">' +
-      (function(){
-      var photoData = localStorage.getItem('az_photo_' + user.iin);
-      var avatarHtml = photoData
-        ? '<img src="'+photoData+'" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--green);flex-shrink:0;">'
-        : '<div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--green),#0d9488);display:flex;align-items:center;justify-content:center;font-size:2.2rem;flex-shrink:0;">👤</div>';
-      return '<div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;">' +
-        '<div style="position:relative;">' +
-          avatarHtml +
-          '<label title="Фото өзгерту" style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;cursor:pointer;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.2);">📷<input type="file" accept="image/*" style="display:none;" onchange="staffChangePhoto(this,\''+user.iin+'\')"></label>' +
-        '</div>' +
-        '<div>' +
-          '<div style="font-size:1.25rem;font-weight:800;color:var(--green-dark);">'+user.name+'</div>' +
-          '<div style="font-size:.85rem;color:#6b8c76;">'+(STAFF_ROLES[user.iin]||'Медицина қызметкері')+'</div>' +
-          '<div style="font-size:.75rem;color:#9ca3af;margin-top:2px;">ЖСН: '+user.iin+'</div>' +
-        '</div>' +
-      '</div>';
-    })() +
+      _profileHtml +
       '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">' +
         '<div style="background:#f5faf7;border-radius:10px;padding:12px;"><div style="font-size:.75rem;color:#6b8c76;">ЖСН (ИИН)</div><div style="font-weight:700;">'+user.iin+'</div></div>' +
         '<div style="background:#f5faf7;border-radius:10px;padding:12px;"><div style="font-size:.75rem;color:#6b8c76;">Тест тапсыру</div><div style="font-weight:700;color:var(--green);">'+myQuiz.length+' рет</div></div>' +
@@ -9995,6 +9995,4 @@ function toggleStaffFolder(id) {
     var last    = parseInt(localStorage.getItem('glist_counter') || '0');
     var n1 = last+1, n2 = last+3, n3 = last+5;
     localStorage.setItem('glist_counter', String(last+1));
-    glistUpdateCounter();
-
-    var docHtml = glistBuildDoc(n1, n2, n3
+    glistUpdateCou
