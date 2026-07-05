@@ -3789,7 +3789,25 @@ html.dark .kz-tile { opacity:0.22; }
     <div class="staff-grid reveal">
 
       <!-- РПН тізімін өңдеу — карточка -->
-      <div class="staff-task-card" id="taskRpn">
+      
+      <!-- 1. ИИН ГЕНЕРАЦИЯСЫ -->
+      <div class="staff-folder" id="folderIin" style="border-color:rgba(37,99,235,0.25);">
+        <div class="staff-folder-head" onclick="toggleStaffFolder('folderIin')" style="background:linear-gradient(135deg,rgba(37,99,235,0.06),rgba(37,99,235,0.02));">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:22px;">🪪</span>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--dark);">Толық ИИН генерациясы</div>
+              <div style="font-size:11px;color:var(--gray);margin-top:1px;">РПН тізімін өңдеу, салыстыру, белый код</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            
+            <span class="staff-folder-arrow" id="folderIinArrow" style="color:rgba(37,99,235,0.7);transition:transform .3s;">▼</span>
+          </div>
+        </div>
+        <div class="staff-folder-body" id="folderIinBody" style="display:none;">
+          <div style="padding:8px 4px 4px;">
+<div class="staff-task-card" id="taskRpn">
         <div class="staff-task-head" onclick="toggleStaffTask('taskRpnBody')">
           <div class="staff-task-left">
             <span class="staff-task-icon">📊</span>
@@ -3822,74 +3840,7 @@ html.dark .kz-tile { opacity:0.22; }
         </div>
 
       <!-- СКРИНИНГ ЖОСПАР ГЕНЕРАТОРЫ -->
-      <div class="staff-task-card" id="taskScrPlan">
-        <div class="staff-task-head" onclick="toggleStaffTask('taskScrPlanBody')">
-          <div class="staff-task-left">
-            <span class="staff-task-icon">📊</span>
-            <div>
-              <div class="staff-task-title" data-i18n="task_scrplan_title">Скрининг жоспар генераторы</div>
-              <div class="staff-task-desc" data-i18n="task_scrplan_desc">«Толық ИИН жасау» нәтижесі бойынша №ҚР ДСМ-174/2020 бұйрығына сәйкес ай сайынғы шақыру жоспары жасалады</div>
-            </div>
-          </div>
-          <span class="staff-task-chevron">▼</span>
-        </div>
-        <div class="staff-task-body" id="taskScrPlanBody" style="display:none;">
-          <div class="splan-wrap">
-
-            <!-- Дерек алу кнопкасы -->
-            <div id="splanFromRpnBox" style="text-align:center;padding:24px 0 8px;">
-              <div style="font-size:2.2rem;margin-bottom:10px;">🔗</div>
-              <div style="font-weight:700;font-size:1rem;color:var(--dark);margin-bottom:8px;">«Толық ИИН жасау» нәтижесінен алу</div>
-              <div style="font-size:.85rem;color:var(--gray);margin-bottom:18px;">Жоғарыдағы «Толық ИИН жасау» бөлімінде файл өңделген болса, деректер автоматты жүктеледі</div>
-              <button class="rpn-download-btn" onclick="splanLoadFromRpn()" style="font-size:.95rem;padding:13px 32px;">
-                ▶ Жоспар жасау
-              </button>
-            </div>
-            <div class="splan-status" id="splanStatus"></div>
-
-            <!-- Нәтиже -->
-            <div class="splan-results" id="splanResults" style="display:none;"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Жоспарлы профилактикалық екпелер — карточка -->
-      <div class="staff-task-card" id="taskVacc">
-        <div class="staff-task-head" onclick="toggleStaffTask('taskVaccBody')">
-          <div class="staff-task-left">
-            <span class="staff-task-icon">💉</span>
-            <div>
-              <div class="staff-task-title" data-i18n="task_vacc_title">Жоспарлы профилактикалық екпелер (2026)</div>
-              <div class="staff-task-desc" data-i18n="task_vacc_desc">Пациенттер тізімін жүктесеңіз, №612 қаулыға сәйкес 2026 жылғы ай бойынша екпе жоспары жасалады</div>
-            </div>
-          </div>
-          <span class="staff-task-chevron">▾</span>
-        </div>
-        <div class="staff-task-body" id="taskVaccBody" style="display:none;">
-          <div class="rpn-upload-area" id="vaccDropZone" onclick="document.getElementById('vaccFileInput').click()">
-            <div class="rpn-upload-icon">📂</div>
-            <div class="rpn-upload-text">«Толық ИИН жасау» нәтижесінің Excel файлын жүктеңіз</div>
-            <div class="rpn-upload-hint">.xlsx, .xls форматтары қолдау көрсетіледі</div>
-            <input type="file" id="vaccFileInput" accept=".xlsx,.xls" style="display:none" onchange="handleVaccFile(this.files[0])">
-          </div>
-          <div id="vaccStatus" class="rpn-status" style="display:none;"></div>
-          <div id="vaccPreview" style="display:none;">
-            <div class="rpn-preview-title">📋 2026 жылғы екпе жоспары</div>
-            <div class="vacc-month-tabs" id="vaccMonthTabs"></div>
-            <div class="rpn-table-wrap">
-              <table id="vaccPreviewTable" class="rpn-table"></table>
-            </div>
-            <div class="rpn-actions">
-              <div class="rpn-info" id="vaccInfo"></div>
-              <button class="rpn-download-btn" onclick="downloadVaccPlan()">⬇️ Excel жоспарын жүктеу</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- РПН САЛЫСТЫРУ -->
-      <div class="staff-task-card" id="taskRpnDiff">
+<div class="staff-task-card" id="taskRpnDiff">
         <div class="staff-task-head" onclick="toggleStaffTask('taskRpnDiffBody')">
           <div class="staff-task-left">
             <span class="staff-task-icon">🔄</span>
@@ -3991,7 +3942,7 @@ html.dark .kz-tile { opacity:0.22; }
 
 
       <!-- БЕЛЫЙ КОД -->
-      <div class="staff-task-card" id="taskWhiteCode">
+<div class="staff-task-card" id="taskWhiteCode">
         <div class="staff-task-head" onclick="toggleStaffTask('taskWhiteCodeBody')">
           <div class="staff-task-left">
             <span class="staff-task-icon">🚫</span>
@@ -4062,6 +4013,99 @@ html.dark .kz-tile { opacity:0.22; }
 
       <!-- ДЕЗ ЕСЕПТЕГІШ -->
       <!-- ДЕЗИНФЕКЦИЯ ПАПКАСЫ -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. ЖОСПАР ЖАСАУ -->
+      <div class="staff-folder" id="folderPlan" style="border-color:rgba(34,164,85,0.25);">
+        <div class="staff-folder-head" onclick="toggleStaffFolder('folderPlan')" style="background:linear-gradient(135deg,rgba(34,164,85,0.06),rgba(34,164,85,0.02));">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:22px;">📅</span>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--dark);">Жоспар жасау генерациясы</div>
+              <div style="font-size:11px;color:var(--gray);margin-top:1px;">Скрининг және вакцина жоспарлары</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            
+            <span class="staff-folder-arrow" id="folderPlanArrow" style="color:rgba(34,164,85,0.7);transition:transform .3s;">▼</span>
+          </div>
+        </div>
+        <div class="staff-folder-body" id="folderPlanBody" style="display:none;">
+          <div style="padding:8px 4px 4px;">
+<div class="staff-task-card" id="taskScrPlan">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskScrPlanBody')">
+          <div class="staff-task-left">
+            <span class="staff-task-icon">📊</span>
+            <div>
+              <div class="staff-task-title" data-i18n="task_scrplan_title">Скрининг жоспар генераторы</div>
+              <div class="staff-task-desc" data-i18n="task_scrplan_desc">«Толық ИИН жасау» нәтижесі бойынша №ҚР ДСМ-174/2020 бұйрығына сәйкес ай сайынғы шақыру жоспары жасалады</div>
+            </div>
+          </div>
+          <span class="staff-task-chevron">▼</span>
+        </div>
+        <div class="staff-task-body" id="taskScrPlanBody" style="display:none;">
+          <div class="splan-wrap">
+
+            <!-- Дерек алу кнопкасы -->
+            <div id="splanFromRpnBox" style="text-align:center;padding:24px 0 8px;">
+              <div style="font-size:2.2rem;margin-bottom:10px;">🔗</div>
+              <div style="font-weight:700;font-size:1rem;color:var(--dark);margin-bottom:8px;">«Толық ИИН жасау» нәтижесінен алу</div>
+              <div style="font-size:.85rem;color:var(--gray);margin-bottom:18px;">Жоғарыдағы «Толық ИИН жасау» бөлімінде файл өңделген болса, деректер автоматты жүктеледі</div>
+              <button class="rpn-download-btn" onclick="splanLoadFromRpn()" style="font-size:.95rem;padding:13px 32px;">
+                ▶ Жоспар жасау
+              </button>
+            </div>
+            <div class="splan-status" id="splanStatus"></div>
+
+            <!-- Нәтиже -->
+            <div class="splan-results" id="splanResults" style="display:none;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Жоспарлы профилактикалық екпелер — карточка -->
+<div class="staff-task-card" id="taskVacc">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskVaccBody')">
+          <div class="staff-task-left">
+            <span class="staff-task-icon">💉</span>
+            <div>
+              <div class="staff-task-title" data-i18n="task_vacc_title">Жоспарлы профилактикалық екпелер (2026)</div>
+              <div class="staff-task-desc" data-i18n="task_vacc_desc">Пациенттер тізімін жүктесеңіз, №612 қаулыға сәйкес 2026 жылғы ай бойынша екпе жоспары жасалады</div>
+            </div>
+          </div>
+          <span class="staff-task-chevron">▾</span>
+        </div>
+        <div class="staff-task-body" id="taskVaccBody" style="display:none;">
+          <div class="rpn-upload-area" id="vaccDropZone" onclick="document.getElementById('vaccFileInput').click()">
+            <div class="rpn-upload-icon">📂</div>
+            <div class="rpn-upload-text">«Толық ИИН жасау» нәтижесінің Excel файлын жүктеңіз</div>
+            <div class="rpn-upload-hint">.xlsx, .xls форматтары қолдау көрсетіледі</div>
+            <input type="file" id="vaccFileInput" accept=".xlsx,.xls" style="display:none" onchange="handleVaccFile(this.files[0])">
+          </div>
+          <div id="vaccStatus" class="rpn-status" style="display:none;"></div>
+          <div id="vaccPreview" style="display:none;">
+            <div class="rpn-preview-title">📋 2026 жылғы екпе жоспары</div>
+            <div class="vacc-month-tabs" id="vaccMonthTabs"></div>
+            <div class="rpn-table-wrap">
+              <table id="vaccPreviewTable" class="rpn-table"></table>
+            </div>
+            <div class="rpn-actions">
+              <div class="rpn-info" id="vaccInfo"></div>
+              <button class="rpn-download-btn" onclick="downloadVaccPlan()">⬇️ Excel жоспарын жүктеу</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- РПН САЛЫСТЫРУ -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. ДЕЗИНФЕКЦИЯ -->
       <div class="staff-folder" id="folderDez">
         <div class="staff-folder-head" onclick="toggleStaffFolder('folderDez')">
           <div style="display:flex;align-items:center;gap:12px;">
@@ -4578,6 +4622,7 @@ html.dark .kz-tile { opacity:0.22; }
         <div style="font-size:14px;font-weight:700;color:var(--dark);line-height:1.5;">Балаларды санаторияға және лагерьге жіберу үшін қажетті медициналық құжаттарды автоматты дайындау</div>
       </div>
 
+      <!-- 4. САНАТОРИЙ ҚҰЖАТТАРЫ -->
       <div class="staff-folder" id="folderSanat">
         <div class="staff-folder-head" onclick="toggleStaffFolder('folderSanat')">
           <div style="display:flex;align-items:center;gap:12px;">
@@ -4606,15 +4651,15 @@ html.dark .kz-tile { opacity:0.22; }
 
                 <!-- === 1. МАЗОК === -->
                 <div style="border-bottom:2px solid rgba(34,164,85,0.15);">
-                  <div onclick="rezToggle('rez1')" style="display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;background:rgba(34,164,85,0.04);user-select:none;" onmouseover="this.style.background='rgba(34,164,85,0.09)'" onmouseout="this.style.background='rgba(34,164,85,0.04)'">
+                  <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:2px solid rgba(0,0,0,0.06);background:rgba(34,164,85,0.04);user-select:none;">
                     <span style="font-size:20px;">🧫</span>
                     <div style="flex:1;">
                       <div style="font-size:13px;font-weight:700;color:var(--dark);">Мазок из зева и носа на стафилококк</div>
                       <div style="font-size:11px;color:var(--gray);">Форма №057/у</div>
                     </div>
-                    <span id="rez1Arrow" style="color:var(--green);font-size:13px;transition:transform .2s;display:inline-block;">▼</span>
+                    
                   </div>
-                  <div id="rez1" style="display:none;">
+                  <div id="rez1">
                     <div style="padding:20px 16px;">
 
                   <!-- СЧЁТЧИК -->
@@ -4680,15 +4725,15 @@ html.dark .kz-tile { opacity:0.22; }
 
                 <!-- === 2. ГЕЛЬМИНТ === -->
                 <div style="border-bottom:2px solid rgba(37,99,235,0.15);">
-                  <div onclick="rezToggle('rez2')" style="display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;background:rgba(37,99,235,0.04);user-select:none;" onmouseover="this.style.background='rgba(37,99,235,0.09)'" onmouseout="this.style.background='rgba(37,99,235,0.04)'">
+                  <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:2px solid rgba(0,0,0,0.06);background:rgba(37,99,235,0.04);user-select:none;">
                     <span style="font-size:20px;">🦠</span>
                     <div style="flex:1;">
                       <div style="font-size:13px;font-weight:700;color:var(--dark);">Яйца гельминтов, простейшие, соскоб на энтеробиоз</div>
                       <div style="font-size:11px;color:var(--gray);">Форма №221/у — №N-N+2-N+4</div>
                     </div>
-                    <span id="rez2Arrow" style="color:#2563eb;font-size:13px;transition:transform .2s;display:inline-block;">▼</span>
+                    
                   </div>
-                  <div id="rez2" style="display:none;">
+                  <div id="rez2">
                     <div style="padding:20px 16px;">
 
                   <!-- СЧЁТЧИК -->
@@ -4750,15 +4795,15 @@ html.dark .kz-tile { opacity:0.22; }
 
                 <!-- === 3. КАЛ === -->
                 <div>
-                  <div onclick="rezToggle('rez3')" style="display:flex;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;background:rgba(124,58,237,0.04);user-select:none;" onmouseover="this.style.background='rgba(124,58,237,0.09)'" onmouseout="this.style.background='rgba(124,58,237,0.04)'">
+                  <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:2px solid rgba(0,0,0,0.06);background:rgba(124,58,237,0.04);user-select:none;">
                     <span style="font-size:20px;">🧪</span>
                     <div style="flex:1;">
                       <div style="font-size:13px;font-weight:700;color:var(--dark);">Кал на кишечную группу</div>
                       <div style="font-size:11px;color:var(--gray);">Форма №058/у</div>
                     </div>
-                    <span id="rez3Arrow" style="color:#7c3aed;font-size:13px;transition:transform .2s;display:inline-block;">▼</span>
+                    
                   </div>
-                  <div id="rez3" style="display:none;">
+                  <div id="rez3">
                     <div style="padding:20px 16px;">
 
                   <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(124,58,237,0.06);border-radius:10px;border:1px solid rgba(124,58,237,0.2);">
@@ -4909,7 +4954,24 @@ html.dark .kz-tile { opacity:0.22; }
         <div style="font-size:14px;font-weight:700;color:var(--dark);line-height:1.5;">Медициналық орталықтың қызметінде қолданылатын нормативтік журналдар үлгілері — жүктеп алып, толтырып пайдалануға болады</div>
       </div>
 
-      <div class="staff-task-card" id="taskJournals">
+      <!-- 5. ЖУРНАЛДАР -->
+      <div class="staff-folder" id="folderJournals" style="border-color:rgba(139,92,246,0.25);">
+        <div class="staff-folder-head" onclick="toggleStaffFolder('folderJournals')" style="background:linear-gradient(135deg,rgba(139,92,246,0.06),rgba(139,92,246,0.02));">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:22px;">📓</span>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--dark);">Журналдар үлгісі</div>
+              <div style="font-size:11px;color:var(--gray);margin-top:1px;">Дезинфекция, екпе, медотвод журналдары</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            
+            <span class="staff-folder-arrow" id="folderJournalsArrow" style="color:rgba(139,92,246,0.7);transition:transform .3s;">▼</span>
+          </div>
+        </div>
+        <div class="staff-folder-body" id="folderJournalsBody" style="display:none;">
+          <div style="padding:8px 4px 4px;">
+<div class="staff-task-card" id="taskJournals">
         <div class="staff-task-head" onclick="toggleStaffTask('taskJournalsBody')" style="cursor:pointer;">
           <div class="staff-task-icon">📓</div>
           <div class="staff-task-info">
@@ -4999,6 +5061,10 @@ html.dark .kz-tile { opacity:0.22; }
           </div>
         </div>
       </div>
+          </div>
+        </div>
+      </div>
+
 
     </div>
   </div>
@@ -6315,6 +6381,16 @@ function toggleStaffTask(bodyId) {
   if (!isOpen) {
     var toolName = _TOOL_NAMES[bodyId] || bodyId;
     staffLog('Құрал ашылды', toolName);
+    if (bodyId === 'taskRezultatBody') {
+      setTimeout(function(){
+        if(typeof mazokInitDates==='function'){mazokInitDates(); mazokUpdateCounter();}
+        if(typeof glistInitDate==='function'){glistInitDate(); glistUpdateCounter();}
+        if(typeof kalInitDates==='function'){kalInitDates(); kalUpdateCounter();}
+      }, 50);
+    }
+    if (bodyId === 'taskKozhBody') {
+      setTimeout(function(){ if(typeof kozhInit==='function') kozhInit(); }, 50);
+    }
   }
 }
 
