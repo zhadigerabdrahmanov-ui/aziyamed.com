@@ -4510,30 +4510,17 @@ html.dark .kz-tile { opacity:0.22; }
     </div>
     <div style="padding:8px 4px 4px;">
 
-            <!-- РЕЗУЛЬТАТ МИКРОБИОЛОГИЧЕСКИХ ИССЛЕДОВАНИЙ -->
-            <div class="staff-task-card" id="taskRezultat">
-              <div class="staff-task-head" onclick="toggleStaffTask('taskRezultatBody')" style="cursor:pointer;">
-                <div class="staff-task-icon">🔬</div>
-                <div class="staff-task-info">
-                  <div class="staff-task-title">Результат микробиологических исследований</div>
-                  <div class="staff-task-desc">3 анализ түрі — форма №057/у, №058/у, №221/у</div>
-                </div>
-                <div class="staff-task-arrow">▼</div>
-              </div>
-              <div class="staff-task-body" id="taskRezultatBody" style="display:none;">
-
-                <!-- === 1. МАЗОК === -->
-                <div style="border-bottom:2px solid rgba(34,164,85,0.15);">
-                  <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:2px solid rgba(0,0,0,0.06);background:rgba(34,164,85,0.04);user-select:none;">
-                    <span style="font-size:20px;">🧫</span>
-                    <div style="flex:1;">
-                      <div style="font-size:13px;font-weight:700;color:var(--dark);">Мазок из зева и носа на стафилококк</div>
-                      <div style="font-size:11px;color:var(--gray);">Форма №057/у</div>
-                    </div>
-                    
-                  </div>
-                  <div id="rez1">
-                    <div style="padding:20px 16px;">
+      <div class="staff-task-card" id="taskMazok" style="border-left:3px solid rgba(34,164,85,0.5);">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskMazokBody')" style="cursor:pointer;">
+          <div class="staff-task-icon">🧫</div>
+          <div class="staff-task-info">
+            <div class="staff-task-title">Мазок из зева и носа на стафилококк</div>
+            <div class="staff-task-desc">Форма №057/у</div>
+          </div>
+          <div class="staff-task-arrow">▼</div>
+        </div>
+        <div class="staff-task-body" id="taskMazokBody" style="display:none;">
+<div style="padding:20px 16px;">
 
                   <!-- СЧЁТЧИК -->
                   <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(34,164,85,0.06);border-radius:10px;border:1px solid rgba(34,164,85,0.2);">
@@ -4591,23 +4578,20 @@ html.dark .kz-tile { opacity:0.22; }
                   <div id="mazokHistory" style="margin-top:16px;"></div>
 
                 </div>
-              </div>
-            </div>
-                  </div>
-                </div>
+        </div>
+      </div>
 
-                <!-- === 2. ГЕЛЬМИНТ === -->
-                <div style="border-bottom:2px solid rgba(37,99,235,0.15);">
-                  <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:2px solid rgba(0,0,0,0.06);background:rgba(37,99,235,0.04);user-select:none;">
-                    <span style="font-size:20px;">🦠</span>
-                    <div style="flex:1;">
-                      <div style="font-size:13px;font-weight:700;color:var(--dark);">Яйца гельминтов, простейшие, соскоб на энтеробиоз</div>
-                      <div style="font-size:11px;color:var(--gray);">Форма №221/у — №N-N+2-N+4</div>
-                    </div>
-                    
-                  </div>
-                  <div id="rez2">
-                    <div style="padding:20px 16px;">
+      <div class="staff-task-card" id="taskGlist" style="border-left:3px solid rgba(37,99,235,0.5);">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskGlistBody')" style="cursor:pointer;">
+          <div class="staff-task-icon">🦠</div>
+          <div class="staff-task-info">
+            <div class="staff-task-title">Яйца гельминтов, простейшие, соскоб на энтеробиоз</div>
+            <div class="staff-task-desc">Форма №221/у — №N-N+2-N+4</div>
+          </div>
+          <div class="staff-task-arrow">▼</div>
+        </div>
+        <div class="staff-task-body" id="taskGlistBody" style="display:none;">
+<div style="padding:20px 16px;">
 
                   <!-- СЧЁТЧИК -->
                   <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(37,99,235,0.06);border-radius:10px;border:1px solid rgba(37,99,235,0.2);">
@@ -4661,11 +4645,155 @@ html.dark .kz-tile { opacity:0.22; }
                   <div id="glistHistory" style="margin-top:16px;"></div>
 
                 </div>
-              </div>
-            </div>
-                  </div>
+        </div>
+      </div>
+
+      <div class="staff-task-card" id="taskKal" style="border-left:3px solid rgba(124,58,237,0.5);">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskKalBody')" style="cursor:pointer;">
+          <div class="staff-task-icon">🧪</div>
+          <div class="staff-task-info">
+            <div class="staff-task-title">Кал на кишечную группу</div>
+            <div class="staff-task-desc">Форма №058/у</div>
+          </div>
+          <div class="staff-task-arrow">▼</div>
+        </div>
+        <div class="staff-task-body" id="taskKalBody" style="display:none;">
+<div style="padding:20px 16px;">
+
+  <!-- СЧЁТЧИК -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(124,58,237,0.06);border-radius:10px;border:1px solid rgba(124,58,237,0.2);">
+    <span style="font-size:13px;font-weight:600;color:var(--dark);">Соңғы берілген №:</span>
+    <span id="kalLastNum" style="font-size:20px;font-weight:900;color:#7c3aed;">—</span>
+    <span style="font-size:12px;color:var(--gray);margin-left:4px;">Келесі № : <b id="kalNextNum" style="color:var(--orange);">—</b></span>
+    <button onclick="kalResetCounter()" style="margin-left:auto;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(124,58,237,0.3);background:transparent;color:#7c3aed;font-size:11px;font-weight:700;cursor:pointer;">Нөлден бастау</button>
   </div>
-  <div id="paneljournals" class="kuraldar-panel-content" style="display:none;">
+
+  <!-- ФОРМА -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+    <div>
+      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Фамилия</label>
+      <input id="kalFam" type="text" placeholder="Иванов" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Имя</label>
+      <input id="kalIm" type="text" placeholder="Иван" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Отчество</label>
+      <input id="kalOtch" type="text" placeholder="Иванович" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Год рождения</label>
+      <input id="kalGod" type="number" placeholder="2015" min="1990" max="2030" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+    </div>
+  </div>
+
+  <!-- АВТОМАТТЫ ДАТАЛАР -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;padding:14px 16px;background:rgba(124,58,237,0.04);border-radius:10px;border:1px solid rgba(124,58,237,0.12);">
+    <div>
+      <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Дата поступления анализа (авто)</div>
+      <div id="kalDateIn" style="font-size:14px;font-weight:700;color:#7c3aed;"></div>
+      <div style="font-size:10px;color:var(--gray);margin-top:2px;">Бүгіннен 3 күн бұрын</div>
+    </div>
+    <div>
+      <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Дата выдачи анализа (авто)</div>
+      <div id="kalDateOut" style="font-size:14px;font-weight:700;color:var(--green);"></div>
+      <div style="font-size:10px;color:var(--gray);margin-top:2px;">Бүгінгі күн</div>
+    </div>
+  </div>
+
+  <!-- БАТЫРМАЛАР -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button onclick="kalGenerate()" style="padding:11px 28px;background:#7c3aed;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;flex:1;min-width:180px;">
+      🖨️ Басып шығару / Генерациялау
+    </button>
+    <button onclick="kalPreview()" style="padding:11px 20px;background:rgba(124,58,237,0.1);color:#7c3aed;border:1.5px solid rgba(124,58,237,0.3);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">
+      👁 Алдын ала қарау
+    </button>
+  </div>
+
+  <!-- ТАРИХ -->
+  <div id="kalHistory" style="margin-top:16px;"></div>
+
+</div>
+        </div>
+      </div>
+
+      <div class="staff-task-card" id="taskKozh" style="border-left:3px solid rgba(220,38,38,0.5);">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskKozhBody')" style="cursor:pointer;">
+          <div class="staff-task-icon">📋</div>
+          <div class="staff-task-info">
+            <div class="staff-task-title">Справка кожвенеролога</div>
+            <div class="staff-task-desc">Кожвенеролог тіркелмегені туралы анықтама</div>
+          </div>
+          <div class="staff-task-arrow">▼</div>
+        </div>
+        <div class="staff-task-body" id="taskKozhBody" style="display:none;">
+<div style="padding:20px 16px;">
+
+  <!-- СЧЁТЧИК -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(220,38,38,0.06);border-radius:10px;border:1px solid rgba(220,38,38,0.2);">
+    <span style="font-size:13px;font-weight:600;color:var(--dark);">Соңғы берілген №:</span>
+    <span id="kozhLastNum" style="font-size:20px;font-weight:900;color:#dc2626;">—</span>
+    <span style="font-size:12px;color:var(--gray);margin-left:4px;">Келесі № : <b id="kozhNextNum" style="color:var(--orange);">—</b></span>
+    <button onclick="kozhResetCounter()" style="margin-left:auto;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(220,38,38,0.3);background:transparent;color:#dc2626;font-size:11px;font-weight:700;cursor:pointer;">Нөлден бастау</button>
+  </div>
+
+  <!-- ФОРМА -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+    <div>
+      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Фамилия</label>
+      <input id="kozhFam" type="text" placeholder="Иванов" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Имя</label>
+      <input id="kozhIm" type="text" placeholder="Иван" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Отчество</label>
+      <input id="kozhOtch" type="text" placeholder="Иванович" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+    </div>
+    <div>
+      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Туған күні (дата рождения)</label>
+      <input id="kozhDob" type="text" placeholder="01.01.2015" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+    </div>
+  </div>
+
+  <!-- ЖЫН БЕЛГІСІ -->
+  <div style="display:flex;align-items:center;gap:16px;margin-bottom:18px;padding:12px 16px;background:rgba(220,38,38,0.04);border-radius:10px;border:1px solid rgba(220,38,38,0.12);">
+    <span style="font-size:12px;font-weight:700;color:var(--gray);">Жынысы:</span>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;">
+      <input type="radio" name="kozhGender" value="он" checked style="accent-color:#dc2626;"> Ер (он)
+    </label>
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:600;">
+      <input type="radio" name="kozhGender" value="она" style="accent-color:#dc2626;"> Әйел (она)
+    </label>
+  </div>
+
+  <!-- АВТОМАТТЫ ДАТА -->
+  <div style="margin-bottom:20px;padding:14px 16px;background:rgba(220,38,38,0.04);border-radius:10px;border:1px solid rgba(220,38,38,0.12);">
+    <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Справка берілген күні (авто)</div>
+    <div id="kozhDateOut" style="font-size:14px;font-weight:700;color:#dc2626;"></div>
+  </div>
+
+  <!-- БАТЫРМАЛАР -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button onclick="kozhGenerate()" style="padding:11px 28px;background:#dc2626;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;flex:1;min-width:180px;">
+      🖨️ Басып шығару / Генерациялау
+    </button>
+    <button onclick="kozhPreview()" style="padding:11px 20px;background:rgba(220,38,38,0.1);color:#dc2626;border:1.5px solid rgba(220,38,38,0.3);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">
+      👁 Алдын ала қарау
+    </button>
+  </div>
+
+  <!-- ТАРИХ -->
+  <div id="kozhHistory" style="margin-top:16px;"></div>
+
+</div>
+        </div>
+      </div>
+  </div>
+id="paneljournals" class="kuraldar-panel-content" style="display:none;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid rgba(139,92,246,0.15);">
       <span style="font-size:28px;">📓</span>
       <div>
@@ -6075,7 +6203,7 @@ function toggleSchedRow(rowId, expandId) {
 }
 
 // ─── STAFF TASKS ─────────────────────────────────────────────────────────────
-var _TOOL_NAMES = {"taskRpnBody": "РПН тазалау", "taskScrPlanBody": "Скрининг жоспар", "taskVaccBody": "Екпе калькулятор", "taskRpnDiffBody": "Тіркелгендер мен шыққандарды анықтау", "taskWhiteCodeBody": "Белый код", "taskDezBody": "Дезинфекция", "taskDez2Body": "Дезинфекция 2", "taskQuartzBody": "Кварц", "taskQuizBody": "Тест", "taskIncidentBody": "Инцидент", "taskPatientMapBody": "Пациенттер картасы", "taskDez3Body": "Ағымды 5 күн", "taskDez4Body": "Аптасына дайындау", "taskDez5Body": "Айына дайындау", "taskDezSummaryBody": "Жалпы қорытынды", "taskJournalsBody": "Журналдар үлгісі", "taskRezultatBody": "Микробиологиялық зерттеу нәтижелері", "taskKozhBody": "Справка кожвенеролога"};
+var _TOOL_NAMES = {"taskRpnBody": "РПН тазалау", "taskScrPlanBody": "Скрининг жоспар", "taskVaccBody": "Екпе калькулятор", "taskRpnDiffBody": "Тіркелгендер мен шыққандарды анықтау", "taskWhiteCodeBody": "Белый код", "taskDezBody": "Дезинфекция", "taskDez2Body": "Дезинфекция 2", "taskQuartzBody": "Кварц", "taskQuizBody": "Тест", "taskIncidentBody": "Инцидент", "taskPatientMapBody": "Пациенттер картасы", "taskDez3Body": "Ағымды 5 күн", "taskDez4Body": "Аптасына дайындау", "taskDez5Body": "Айына дайындау", "taskDezSummaryBody": "Жалпы қорытынды", "taskJournalsBody": "Журналдар үлгісі", "taskMazokBody": "Мазок из зева и носа", "taskGlistBody": "Яйца гельминтов, соскоб", "taskKalBody": "Кал на кишечную группу", "taskKozhBody": "Справка кожвенеролога", "taskKozhBody": "Справка кожвенеролога"};
 function toggleStaffTask(bodyId) {
   const body = document.getElementById(bodyId);
   if (!body) return;
@@ -6086,15 +6214,17 @@ function toggleStaffTask(bodyId) {
   if (!isOpen) {
     var toolName = _TOOL_NAMES[bodyId] || bodyId;
     staffLog('Құрал ашылды', toolName);
-    if (bodyId === 'taskRezultatBody') {
-      setTimeout(function(){
-        if(typeof mazokInitDates==='function'){mazokInitDates(); mazokUpdateCounter();}
-        if(typeof glistInitDate==='function'){glistInitDate(); glistUpdateCounter();}
-        if(typeof kalInitDates==='function'){kalInitDates(); kalUpdateCounter();}
-      }, 50);
+    if (bodyId === 'taskMazokBody') {
+      setTimeout(function(){ if(typeof mazokInitDates==='function'){mazokInitDates();mazokUpdateCounter();} }, 50);
+    }
+    if (bodyId === 'taskGlistBody') {
+      setTimeout(function(){ if(typeof glistInitDate==='function'){glistInitDate();glistUpdateCounter();} }, 50);
+    }
+    if (bodyId === 'taskKalBody') {
+      setTimeout(function(){ if(typeof kalInitDates==='function'){kalInitDates();kalUpdateCounter();} }, 50);
     }
     if (bodyId === 'taskKozhBody') {
-      setTimeout(function(){ if(typeof kozhInit==='function') kozhInit(); }, 50);
+      setTimeout(function(){ if(typeof kozhInitDate==='function'){kozhInitDate();kozhUpdateCounter();} }, 50);
     }
   }
 }
@@ -9392,13 +9522,7 @@ function openKuralPanel(panelId) {
   if (tile) tile.classList.add('active');
 
   // Init functions for specific panels
-  if (panelId === 'sanat') {
-    setTimeout(function(){
-      if(typeof mazokInitDates==='function'){ mazokInitDates(); mazokUpdateCounter(); }
-      if(typeof glistInitDate==='function'){ glistInitDate(); glistUpdateCounter(); }
-      if(typeof kalInitDates==='function'){ kalInitDates(); kalUpdateCounter(); }
-    }, 80);
-  }
+
 
   setTimeout(function(){
     wrapper.scrollIntoView({ behavior:'smooth', block:'start' });
