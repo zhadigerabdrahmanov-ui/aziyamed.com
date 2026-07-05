@@ -4572,6 +4572,104 @@ html.dark .kz-tile { opacity:0.22; }
       
 <!-- Болашақта жаңа құралдар осы жерге қосылады -->
 
+      <!-- САНАТОРИЙ / ЛАГЕРЬ ДАЙЫНДЫҚ БӨЛІМІ -->
+      <div style="margin:28px 0 14px;padding:18px 22px;background:linear-gradient(135deg,rgba(34,164,85,0.07),rgba(34,164,85,0.03));border-left:4px solid var(--green);border-radius:0 12px 12px 0;">
+        <div style="font-size:13px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">🏕️ Санаторияға / Лагерьге дайындық</div>
+        <div style="font-size:14px;font-weight:700;color:var(--dark);line-height:1.5;">Балаларды санаторияға және лагерьге жіберу үшін қажетті медициналық құжаттарды автоматты дайындау</div>
+      </div>
+
+      <div class="staff-folder" id="folderSanat">
+        <div class="staff-folder-head" onclick="toggleStaffFolder('folderSanat')">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:26px;">🏕️</span>
+            <div>
+              <div style="font-size:15px;font-weight:800;color:var(--dark);">Санаторияға / Лагерьге дайындық</div>
+              <div style="font-size:12px;color:var(--gray);font-weight:400;margin-top:1px;">Құжаттарды автоматты генерациялау</div>
+            </div>
+          </div>
+          <span class="staff-folder-arrow" id="folderSanatArrow">▼</span>
+        </div>
+        <div class="staff-folder-body" id="folderSanatBody" style="display:none;">
+          <div style="padding:8px 4px 4px;">
+
+            <!-- МАЗОК ГЕНЕРАТОР -->
+            <div class="staff-task-card" id="taskMazok">
+              <div class="staff-task-head" onclick="toggleStaffTask('taskMazokBody')" style="cursor:pointer;">
+                <div class="staff-task-icon">🧫</div>
+                <div class="staff-task-info">
+                  <div class="staff-task-title">Результат микробиологических исследований</div>
+                  <div class="staff-task-desc">Мазок из зева и носа на стафилококк — форма №057/у</div>
+                </div>
+                <div class="staff-task-arrow">▼</div>
+              </div>
+              <div class="staff-task-body" id="taskMazokBody" style="display:none;">
+                <div style="padding:20px 16px;">
+
+                  <!-- СЧЁТЧИК -->
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(34,164,85,0.06);border-radius:10px;border:1px solid rgba(34,164,85,0.2);">
+                    <span style="font-size:13px;font-weight:600;color:var(--dark);">Соңғы берілген №:</span>
+                    <span id="mazokLastNum" style="font-size:20px;font-weight:900;color:var(--green);">—</span>
+                    <span style="font-size:12px;color:var(--gray);margin-left:4px;">Келесі жазба: <b id="mazokNextNums" style="color:var(--orange);">—</b></span>
+                    <button onclick="mazokResetCounter()" style="margin-left:auto;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(240,120,48,0.3);background:transparent;color:var(--orange);font-size:11px;font-weight:700;cursor:pointer;">Нөлден бастау</button>
+                  </div>
+
+                  <!-- ФОРМА -->
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+                    <div>
+                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Фамилия</label>
+                      <input id="mazokFam" type="text" placeholder="Иванов" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+                    </div>
+                    <div>
+                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Имя</label>
+                      <input id="mazokIm" type="text" placeholder="Иван" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+                    </div>
+                    <div>
+                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Отчество</label>
+                      <input id="mazokOtch" type="text" placeholder="Иванович" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+                    </div>
+                    <div>
+                      <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Год рождения</label>
+                      <input id="mazokGod" type="number" placeholder="2015" min="1990" max="2030" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;">
+                    </div>
+                  </div>
+
+                  <!-- АВТОМАТТЫ ДАТАЛАР -->
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;padding:14px 16px;background:rgba(37,99,235,0.04);border-radius:10px;border:1px solid rgba(37,99,235,0.12);">
+                    <div>
+                      <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Дата поступления анализа (авто)</div>
+                      <div id="mazokDateIn" style="font-size:14px;font-weight:700;color:#2563eb;"></div>
+                      <div style="font-size:10px;color:var(--gray);margin-top:2px;">Бүгіннен 3 күн бұрын</div>
+                    </div>
+                    <div>
+                      <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Дата выдачи анализа (авто)</div>
+                      <div id="mazokDateOut" style="font-size:14px;font-weight:700;color:var(--green);"></div>
+                      <div style="font-size:10px;color:var(--gray);margin-top:2px;">Бүгінгі күн</div>
+                    </div>
+                  </div>
+
+                  <!-- БАСЫП ШЫҒАРУ БАТЫРМАСЫ -->
+                  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button onclick="mazokGenerate()" style="padding:11px 28px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;flex:1;min-width:180px;">
+                      🖨️ Басып шығару / Генерациялау
+                    </button>
+                    <button onclick="mazokPreview()" style="padding:11px 20px;background:rgba(37,99,235,0.1);color:#2563eb;border:1.5px solid rgba(37,99,235,0.3);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">
+                      👁 Алдын ала қарау
+                    </button>
+                  </div>
+
+                  <!-- ЖАЗБА ТАРИХЫ -->
+                  <div id="mazokHistory" style="margin-top:16px;"></div>
+
+                </div>
+              </div>
+            </div>
+            <!-- /МАЗОК ГЕНЕРАТОР -->
+
+          </div>
+        </div>
+      </div>
+      <!-- /САНАТОРИЙ ПАПКАСЫ -->
+
       <!-- ЖУРНАЛДАР ҮЛГІСІ -->
       <div style="margin:28px 0 14px;padding:18px 22px;background:linear-gradient(135deg,rgba(37,99,235,0.07),rgba(37,99,235,0.03));border-left:4px solid #2563eb;border-radius:0 12px 12px 0;">
         <div style="font-size:13px;font-weight:800;color:#2563eb;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">📓 Журналдар үлгісі</div>
@@ -5973,7 +6071,7 @@ function toggleSchedRow(rowId, expandId) {
 }
 
 // ─── STAFF TASKS ─────────────────────────────────────────────────────────────
-var _TOOL_NAMES = {"taskRpnBody": "РПН тазалау", "taskScrPlanBody": "Скрининг жоспар", "taskVaccBody": "Екпе калькулятор", "taskRpnDiffBody": "Тіркелгендер мен шыққандарды анықтау", "taskWhiteCodeBody": "Белый код", "taskDezBody": "Дезинфекция", "taskDez2Body": "Дезинфекция 2", "taskQuartzBody": "Кварц", "taskQuizBody": "Тест", "taskIncidentBody": "Инцидент", "taskPatientMapBody": "Пациенттер картасы", "taskDez3Body": "Ағымды 5 күн", "taskDez4Body": "Аптасына дайындау", "taskDez5Body": "Айына дайындау", "taskDezSummaryBody": "Жалпы қорытынды", "taskJournalsBody": "Журналдар үлгісі"};
+var _TOOL_NAMES = {"taskRpnBody": "РПН тазалау", "taskScrPlanBody": "Скрининг жоспар", "taskVaccBody": "Екпе калькулятор", "taskRpnDiffBody": "Тіркелгендер мен шыққандарды анықтау", "taskWhiteCodeBody": "Белый код", "taskDezBody": "Дезинфекция", "taskDez2Body": "Дезинфекция 2", "taskQuartzBody": "Кварц", "taskQuizBody": "Тест", "taskIncidentBody": "Инцидент", "taskPatientMapBody": "Пациенттер картасы", "taskDez3Body": "Ағымды 5 күн", "taskDez4Body": "Аптасына дайындау", "taskDez5Body": "Айына дайындау", "taskDezSummaryBody": "Жалпы қорытынды", "taskJournalsBody": "Журналдар үлгісі", "taskMazokBody": "Мазок генератор"};
 function toggleStaffTask(bodyId) {
   const body = document.getElementById(bodyId);
   if (!body) return;
@@ -6771,6 +6869,7 @@ function resetDez2() {
       if (id === 'taskDez4Body') { setTimeout(renderDezWeeklyTable, 50); }
       if (id === 'taskDez5Body') { setTimeout(renderDezMonthlyTable, 50); }
       if (id === 'taskDezSummaryBody') { setTimeout(renderDezSummary, 50); }
+    if (id === 'taskMazokBody') { setTimeout(mazokInit, 50); }
     };
   })();
 
@@ -9266,5 +9365,141 @@ function submitBlogComment(postId) {
       folder.classList.add('open');
       body.style.display = '';
     }
+  }
+
+  // ===== МАЗОК ГЕНЕРАТОР =====
+  function mazokFormatDate(d) {
+    var dd = String(d.getDate()).padStart(2,'0');
+    var mm = String(d.getMonth()+1).padStart(2,'0');
+    var yyyy = d.getFullYear();
+    return dd + '.' + mm + '.' + yyyy;
+  }
+
+  function mazokInitDates() {
+    var today = new Date();
+    var minus3 = new Date(today); minus3.setDate(today.getDate() - 3);
+    var elIn  = document.getElementById('mazokDateIn');
+    var elOut = document.getElementById('mazokDateOut');
+    if (elIn)  elIn.textContent  = mazokFormatDate(minus3);
+    if (elOut) elOut.textContent = mazokFormatDate(today);
+  }
+
+  function mazokUpdateCounter() {
+    var last = parseInt(localStorage.getItem('mazok_counter') || '0');
+    var elLast = document.getElementById('mazokLastNum');
+    var elNext = document.getElementById('mazokNextNums');
+    if (elLast) elLast.textContent = last === 0 ? '—' : '№' + last;
+    if (elNext) elNext.textContent = '№' + (last+1) + ' және №' + (last+2);
+  }
+
+  function mazokResetCounter() {
+    if (!confirm('Счётчикті нөлге қоясыз ба? Барлық нөмерлеу қайтадан №1-ден басталады.')) return;
+    localStorage.setItem('mazok_counter', '0');
+    mazokUpdateCounter();
+    var hist = document.getElementById('mazokHistory');
+    if (hist) hist.innerHTML = '';
+  }
+
+  function mazokGetFIO() {
+    var f = (document.getElementById('mazokFam').value||'').trim();
+    var i = (document.getElementById('mazokIm').value||'').trim();
+    var o = (document.getElementById('mazokOtch').value||'').trim();
+    return [f, i, o].filter(Boolean).join(' ');
+  }
+
+  function mazokBuildForm(num, fio, god, dateIn, dateOut, material) {
+    return '<div style="width:175mm;padding:5mm 8mm 8mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:10pt;page-break-inside:avoid;">' +
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:4mm;">' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;width:55%;">Қазақстан Республикасы Денсаулық сақтау министірлігі<br>Министерство здравоохранения Республики Казахстан</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;text-align:center;">ҚҰЖЖ бойынша ұйым коды<br>Код организации по ОКПО<br><br></td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Ұйымнын атауы<br><b>ЖШС «Азия мед – МО»</b><br>Наименование организации<br><b>ТОО «Азия мед – МО»</b></td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Медицинская документация форма №057/у<br>Утверждена приказом министра здравоохранения Республики Казахстан 30 октября 2010г №175</td>' +
+        '</tr>' +
+      '</table>' +
+      '<div style="text-align:center;font-size:11pt;font-weight:bold;margin:3mm 0 1mm;">Результат микробиологических исследований</div>' +
+      '<div style="text-align:center;font-size:9pt;margin-bottom:2mm;">(мазок из зева и носа на стафилококк)</div>' +
+      '<div style="text-align:right;font-size:10pt;margin-bottom:3mm;padding-right:4mm;">№ <u>&nbsp;&nbsp;' + num + '&nbsp;&nbsp;</u></div>' +
+      '<table style="width:100%;border-collapse:collapse;">' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;width:55%;">Фамилия &nbsp;&nbsp;&nbsp; Имя &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Отчество:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;font-weight:bold;">' + fio + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Год рождения :</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;font-weight:bold;">' + god + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата поступления анализа:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dateIn + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата &nbsp;&nbsp; выдачи &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; анализа:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dateOut + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Взятый материал для исследования:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + material + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Наименование микроорганизма выделенного</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Отрицательно</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;font-size:9.5pt;">Фамилия Имя бактериолога:</td><td style="padding:1.5mm 2mm;font-size:9.5pt;">Ж.Абдрахманов.</td></tr>' +
+      '</table>' +
+    '</div>';
+  }
+
+  function mazokGenerate() {
+    var fio  = mazokGetFIO();
+    var god  = (document.getElementById('mazokGod').value||'').trim();
+    if (!fio || !god) { alert('ФИО және жыл туған күнін жазыңыз!'); return; }
+
+    var today   = new Date();
+    var minus3  = new Date(today); minus3.setDate(today.getDate() - 3);
+    var dateIn  = mazokFormatDate(minus3);
+    var dateOut = mazokFormatDate(today);
+
+    var last = parseInt(localStorage.getItem('mazok_counter') || '0');
+    var n1 = last + 1, n2 = last + 2;
+    localStorage.setItem('mazok_counter', String(n2));
+    mazokUpdateCounter();
+
+    var form1 = mazokBuildForm(n1, fio, god, dateIn, dateOut, 'Мазок из зева');
+    var form2 = mazokBuildForm(n2, fio, god, dateIn, dateOut, 'Мазок из носа');
+
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Мазок — ' + fio + '</title>' +
+      '<style>@page{size:A4;margin:10mm;} body{margin:0;padding:0;} ' +
+      '.page-row{display:flex;gap:5mm;justify-content:center;flex-wrap:wrap;} ' +
+      '@media print{button{display:none;}.no-print{display:none;}}' +
+      '</style></head><body>' +
+      '<div class="no-print" style="padding:10px;background:#f0f9ff;text-align:center;font-family:Arial,sans-serif;">' +
+        '<button onclick="window.print()" style="padding:10px 28px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>' +
+        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
+      '</div>' +
+      '<div class="page-row">' + form1 + form2 + '</div>' +
+      '</body></html>';
+
+    var w = window.open('','_blank');
+    w.document.write(html);
+    w.document.close();
+
+    // History
+    mazokAddHistory(n1, n2, fio, god, dateOut);
+  }
+
+  function mazokPreview() {
+    var fio = mazokGetFIO();
+    var god = (document.getElementById('mazokGod').value||'').trim();
+    if (!fio || !god) { alert('ФИО және жыл туған күнін жазыңыз!'); return; }
+    var today  = new Date();
+    var minus3 = new Date(today); minus3.setDate(today.getDate()-3);
+    var last   = parseInt(localStorage.getItem('mazok_counter')||'0');
+    var n1 = last+1, n2 = last+2;
+    var hist = document.getElementById('mazokHistory');
+    if (!hist) return;
+    hist.innerHTML = '<div style="margin-top:12px;padding:14px 16px;background:#f0fdf4;border:1.5px solid rgba(34,164,85,0.3);border-radius:10px;">' +
+      '<div style="font-size:12px;font-weight:700;color:var(--green);margin-bottom:8px;">👁 Алдын ала қарау:</div>' +
+      '<div style="font-size:13px;"><b>№' + n1 + '</b> — ' + fio + ', ' + god + 'г.р. — Мазок из зева — ' + mazokFormatDate(minus3) + ' / ' + mazokFormatDate(today) + '</div>' +
+      '<div style="font-size:13px;margin-top:4px;"><b>№' + n2 + '</b> — ' + fio + ', ' + god + 'г.р. — Мазок из носа — ' + mazokFormatDate(minus3) + ' / ' + mazokFormatDate(today) + '</div>' +
+    '</div>';
+  }
+
+  function mazokAddHistory(n1, n2, fio, god, dateOut) {
+    var hist = document.getElementById('mazokHistory');
+    if (!hist) return;
+    var item = '<div style="margin-top:10px;padding:10px 14px;background:#f0fdf4;border-left:3px solid var(--green);border-radius:0 8px 8px 0;font-size:13px;">' +
+      '<span style="font-weight:700;color:var(--green);">✓ Жасалды: №' + n1 + '–' + n2 + '</span> — ' + fio + ', ' + god + ' г.р. — ' + dateOut +
+    '</div>';
+    hist.innerHTML = item + hist.innerHTML;
+  }
+
+  function mazokInit() {
+    mazokInitDates();
+    mazokUpdateCounter();
   }
 </script></body></html>
