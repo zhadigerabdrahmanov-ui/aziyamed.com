@@ -3841,7 +3841,7 @@ html.dark .kz-tile { opacity:0.22; }
 </section>
 
 <!-- STAFF TOOLS -->
-<section id="staff" class="page-section" style="background:var(--light);">
+<section id="staff" class="page-section" style="background:var(--light);padding-top:100px;">
   <div class="section-inner">
     <div class="section-head center reveal">
       <div class="section-label" data-i18n="staff_label">ҚҰРАЛДАР</div>
@@ -9995,4 +9995,224 @@ function toggleStaffFolder(id) {
     var last    = parseInt(localStorage.getItem('glist_counter') || '0');
     var n1 = last+1, n2 = last+3, n3 = last+5;
     localStorage.setItem('glist_counter', String(last+1));
-    glistUpdateCou
+    glistUpdateCounter();
+
+    var docHtml = glistBuildDoc(n1, n2, n3, fio, dob, org, dateOut);
+
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Гельминт — ' + fio + '</title>' +
+      '<style>@page{size:A4;margin:10mm;} body{margin:0;padding:0;} @media print{.no-print{display:none;}}</style>' +
+      '</head><body>' +
+      '<div class="no-print" style="padding:10px;background:#eff6ff;text-align:center;font-family:Arial,sans-serif;">' +
+        '<button onclick="window.print()" style="padding:10px 28px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>' +
+        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
+      '</div>' +
+      docHtml +
+      '</body></html>';
+
+    var w = window.open('','_blank');
+    w.document.write(html);
+    w.document.close();
+
+    var hist = document.getElementById('glistHistory');
+    if (hist) {
+      hist.innerHTML = '<div style="margin-top:10px;padding:10px 14px;background:#eff6ff;border-left:3px solid #2563eb;border-radius:0 8px 8px 0;font-size:13px;">' +
+        '<span style="font-weight:700;color:#2563eb;">✓ Жасалды: №' + n1 + '-' + n2 + '-' + n3 + '</span> — ' + fio + ', ' + dob + ' — ' + dateOut +
+      '</div>' + hist.innerHTML;
+    }
+  }
+
+  function glistPreview() {
+    var fio = glistGetFIO();
+    var dob = (document.getElementById('glistDob').value||'').trim();
+    if (!fio || !dob) { alert('ФИО және туған күнін жазыңыз!'); return; }
+    var last = parseInt(localStorage.getItem('glist_counter')||'0');
+    var n1 = last+1, n2 = last+3, n3 = last+5;
+    var hist = document.getElementById('glistHistory');
+    if (!hist) return;
+    hist.innerHTML = '<div style="margin-top:12px;padding:14px 16px;background:#eff6ff;border:1.5px solid rgba(37,99,235,0.3);border-radius:10px;">' +
+      '<div style="font-size:12px;font-weight:700;color:#2563eb;margin-bottom:6px;">👁 Алдын ала қарау:</div>' +
+      '<div style="font-size:13px;"><b>№' + n1 + '-' + n2 + '-' + n3 + '</b> — ' + fio + ', ' + dob + ' — Яйца гельминтов / Простейшие / Энтеробиоз</div>' +
+    '</div>';
+  }
+
+  function glistInit() {
+    glistInitDate();
+    glistUpdateCounter();
+  }
+
+  // ===== КАЛ НА КИШЕЧНУЮ ГРУППУ =====
+  function kalInitDates() {
+    var today  = new Date();
+    var minus3 = new Date(today); minus3.setDate(today.getDate()-3);
+    var eIn  = document.getElementById('kalDateIn');
+    var eOut = document.getElementById('kalDateOut');
+    if (eIn)  eIn.textContent  = mazokFormatDate(minus3);
+    if (eOut) eOut.textContent = mazokFormatDate(today);
+  }
+  function kalUpdateCounter() {
+    var last = parseInt(localStorage.getItem('kal_counter')||'0');
+    var eL = document.getElementById('kalLastNum');
+    var eN = document.getElementById('kalNextNum');
+    if (eL) eL.textContent = last===0 ? '—' : '№'+last;
+    if (eN) eN.textContent = '№'+(last+1);
+  }
+  function kalResetCounter() {
+    if (!confirm('Счётчикті нөлге қоясыз ба?')) return;
+    localStorage.setItem('kal_counter','0');
+    kalUpdateCounter();
+    var h=document.getElementById('kalHistory'); if(h) h.innerHTML='';
+  }
+  function kalGetFIO() {
+    var f=(document.getElementById('kalFam').value||'').trim();
+    var i=(document.getElementById('kalIm').value||'').trim();
+    var o=(document.getElementById('kalOtch').value||'').trim();
+    return [f,i,o].filter(Boolean).join(' ');
+  }
+  function kalGenerate() {
+    var fio=kalGetFIO();
+    var god=(document.getElementById('kalGod').value||'').trim();
+    if(!fio||!god){alert('ФИО және жыл туған күнін жазыңыз!');return;}
+    var today=new Date(), minus3=new Date(today);
+    minus3.setDate(today.getDate()-3);
+    var dateIn=mazokFormatDate(minus3), dateOut=mazokFormatDate(today);
+    var last=parseInt(localStorage.getItem('kal_counter')||'0');
+    var n=last+1;
+    localStorage.setItem('kal_counter',String(n));
+    kalUpdateCounter();
+    var form = mazokBuildForm(n, fio, god, dateIn, dateOut, 'Кал');
+    // Fix title and form number in the printed doc
+    form = form.replace('Результат микробиологических исследований','Результат микробиологических исследований');
+    form = form.replace('(мазок из зева и носа на стафилококк)','(Кал на кишечную группу)');
+    form = form.replace('форма №057/у','форма №058/у');
+    form = form.replace('Мазок из зева и носа','Кал');
+    var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Кал на кишечную — '+fio+'</title>'+
+      '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;} @media print{.no-print{display:none;}}</style>'+
+      '</head><body>'+
+      '<div class="no-print" style="padding:10px;background:#faf5ff;text-align:center;font-family:Arial,sans-serif;">'+
+        '<button onclick="window.print()" style="padding:10px 28px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>'+
+        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>'+
+      '</div>'+form+'</body></html>';
+    var w=window.open('','_blank'); w.document.write(html); w.document.close();
+    var hist=document.getElementById('kalHistory');
+    if(hist) hist.innerHTML='<div style="margin-top:10px;padding:10px 14px;background:#faf5ff;border-left:3px solid #7c3aed;border-radius:0 8px 8px 0;font-size:13px;">'+
+      '<span style="font-weight:700;color:#7c3aed;">✓ Жасалды: №'+n+'</span> — '+fio+', '+god+' г.р. — '+dateOut+'</div>'+hist.innerHTML;
+  }
+  function kalPreview() {
+    var fio=kalGetFIO();
+    var god=(document.getElementById('kalGod').value||'').trim();
+    if(!fio||!god){alert('ФИО және жыл туған күнін жазыңыз!');return;}
+    var today=new Date(), minus3=new Date(today); minus3.setDate(today.getDate()-3);
+    var last=parseInt(localStorage.getItem('kal_counter')||'0');
+    var hist=document.getElementById('kalHistory'); if(!hist) return;
+    hist.innerHTML='<div style="margin-top:12px;padding:14px 16px;background:#faf5ff;border:1.5px solid rgba(124,58,237,0.3);border-radius:10px;">'+
+      '<div style="font-size:12px;font-weight:700;color:#7c3aed;margin-bottom:6px;">👁 Алдын ала қарау:</div>'+
+      '<div style="font-size:13px;"><b>№'+(last+1)+'</b> — '+fio+', '+god+' г.р. — Кал на кишечную группу — '+mazokFormatDate(minus3)+' / '+mazokFormatDate(today)+'</div>'+
+    '</div>';
+  }
+  function kalInit() { kalInitDates(); kalUpdateCounter(); }
+
+  function rezToggle(id) {
+    var body  = document.getElementById(id);
+    var arrow = document.getElementById(id + 'Arrow');
+    if (!body) return;
+    var open = body.style.display !== 'none';
+    body.style.display = open ? 'none' : '';
+    if (arrow) arrow.style.transform = open ? '' : 'rotate(180deg)';
+    if (!open) {
+      if (id==='rez1') { mazokInitDates(); mazokUpdateCounter(); }
+      if (id==='rez2') { glistInitDate(); glistUpdateCounter(); }
+      if (id==='rez3') { kalInitDates(); kalUpdateCounter(); }
+    }
+  }
+
+  // ===== СПРАВКА КОЖВЕНЕРОЛОГА =====
+  function kozhInitDate() {
+    var el = document.getElementById('kozhDateOut');
+    if (el) el.textContent = mazokFormatDate(new Date());
+  }
+  function kozhUpdateCounter() {
+    var last = parseInt(localStorage.getItem('kozh_counter')||'0');
+    var eL = document.getElementById('kozhLastNum');
+    var eN = document.getElementById('kozhNextNum');
+    if (eL) eL.textContent = last===0 ? '—' : '№'+last;
+    if (eN) eN.textContent = '№'+(last+1);
+  }
+  function kozhResetCounter() {
+    if (!confirm('Счётчикті нөлге қоясыз ба?')) return;
+    localStorage.setItem('kozh_counter','0');
+    kozhUpdateCounter();
+    var h=document.getElementById('kozhHistory'); if(h) h.innerHTML='';
+  }
+  function kozhGetFIO() {
+    var f=(document.getElementById('kozhFam').value||'').trim();
+    var i=(document.getElementById('kozhIm').value||'').trim();
+    var o=(document.getElementById('kozhOtch').value||'').trim();
+    return [f,i,o].filter(Boolean).join(' ');
+  }
+  function kozhGetGender() {
+    var r = document.querySelector('input[name="kozhGender"]:checked');
+    return r ? r.value : 'он(а)';
+  }
+  function kozhBuildText(num, fio, dob, gender, date) {
+    var today = new Date();
+    var dd=String(today.getDate()).padStart(2,'0');
+    var mm=String(today.getMonth()+1).padStart(2,'0');
+    var yyyy=today.getFullYear();
+    return {
+      num: num, fio: fio, dob: dob, gender: gender,
+      date: date, dd: dd, mm: mm, yyyy: yyyy
+    };
+  }
+  function kozhBuildHTML(d) {
+    return '<div style="width:180mm;margin:0 auto;padding:15mm 20mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:12pt;line-height:2;">' +
+      '<div style="text-align:center;font-size:14pt;font-weight:bold;margin-bottom:10mm;">Справка №&nbsp;<u>&nbsp;&nbsp;' + d.num + '&nbsp;&nbsp;</u></div>' +
+      '<div style="text-align:justify;margin-bottom:6mm;">' +
+        '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>' + d.fio + '</b>, ' + d.dob + ' года рождения в том что ' + d.gender +
+        ' действительно «ДУ» у врача кожвенеролога не состоит по архивным данным не значится.' +
+      '</div>' +
+      '<div style="text-align:center;margin-bottom:12mm;">Справка дана для предъявления по месту требования.</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10mm;">' +
+        '<div>Дата &nbsp;<u>&nbsp;&nbsp;' + d.dd + '&nbsp;</u>&nbsp;.&nbsp;<u>&nbsp;' + d.mm + '&nbsp;</u>&nbsp;.&nbsp;' + d.yyyy + '&nbsp;год</div>' +
+        '<div>Врач &nbsp;<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u></div>' +
+      '</div>' +
+    '</div>';
+  }
+  function kozhPreview() {
+    var fio=kozhGetFIO(), dob=(document.getElementById('kozhDob').value||'').trim();
+    if(!fio||!dob){alert('ФИО және туған күнін жазыңыз!');return;}
+    var gender=kozhGetGender(), date=mazokFormatDate(new Date());
+    var last=parseInt(localStorage.getItem('kozh_counter')||'0');
+    var box=document.getElementById('kozhPreviewBox');
+    if(!box) return;
+    var d=kozhBuildText(last+1,fio,dob,gender,date);
+    box.style.display='';
+    box.innerHTML=
+      '<div style="font-size:11px;font-weight:700;color:#dc2626;margin-bottom:8px;">👁 Алдын ала қарау:</div>'+
+      '<b>Справка №'+(last+1)+'</b><br>'+
+      fio+', '+dob+' года рождения в том что <b>'+gender+'</b> действительно «ДУ» у врача кожвенеролога не состоит...<br>'+
+      '<span style="font-size:11px;color:var(--gray);">Дата: '+date+'</span>';
+  }
+  function kozhGenerate() {
+    var fio=kozhGetFIO(), dob=(document.getElementById('kozhDob').value||'').trim();
+    if(!fio||!dob){alert('ФИО және туған күнін жазыңыз!');return;}
+    var gender=kozhGetGender(), date=mazokFormatDate(new Date());
+    var last=parseInt(localStorage.getItem('kozh_counter')||'0');
+    var n=last+1;
+    localStorage.setItem('kozh_counter',String(n));
+    kozhUpdateCounter();
+    var d=kozhBuildText(n,fio,dob,gender,date);
+    var bodyHtml=kozhBuildHTML(d);
+    var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Справка кожвенеролога — '+fio+'</title>'+
+      '<style>@page{size:A4;margin:0;} body{margin:0;padding:0;} @media print{.no-print{display:none;}}</style>'+
+      '</head><body>'+
+      '<div class="no-print" style="padding:10px;background:#fff5f5;text-align:center;font-family:Arial,sans-serif;">'+
+        '<button onclick="window.print()" style="padding:10px 28px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>'+
+        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>'+
+      '</div>'+bodyHtml+'</body></html>';
+    var w=window.open('','_blank'); w.document.write(html); w.document.close();
+    var hist=document.getElementById('kozhHistory');
+    if(hist) hist.innerHTML='<div style="margin-top:10px;padding:10px 14px;background:#fff5f5;border-left:3px solid #dc2626;border-radius:0 8px 8px 0;font-size:13px;">'+
+      '<span style="font-weight:700;color:#dc2626;">✓ Жасалды: №'+n+'</span> — '+fio+', '+dob+' — '+date+'</div>'+hist.innerHTML;
+  }
+  function kozhInit() { kozhInitDate(); kozhUpdateCounter(); }
+</scr
