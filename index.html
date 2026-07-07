@@ -4546,7 +4546,7 @@ html.dark .kz-tile { opacity:0.22; }
         </div>
       </div>
       <button onclick="generateAllDocs()" style="width:100%;padding:13px 28px;background:linear-gradient(135deg,#14b8a6,#0d9488);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:0.3px;box-shadow:0 4px 12px rgba(20,184,166,0.35);">
-        🖨️ 4 құжатты бірдестен генерациялау
+        🖨️ Санаторияға қажетті құжаттың барлығын генерациялау
       </button>
     </div>
 
@@ -4834,6 +4834,187 @@ html.dark .kz-tile { opacity:0.22; }
 </div>
         </div>
       </div>
+
+      <!-- ═══ БРУЦЕЛЛЕЗ ═══ -->
+      <div class="staff-task-card" id="taskBrc" style="border-left:3px solid rgba(249,115,22,0.5);">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskBrcBody')" style="cursor:pointer;">
+          <div class="staff-task-icon">🧫</div>
+          <div class="staff-task-info">
+            <div class="staff-task-title">Анализ на бруцеллез</div>
+            <div class="staff-task-desc">Р. Хеддельсона / Р. Райта — форма №221/у</div>
+          </div>
+          <div class="staff-task-arrow">▼</div>
+        </div>
+        <div class="staff-task-body" id="taskBrcBody" style="display:none;">
+<div style="padding:20px 16px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(249,115,22,0.06);border-radius:10px;border:1px solid rgba(249,115,22,0.2);">
+    <span style="font-size:13px;font-weight:600;color:var(--dark);">Соңғы берілген №:</span>
+    <span id="brcLastNum" style="font-size:20px;font-weight:900;color:#f97316;">—</span>
+    <span style="font-size:12px;color:var(--gray);margin-left:4px;">Келесі № : <b id="brcNextNum" style="color:var(--orange);">—</b></span>
+    <button onclick="brcResetCounter()" style="margin-left:auto;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(249,115,22,0.3);background:transparent;color:#f97316;font-size:11px;font-weight:700;cursor:pointer;">Нөлден бастау</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Фамилия</label><input id="brcFam" type="text" placeholder="Иванов" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Имя</label><input id="brcIm" type="text" placeholder="Иван" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Отчество</label><input id="brcOtch" type="text" placeholder="Иванович" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Туған күні (дата рождения)</label><input id="brcDob" type="text" placeholder="01.01.1990" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+  </div>
+  <div style="margin-bottom:20px;padding:14px 16px;background:rgba(249,115,22,0.04);border-radius:10px;border:1px solid rgba(249,115,22,0.12);">
+    <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Справка берілген күні (авто)</div>
+    <div id="brcDateOut" style="font-size:14px;font-weight:700;color:#f97316;"></div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button onclick="brcGenerate()" style="padding:11px 28px;background:#f97316;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;flex:1;min-width:180px;">🖨️ Басып шығару / Генерациялау</button>
+  </div>
+  <div id="brcHistory" style="margin-top:16px;"></div>
+</div>
+        </div>
+      </div>
+
+      <!-- ═══ МИКРОРЕАКЦИЯ ═══ -->
+      <div class="staff-task-card" id="taskMic" style="border-left:3px solid rgba(59,130,246,0.5);">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskMicBody')" style="cursor:pointer;">
+          <div class="staff-task-icon">🩸</div>
+          <div class="staff-task-info">
+            <div class="staff-task-title">Кровь на микрореакцию</div>
+            <div class="staff-task-desc">Экспресс метод — форма №013/у</div>
+          </div>
+          <div class="staff-task-arrow">▼</div>
+        </div>
+        <div class="staff-task-body" id="taskMicBody" style="display:none;">
+<div style="padding:20px 16px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(59,130,246,0.06);border-radius:10px;border:1px solid rgba(59,130,246,0.2);">
+    <span style="font-size:13px;font-weight:600;color:var(--dark);">Соңғы берілген №:</span>
+    <span id="micLastNum" style="font-size:20px;font-weight:900;color:#3b82f6;">—</span>
+    <span style="font-size:12px;color:var(--gray);margin-left:4px;">Келесі № : <b id="micNextNum" style="color:var(--orange);">—</b></span>
+    <button onclick="micResetCounter()" style="margin-left:auto;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(59,130,246,0.3);background:transparent;color:#3b82f6;font-size:11px;font-weight:700;cursor:pointer;">Нөлден бастау</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Фамилия</label><input id="micFam" type="text" placeholder="Иванов" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Имя</label><input id="micIm" type="text" placeholder="Иван" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Отчество</label><input id="micOtch" type="text" placeholder="Иванович" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Туған күні (дата рождения)</label><input id="micDob" type="text" placeholder="01.01.1990" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+  </div>
+  <div style="margin-bottom:20px;padding:14px 16px;background:rgba(59,130,246,0.04);border-radius:10px;border:1px solid rgba(59,130,246,0.12);">
+    <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Справка берілген күні (авто)</div>
+    <div id="micDateOut" style="font-size:14px;font-weight:700;color:#3b82f6;"></div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button onclick="micGenerate()" style="padding:11px 28px;background:#3b82f6;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;flex:1;min-width:180px;">🖨️ Басып шығару / Генерациялау</button>
+  </div>
+  <div id="micHistory" style="margin-top:16px;"></div>
+</div>
+        </div>
+      </div>
+
+      <!-- ═══ ДИФТЕРИЯ ═══ -->
+      <div class="staff-task-card" id="taskDif" style="border-left:3px solid rgba(139,92,246,0.5);">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskDifBody')" style="cursor:pointer;">
+          <div class="staff-task-icon">🔬</div>
+          <div class="staff-task-info">
+            <div class="staff-task-title">Мазок на дифтерию</div>
+            <div class="staff-task-desc">Мазок из зева — форма №057/у</div>
+          </div>
+          <div class="staff-task-arrow">▼</div>
+        </div>
+        <div class="staff-task-body" id="taskDifBody" style="display:none;">
+<div style="padding:20px 16px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(139,92,246,0.06);border-radius:10px;border:1px solid rgba(139,92,246,0.2);">
+    <span style="font-size:13px;font-weight:600;color:var(--dark);">Соңғы берілген №:</span>
+    <span id="difLastNum" style="font-size:20px;font-weight:900;color:#8b5cf6;">—</span>
+    <span style="font-size:12px;color:var(--gray);margin-left:4px;">Келесі № : <b id="difNextNum" style="color:var(--orange);">—</b></span>
+    <button onclick="difResetCounter()" style="margin-left:auto;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(139,92,246,0.3);background:transparent;color:#8b5cf6;font-size:11px;font-weight:700;cursor:pointer;">Нөлден бастау</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Фамилия</label><input id="difFam" type="text" placeholder="Иванов" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Имя</label><input id="difIm" type="text" placeholder="Иван" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Отчество</label><input id="difOtch" type="text" placeholder="Иванович" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Туған күні (дата рождения)</label><input id="difDob" type="text" placeholder="01.01.1990" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+  </div>
+  <div style="margin-bottom:20px;padding:14px 16px;background:rgba(139,92,246,0.04);border-radius:10px;border:1px solid rgba(139,92,246,0.12);">
+    <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Справка берілген күні (авто)</div>
+    <div id="difDateOut" style="font-size:14px;font-weight:700;color:#8b5cf6;"></div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button onclick="difGenerate()" style="padding:11px 28px;background:#8b5cf6;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;flex:1;min-width:180px;">🖨️ Басып шығару / Генерациялау</button>
+  </div>
+  <div id="difHistory" style="margin-top:16px;"></div>
+</div>
+        </div>
+      </div>
+
+      <!-- ═══ МЕНИНГИТ ═══ -->
+      <div class="staff-task-card" id="taskMen" style="border-left:3px solid rgba(13,148,136,0.5);">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskMenBody')" style="cursor:pointer;">
+          <div class="staff-task-icon">🧠</div>
+          <div class="staff-task-info">
+            <div class="staff-task-title">Мазок на менингит</div>
+            <div class="staff-task-desc">Мазок задней стенки носоглотки — форма №375/у</div>
+          </div>
+          <div class="staff-task-arrow">▼</div>
+        </div>
+        <div class="staff-task-body" id="taskMenBody" style="display:none;">
+<div style="padding:20px 16px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(13,148,136,0.06);border-radius:10px;border:1px solid rgba(13,148,136,0.2);">
+    <span style="font-size:13px;font-weight:600;color:var(--dark);">Соңғы берілген №:</span>
+    <span id="menLastNum" style="font-size:20px;font-weight:900;color:#0d9488;">—</span>
+    <span style="font-size:12px;color:var(--gray);margin-left:4px;">Келесі № : <b id="menNextNum" style="color:var(--orange);">—</b></span>
+    <button onclick="menResetCounter()" style="margin-left:auto;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(13,148,136,0.3);background:transparent;color:#0d9488;font-size:11px;font-weight:700;cursor:pointer;">Нөлден бастау</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Фамилия</label><input id="menFam" type="text" placeholder="Иванов" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Имя</label><input id="menIm" type="text" placeholder="Иван" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Отчество</label><input id="menOtch" type="text" placeholder="Иванович" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Туған күні (дата рождения)</label><input id="menDob" type="text" placeholder="01.01.1990" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+  </div>
+  <div style="margin-bottom:20px;padding:14px 16px;background:rgba(13,148,136,0.04);border-radius:10px;border:1px solid rgba(13,148,136,0.12);">
+    <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Справка берілген күні (авто)</div>
+    <div id="menDateOut" style="font-size:14px;font-weight:700;color:#0d9488;"></div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button onclick="menGenerate()" style="padding:11px 28px;background:#0d9488;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;flex:1;min-width:180px;">🖨️ Басып шығару / Генерациялау</button>
+  </div>
+  <div id="menHistory" style="margin-top:16px;"></div>
+</div>
+        </div>
+      </div>
+
+      <!-- ═══ ГЕПАТИТ В ЖӘНЕ С ═══ -->
+      <div class="staff-task-card" id="taskHep" style="border-left:3px solid rgba(22,163,74,0.5);">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskHepBody')" style="cursor:pointer;">
+          <div class="staff-task-icon">💉</div>
+          <div class="staff-task-info">
+            <div class="staff-task-title">Гепатит В және С</div>
+            <div class="staff-task-desc">ИФА крови — форма №244/у</div>
+          </div>
+          <div class="staff-task-arrow">▼</div>
+        </div>
+        <div class="staff-task-body" id="taskHepBody" style="display:none;">
+<div style="padding:20px 16px;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding:12px 16px;background:rgba(22,163,74,0.06);border-radius:10px;border:1px solid rgba(22,163,74,0.2);">
+    <span style="font-size:13px;font-weight:600;color:var(--dark);">Соңғы берілген №:</span>
+    <span id="hepLastNum" style="font-size:20px;font-weight:900;color:#16a34a;">—</span>
+    <span style="font-size:12px;color:var(--gray);margin-left:4px;">Келесі № : <b id="hepNextNum" style="color:var(--orange);">—</b></span>
+    <button onclick="hepResetCounter()" style="margin-left:auto;padding:5px 12px;border-radius:8px;border:1.5px solid rgba(22,163,74,0.3);background:transparent;color:#16a34a;font-size:11px;font-weight:700;cursor:pointer;">Нөлден бастау</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Фамилия</label><input id="hepFam" type="text" placeholder="Иванов" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Имя</label><input id="hepIm" type="text" placeholder="Иван" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Отчество</label><input id="hepOtch" type="text" placeholder="Иванович" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+    <div><label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Туған күні (дата рождения)</label><input id="hepDob" type="text" placeholder="01.01.1990" style="width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:14px;font-weight:600;box-sizing:border-box;"></div>
+  </div>
+  <div style="margin-bottom:20px;padding:14px 16px;background:rgba(22,163,74,0.04);border-radius:10px;border:1px solid rgba(22,163,74,0.12);">
+    <div style="font-size:11px;color:var(--gray);font-weight:600;margin-bottom:3px;">Справка берілген күні (авто)</div>
+    <div id="hepDateOut" style="font-size:14px;font-weight:700;color:#16a34a;"></div>
+  </div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button onclick="hepGenerate()" style="padding:11px 28px;background:#16a34a;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;flex:1;min-width:180px;">🖨️ Басып шығару / Генерациялау</button>
+  </div>
+  <div id="hepHistory" style="margin-top:16px;"></div>
+</div>
+        </div>
+      </div>
+
   </div>
   </div>
 <div id="paneljournals" class="kuraldar-panel-content" style="display:none;">
@@ -7148,6 +7329,11 @@ function resetDez2() {
       if (id === 'taskDez5Body') { setTimeout(renderDezMonthlyTable, 50); }
       if (id === 'taskDezSummaryBody') { setTimeout(renderDezSummary, 50); }
     if (id === 'taskKozhBody') { setTimeout(kozhInit, 50); }
+    if (id === 'taskBrcBody') { setTimeout(brcInit, 50); }
+    if (id === 'taskMicBody') { setTimeout(micInit, 50); }
+    if (id === 'taskDifBody') { setTimeout(difInit, 50); }
+    if (id === 'taskMenBody') { setTimeout(menInit, 50); }
+    if (id === 'taskHepBody') { setTimeout(hepInit, 50); }
     if (id === 'taskRezultatBody') { setTimeout(function(){ mazokInitDates(); mazokUpdateCounter(); glistInitDate(); glistUpdateCounter(); kalInitDates(); kalUpdateCounter(); }, 50); }
     };
   })();
@@ -9911,126 +10097,84 @@ function toggleStaffFolder(id) {
 
   function glistUpdateCounter() {
     var last = parseInt(localStorage.getItem('glist_counter') || '0');
-    var elLast = document.getElementById('glistLastNum');
-    var elNext = document.getElementById('glistNextNums');
-    if (elLast) elLast.textContent = last === 0 ? '—' : '№' + last + '-' + (last+2) + '-' + (last+4);
-    if (elNext) {
-      var n = last + 1;
-      elNext.textContent = '№' + n + '-' + (n+2) + '-' + (n+4);
-    }
+    var elL = document.getElementById('glistLastNum');
+    var elN = document.getElementById('glistNextNums');
+    if (elL) elL.textContent = last === 0 ? '—' : '№' + last;
+    if (elN) elN.textContent = '№' + (last + 1);
   }
 
   function glistResetCounter() {
     if (!confirm('Счётчикті нөлге қоясыз ба?')) return;
     localStorage.setItem('glist_counter', '0');
     glistUpdateCounter();
-    var hist = document.getElementById('glistHistory');
-    if (hist) hist.innerHTML = '';
+    var h = document.getElementById('glistHistory');
+    if (h) h.innerHTML = '';
   }
 
   function glistGetFIO() {
-    var f = (document.getElementById('glistFam').value||'').trim();
-    var i = (document.getElementById('glistIm').value||'').trim();
-    var o = (document.getElementById('glistOtch').value||'').trim();
+    var f = (document.getElementById('glistFam').value || '').trim();
+    var i = (document.getElementById('glistIm').value || '').trim();
+    var o = (document.getElementById('glistOtch').value || '').trim();
     return [f, i, o].filter(Boolean).join(' ');
   }
 
   function glistBuildDoc(n1, n2, n3, fio, dob, org, dateOut) {
-    var orgLine = org ? org : '';
-    var today = new Date();
-    var dd = String(today.getDate()).padStart(2,'0');
-    var mm = String(today.getMonth()+1).padStart(2,'0');
-    var yyyy = today.getFullYear();
-    return '<div style="width:180mm;margin:0 auto;padding:5mm 8mm 10mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:10pt;">' +
-      '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:5mm;">' +
+    return '<div style="width:175mm;padding:5mm 8mm 8mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:10pt;page-break-inside:avoid;">' +
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:4mm;">' +
         '<tr>' +
           '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;width:55%;">Қазақстан Республикасы Денсаулық сақтау министірлігі<br>Министерство здравоохранения Республики Казахстан</td>' +
           '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;text-align:center;">ҚҰЖЖ бойынша ұйым коды<br>Код организации по ОКПО<br><br></td>' +
         '</tr>' +
         '<tr>' +
-          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Ұйымнын атауы<br>Наименование организации<br><b>ТОО «Азия-Мед МО»</b></td>' +
-          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Медицинская документация форма №221/у<br>Утверждена приказом министра здравоохранения Республики Казахстан 30 октября 2010г №175</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">ЖШС «Азия мед – МО»<br>ТОО «Азия мед – МО»</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Медицинская документация форма №221/у</td>' +
         '</tr>' +
       '</table>' +
-      '<div style="text-align:center;font-size:13pt;font-weight:bold;margin:4mm 0 1mm;">Анализ &nbsp; №' + n1 + '-' + n2 + '-' + n3 + '</div>' +
-      '<div style="text-align:center;font-size:9.5pt;margin-bottom:5mm;">( на яйца гельминтов, &nbsp; на простейшие, &nbsp; соскоб на энтеробиоз )</div>' +
-      '<div style="margin-bottom:3mm;font-size:10pt;">ТАӘ (ФИО) &nbsp;<u style="letter-spacing:1px;">&nbsp;&nbsp;<b>' + fio + '</b>&nbsp;&nbsp;</u></div>' +
-      '<div style="margin-bottom:3mm;font-size:10pt;">Туған күні (дата рождения) &nbsp;<u>&nbsp;&nbsp;<b>' + dob + '</b>&nbsp;&nbsp;</u></div>' +
-      '<div style="margin-bottom:5mm;font-size:10pt;">Бөлімше (отделение) &nbsp;<u>&nbsp;&nbsp;' + orgLine + '&nbsp;&nbsp;</u> &nbsp;&nbsp; Учереждение &nbsp;<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u></div>' +
-      '<table style="width:100%;border-collapse:collapse;margin-bottom:6mm;">' +
-        '<tr style="background:#f5f5f5;">' +
-          '<th style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:left;font-weight:bold;">Анализ</th>' +
-          '<th style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:center;font-weight:bold;">Результат</th>' +
-        '</tr>' +
-        '<tr>' +
-          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:10pt;">Соскоб на энтеробиоз</td>' +
-          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:10pt;text-align:center;">отр</td>' +
-        '</tr>' +
-        '<tr>' +
-          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:10pt;">Кал на яйца гельминты</td>' +
-          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:10pt;text-align:center;">отр</td>' +
-        '</tr>' +
-        '<tr>' +
-          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:10pt;">Простейшие</td>' +
-          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:10pt;text-align:center;">отр</td>' +
-        '</tr>' +
+      '<div style="text-align:center;font-size:11pt;font-weight:bold;margin:3mm 0 1mm;">Результат паразитологических исследований</div>' +
+      '<div style="text-align:center;font-size:9pt;margin-bottom:2mm;">(яйца гельминтов, простейшие, соскоб на энтеробиоз)</div>' +
+      '<div style="text-align:right;font-size:10pt;margin-bottom:3mm;padding-right:4mm;">№ <u>&nbsp;&nbsp;' + n1 + ' / ' + n2 + ' / ' + n3 + '&nbsp;&nbsp;</u></div>' +
+      '<table style="width:100%;border-collapse:collapse;">' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;width:55%;">Фамилия &nbsp; Имя &nbsp; Отчество:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;font-weight:bold;">' + fio + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата рождения:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dob + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата выдачи:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dateOut + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Яйца гельминтов:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">не обнаружены</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Простейшие:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">не обнаружены</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Соскоб на энтеробиоз:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">не обнаружены</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;font-size:9.5pt;">Бактериолог:</td><td style="padding:1.5mm 2mm;font-size:9.5pt;">Ж.Абдрахманов.</td></tr>' +
       '</table>' +
-      '<div style="font-size:10pt;display:flex;align-items:flex-end;gap:8mm;">' +
-        '<span><u>&nbsp;&nbsp;' + dd + '&nbsp;&nbsp;</u> . <u>&nbsp;&nbsp;' + mm + '&nbsp;&nbsp;</u> . ' + yyyy + ' жылғы (года)</span>' +
-        '<span style="margin-left:auto;font-size:9pt;color:#555;">талдау берілген күн (дата выдачи анализа) &nbsp;&nbsp;&nbsp; орындаушының қолы (подпись исполнителя) _____________</span>' +
-      '</div>' +
     '</div>';
   }
 
   function glistGenerate() {
-    var fio = glistGetFIO();
-    var dob = (document.getElementById('glistDob').value||'').trim();
+    var fio  = glistGetFIO();
+    var dob  = (document.getElementById('glistDob').value || '').trim();
+    var org  = (document.getElementById('glistOrg').value || 'Бак лаборатория').trim();
     if (!fio || !dob) { alert('ФИО және туған күнін жазыңыз!'); return; }
-    var org = (document.getElementById('glistOrg').value||'').trim();
-
-    var today   = new Date();
-    var dateOut = mazokFormatDate(today);
-    var last    = parseInt(localStorage.getItem('glist_counter') || '0');
-    var n1 = last+1, n2 = last+3, n3 = last+5;
-    localStorage.setItem('glist_counter', String(last+1));
+    var last = parseInt(localStorage.getItem('glist_counter') || '0');
+    var n1 = last + 1, n2 = n1 + 2, n3 = n1 + 4;
+    localStorage.setItem('glist_counter', String(n1));
     glistUpdateCounter();
-
-    var docHtml = glistBuildDoc(n1, n2, n3, fio, dob, org, dateOut);
-
+    var dateOut = mazokFormatDate(new Date());
+    var doc = glistBuildDoc(n1, n2, n3, fio, dob, org, dateOut);
     var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Гельминт — ' + fio + '</title>' +
-      '<style>@page{size:A4;margin:10mm;} body{margin:0;padding:0;} @media print{.no-print{display:none;}}</style>' +
+      '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
       '</head><body>' +
-      '<div class="no-print" style="padding:10px;background:#eff6ff;text-align:center;font-family:Arial,sans-serif;">' +
+      '<div class="no-print" style="padding:10px;background:#f0f9ff;text-align:center;font-family:Arial,sans-serif;">' +
         '<button onclick="window.print()" style="padding:10px 28px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>' +
         '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
-      '</div>' +
-      docHtml +
-      '</body></html>';
-
-    var w = window.open('','_blank');
-    w.document.write(html);
-    w.document.close();
-
-    var hist = document.getElementById('glistHistory');
-    if (hist) {
-      hist.innerHTML = '<div style="margin-top:10px;padding:10px 14px;background:#eff6ff;border-left:3px solid #2563eb;border-radius:0 8px 8px 0;font-size:13px;">' +
-        '<span style="font-weight:700;color:#2563eb;">✓ Жасалды: №' + n1 + '-' + n2 + '-' + n3 + '</span> — ' + fio + ', ' + dob + ' — ' + dateOut +
-      '</div>' + hist.innerHTML;
-    }
+      '</div>' + doc + '</body></html>';
+    var w = window.open('', '_blank');
+    if (!w) { alert('Popup блокталған!'); return; }
+    w.document.write(html); w.document.close();
+    glistAddHistory(n1, n2, n3, fio, dob, dateOut);
   }
 
-  function glistPreview() {
-    var fio = glistGetFIO();
-    var dob = (document.getElementById('glistDob').value||'').trim();
-    if (!fio || !dob) { alert('ФИО және туған күнін жазыңыз!'); return; }
-    var last = parseInt(localStorage.getItem('glist_counter')||'0');
-    var n1 = last+1, n2 = last+3, n3 = last+5;
+  function glistAddHistory(n1, n2, n3, fio, dob, dateOut) {
     var hist = document.getElementById('glistHistory');
     if (!hist) return;
-    hist.innerHTML = '<div style="margin-top:12px;padding:14px 16px;background:#eff6ff;border:1.5px solid rgba(37,99,235,0.3);border-radius:10px;">' +
-      '<div style="font-size:12px;font-weight:700;color:#2563eb;margin-bottom:6px;">👁 Алдын ала қарау:</div>' +
-      '<div style="font-size:13px;"><b>№' + n1 + '-' + n2 + '-' + n3 + '</b> — ' + fio + ', ' + dob + ' — Яйца гельминтов / Простейшие / Энтеробиоз</div>' +
-    '</div>';
+    var item = '<div style="margin-top:10px;padding:10px 14px;background:#eff6ff;border-left:3px solid #2563eb;border-radius:0 8px 8px 0;font-size:13px;">' +
+      '<span style="font-weight:700;color:#2563eb;">✓ Жасалды: №' + n1 + '/' + n2 + '/' + n3 + '</span> — ' + fio + ' — ' + dob + ' — ' + dateOut + '</div>';
+    hist.innerHTML = item + hist.innerHTML;
   }
 
   function glistInit() {
@@ -10038,181 +10182,715 @@ function toggleStaffFolder(id) {
     glistUpdateCounter();
   }
 
-  // ===== КАЛ НА КИШЕЧНУЮ ГРУППУ =====
+  // ===== КАЛ НА КИШЕЧНУЮ ГРУППУ ГЕНЕРАТОР =====
   function kalInitDates() {
-    var today  = new Date();
-    var minus3 = new Date(today); minus3.setDate(today.getDate()-3);
-    var eIn  = document.getElementById('kalDateIn');
-    var eOut = document.getElementById('kalDateOut');
-    if (eIn)  eIn.textContent  = mazokFormatDate(minus3);
-    if (eOut) eOut.textContent = mazokFormatDate(today);
+    var today = new Date();
+    var minus3 = new Date(today); minus3.setDate(today.getDate() - 3);
+    var elIn  = document.getElementById('kalDateIn');
+    var elOut = document.getElementById('kalDateOut');
+    if (elIn)  elIn.textContent  = mazokFormatDate(minus3);
+    if (elOut) elOut.textContent = mazokFormatDate(today);
   }
+
   function kalUpdateCounter() {
-    var last = parseInt(localStorage.getItem('kal_counter')||'0');
-    var eL = document.getElementById('kalLastNum');
-    var eN = document.getElementById('kalNextNum');
-    if (eL) eL.textContent = last===0 ? '—' : '№'+last;
-    if (eN) eN.textContent = '№'+(last+1);
+    var last = parseInt(localStorage.getItem('kal_counter') || '0');
+    var elL = document.getElementById('kalLastNum');
+    var elN = document.getElementById('kalNextNum');
+    if (elL) elL.textContent = last === 0 ? '—' : '№' + last;
+    if (elN) elN.textContent = '№' + (last + 1);
   }
+
   function kalResetCounter() {
     if (!confirm('Счётчикті нөлге қоясыз ба?')) return;
-    localStorage.setItem('kal_counter','0');
+    localStorage.setItem('kal_counter', '0');
     kalUpdateCounter();
-    var h=document.getElementById('kalHistory'); if(h) h.innerHTML='';
+    var h = document.getElementById('kalHistory');
+    if (h) h.innerHTML = '';
   }
+
   function kalGetFIO() {
-    var f=(document.getElementById('kalFam').value||'').trim();
-    var i=(document.getElementById('kalIm').value||'').trim();
-    var o=(document.getElementById('kalOtch').value||'').trim();
-    return [f,i,o].filter(Boolean).join(' ');
+    var f = (document.getElementById('kalFam').value || '').trim();
+    var i = (document.getElementById('kalIm').value || '').trim();
+    var o = (document.getElementById('kalOtch').value || '').trim();
+    return [f, i, o].filter(Boolean).join(' ');
   }
-  function kalGenerate() {
-    var fio=kalGetFIO();
-    var god=(document.getElementById('kalGod').value||'').trim();
-    if(!fio||!god){alert('ФИО және жыл туған күнін жазыңыз!');return;}
-    var today=new Date(), minus3=new Date(today);
-    minus3.setDate(today.getDate()-3);
-    var dateIn=mazokFormatDate(minus3), dateOut=mazokFormatDate(today);
-    var last=parseInt(localStorage.getItem('kal_counter')||'0');
-    var n=last+1;
-    localStorage.setItem('kal_counter',String(n));
-    kalUpdateCounter();
-    var form = mazokBuildForm(n, fio, god, dateIn, dateOut, 'Кал');
-    // Fix title and form number in the printed doc
-    form = form.replace('Результат микробиологических исследований','Результат микробиологических исследований');
-    form = form.replace('(мазок из зева и носа на стафилококк)','(Кал на кишечную группу)');
-    form = form.replace('форма №057/у','форма №058/у');
-    form = form.replace('Мазок из зева и носа','Кал');
-    var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Кал на кишечную — '+fio+'</title>'+
-      '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;} @media print{.no-print{display:none;}}</style>'+
-      '</head><body>'+
-      '<div class="no-print" style="padding:10px;background:#faf5ff;text-align:center;font-family:Arial,sans-serif;">'+
-        '<button onclick="window.print()" style="padding:10px 28px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>'+
-        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>'+
-      '</div>'+form+'</body></html>';
-    var w=window.open('','_blank'); w.document.write(html); w.document.close();
-    var hist=document.getElementById('kalHistory');
-    if(hist) hist.innerHTML='<div style="margin-top:10px;padding:10px 14px;background:#faf5ff;border-left:3px solid #7c3aed;border-radius:0 8px 8px 0;font-size:13px;">'+
-      '<span style="font-weight:700;color:#7c3aed;">✓ Жасалды: №'+n+'</span> — '+fio+', '+god+' г.р. — '+dateOut+'</div>'+hist.innerHTML;
-  }
-  function kalPreview() {
-    var fio=kalGetFIO();
-    var god=(document.getElementById('kalGod').value||'').trim();
-    if(!fio||!god){alert('ФИО және жыл туған күнін жазыңыз!');return;}
-    var today=new Date(), minus3=new Date(today); minus3.setDate(today.getDate()-3);
-    var last=parseInt(localStorage.getItem('kal_counter')||'0');
-    var hist=document.getElementById('kalHistory'); if(!hist) return;
-    hist.innerHTML='<div style="margin-top:12px;padding:14px 16px;background:#faf5ff;border:1.5px solid rgba(124,58,237,0.3);border-radius:10px;">'+
-      '<div style="font-size:12px;font-weight:700;color:#7c3aed;margin-bottom:6px;">👁 Алдын ала қарау:</div>'+
-      '<div style="font-size:13px;"><b>№'+(last+1)+'</b> — '+fio+', '+god+' г.р. — Кал на кишечную группу — '+mazokFormatDate(minus3)+' / '+mazokFormatDate(today)+'</div>'+
+
+  function kalBuildDoc(num, fio, god, dateIn, dateOut) {
+    return '<div style="width:175mm;padding:5mm 8mm 8mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:10pt;page-break-inside:avoid;">' +
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:4mm;">' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;width:55%;">Қазақстан Республикасы Денсаулық сақтау министірлігі<br>Министерство здравоохранения Республики Казахстан</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;text-align:center;">ҚҰЖЖ бойынша ұйым коды<br>Код организации по ОКПО<br><br></td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">ЖШС «Азия мед – МО»<br>ТОО «Азия мед – МО»</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Медицинская документация форма №058/у<br>Утверждена приказом министра здравоохранения РК 30 октября 2010г №175</td>' +
+        '</tr>' +
+      '</table>' +
+      '<div style="text-align:center;font-size:11pt;font-weight:bold;margin:3mm 0 1mm;">Результат микробиологических исследований</div>' +
+      '<div style="text-align:center;font-size:9pt;margin-bottom:2mm;">(кал на кишечную группу)</div>' +
+      '<div style="text-align:right;font-size:10pt;margin-bottom:3mm;padding-right:4mm;">№ <u>&nbsp;&nbsp;' + num + '&nbsp;&nbsp;</u></div>' +
+      '<table style="width:100%;border-collapse:collapse;">' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;width:55%;">Фамилия &nbsp; Имя &nbsp; Отчество:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;font-weight:bold;">' + fio + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Год рождения:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;font-weight:bold;">' + god + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата поступления анализа:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dateIn + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата выдачи анализа:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dateOut + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Наименование микроорганизма выделенного:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Отрицательно</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;font-size:9.5pt;">Бактериолог:</td><td style="padding:1.5mm 2mm;font-size:9.5pt;">Ж.Абдрахманов.</td></tr>' +
+      '</table>' +
     '</div>';
   }
-  function kalInit() { kalInitDates(); kalUpdateCounter(); }
 
-  function rezToggle(id) {
-    var body  = document.getElementById(id);
-    var arrow = document.getElementById(id + 'Arrow');
-    if (!body) return;
-    var open = body.style.display !== 'none';
-    body.style.display = open ? 'none' : '';
-    if (arrow) arrow.style.transform = open ? '' : 'rotate(180deg)';
-    if (!open) {
-      if (id==='rez1') { mazokInitDates(); mazokUpdateCounter(); }
-      if (id==='rez2') { glistInitDate(); glistUpdateCounter(); }
-      if (id==='rez3') { kalInitDates(); kalUpdateCounter(); }
-    }
+  function kalGenerate() {
+    var fio  = kalGetFIO();
+    var god  = (document.getElementById('kalGod').value || '').trim();
+    if (!fio || !god) { alert('ФИО және туған жылын жазыңыз!'); return; }
+    var today  = new Date();
+    var minus3 = new Date(today); minus3.setDate(today.getDate() - 3);
+    var dateIn  = mazokFormatDate(minus3);
+    var dateOut = mazokFormatDate(today);
+    var last = parseInt(localStorage.getItem('kal_counter') || '0');
+    var n1 = last + 1;
+    localStorage.setItem('kal_counter', String(n1));
+    kalUpdateCounter();
+    var doc = kalBuildDoc(n1, fio, god, dateIn, dateOut);
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Кал — ' + fio + '</title>' +
+      '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
+      '</head><body>' +
+      '<div class="no-print" style="padding:10px;background:#f5f3ff;text-align:center;font-family:Arial,sans-serif;">' +
+        '<button onclick="window.print()" style="padding:10px 28px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>' +
+        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
+      '</div>' + doc + '</body></html>';
+    var w = window.open('', '_blank');
+    if (!w) { alert('Popup блокталған!'); return; }
+    w.document.write(html); w.document.close();
+    kalAddHistory(n1, fio, god, dateOut);
   }
 
-  // ===== СПРАВКА КОЖВЕНЕРОЛОГА =====
+  function kalPreview() {
+    var fio = kalGetFIO();
+    var god = (document.getElementById('kalGod').value || '').trim();
+    if (!fio || !god) { alert('ФИО және туған жылын жазыңыз!'); return; }
+    var today  = new Date();
+    var minus3 = new Date(today); minus3.setDate(today.getDate()-3);
+    var last   = parseInt(localStorage.getItem('kal_counter') || '0');
+    var hist = document.getElementById('kalHistory');
+    if (!hist) return;
+    hist.innerHTML = '<div style="margin-top:12px;padding:14px 16px;background:#f5f3ff;border:1.5px solid rgba(124,58,237,0.3);border-radius:10px;">' +
+      '<div style="font-size:12px;font-weight:700;color:#7c3aed;margin-bottom:8px;">👁 Алдын ала қарау:</div>' +
+      '<div style="font-size:13px;"><b>№' + (last+1) + '</b> — ' + fio + ', ' + god + ' г.р. — ' + mazokFormatDate(minus3) + ' / ' + mazokFormatDate(today) + '</div>' +
+    '</div>';
+  }
+
+  function kalAddHistory(num, fio, god, dateOut) {
+    var hist = document.getElementById('kalHistory');
+    if (!hist) return;
+    var item = '<div style="margin-top:10px;padding:10px 14px;background:#f5f3ff;border-left:3px solid #7c3aed;border-radius:0 8px 8px 0;font-size:13px;">' +
+      '<span style="font-weight:700;color:#7c3aed;">✓ Жасалды: №' + num + '</span> — ' + fio + ', ' + god + ' г.р. — ' + dateOut + '</div>';
+    hist.innerHTML = item + hist.innerHTML;
+  }
+
+  function kalInit() {
+    kalInitDates();
+    kalUpdateCounter();
+  }
+
+  // ===== СПРАВКА КОЖВЕНЕРОЛОГА ГЕНЕРАТОР =====
   function kozhInitDate() {
     var el = document.getElementById('kozhDateOut');
     if (el) el.textContent = mazokFormatDate(new Date());
   }
+
   function kozhUpdateCounter() {
-    var last = parseInt(localStorage.getItem('kozh_counter')||'0');
-    var eL = document.getElementById('kozhLastNum');
-    var eN = document.getElementById('kozhNextNum');
-    if (eL) eL.textContent = last===0 ? '—' : '№'+last;
-    if (eN) eN.textContent = '№'+(last+1);
+    var last = parseInt(localStorage.getItem('kozh_counter') || '0');
+    var elL = document.getElementById('kozhLastNum');
+    var elN = document.getElementById('kozhNextNum');
+    if (elL) elL.textContent = last === 0 ? '—' : '№' + last;
+    if (elN) elN.textContent = '№' + (last + 1);
   }
+
   function kozhResetCounter() {
     if (!confirm('Счётчикті нөлге қоясыз ба?')) return;
-    localStorage.setItem('kozh_counter','0');
+    localStorage.setItem('kozh_counter', '0');
     kozhUpdateCounter();
-    var h=document.getElementById('kozhHistory'); if(h) h.innerHTML='';
+    var h = document.getElementById('kozhHistory');
+    if (h) h.innerHTML = '';
   }
+
   function kozhGetFIO() {
-    var f=(document.getElementById('kozhFam').value||'').trim();
-    var i=(document.getElementById('kozhIm').value||'').trim();
-    var o=(document.getElementById('kozhOtch').value||'').trim();
-    return [f,i,o].filter(Boolean).join(' ');
+    var f = (document.getElementById('kozhFam').value || '').trim();
+    var i = (document.getElementById('kozhIm').value || '').trim();
+    var o = (document.getElementById('kozhOtch').value || '').trim();
+    return [f, i, o].filter(Boolean).join(' ');
   }
+
   function kozhGetGender() {
     var r = document.querySelector('input[name="kozhGender"]:checked');
-    return r ? r.value : 'он(а)';
+    return r ? r.value : 'он';
   }
+
   function kozhBuildText(num, fio, dob, gender, date) {
-    var today = new Date();
-    var dd=String(today.getDate()).padStart(2,'0');
-    var mm=String(today.getMonth()+1).padStart(2,'0');
-    var yyyy=today.getFullYear();
-    return {
-      num: num, fio: fio, dob: dob, gender: gender,
-      date: date, dd: dd, mm: mm, yyyy: yyyy
-    };
+    var dd = date.split('.')[0] || '';
+    var mm = date.split('.')[1] || '';
+    var yyyy = date.split('.')[2] || '';
+    return { num: num, fio: fio, dob: dob, gender: gender, date: date, dd: dd, mm: mm, yyyy: yyyy };
   }
+
   function kozhBuildHTML(d) {
-    return '<div style="width:180mm;margin:0 auto;padding:15mm 20mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:12pt;line-height:2;">' +
-      '<div style="text-align:center;font-size:14pt;font-weight:bold;margin-bottom:10mm;">Справка №&nbsp;<u>&nbsp;&nbsp;' + d.num + '&nbsp;&nbsp;</u></div>' +
-      '<div style="text-align:justify;margin-bottom:6mm;">' +
-        '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>' + d.fio + '</b>, ' + d.dob + ' года рождения в том что ' + d.gender +
-        ' действительно «ДУ» у врача кожвенеролога не состоит по архивным данным не значится.' +
+    var pronoun = d.gender === 'она' ? 'она' : 'он';
+    var reg = d.gender === 'она' ? 'зарегистрирована' : 'зарегистрирован';
+    return '<div style="width:175mm;padding:8mm 12mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:11pt;page-break-inside:avoid;">' +
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:6mm;">' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;width:55%;">Қазақстан Республикасы Денсаулық сақтау министірлігі<br>Министерство здравоохранения Республики Казахстан</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;text-align:center;">ҚҰЖЖ бойынша ұйым коды<br>Код организации по ОКПО<br><br></td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">ЖШС «Азия мед – МО»<br>ТОО «Азия мед – МО»</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Медицинская документация</td>' +
+        '</tr>' +
+      '</table>' +
+      '<div style="text-align:center;font-size:14pt;font-weight:bold;margin:6mm 0 4mm;text-decoration:underline;">СПРАВКА</div>' +
+      '<div style="text-align:right;font-size:10pt;margin-bottom:5mm;">№ <u>&nbsp;&nbsp;' + d.num + '&nbsp;&nbsp;</u></div>' +
+      '<div style="line-height:1.8;font-size:11pt;text-align:justify;">' +
+        'Дана &nbsp;<b>' + d.fio + '</b>, ' + d.dob + ' года рождения, в том, что ' + pronoun + ' не ' + reg + ' и не состоит на учете в кожно-венерологическом диспансере.' +
       '</div>' +
-      '<div style="text-align:center;margin-bottom:12mm;">Справка дана для предъявления по месту требования.</div>' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:10mm;">' +
-        '<div>Дата &nbsp;<u>&nbsp;&nbsp;' + d.dd + '&nbsp;</u>&nbsp;.&nbsp;<u>&nbsp;' + d.mm + '&nbsp;</u>&nbsp;.&nbsp;' + d.yyyy + '&nbsp;год</div>' +
-        '<div>Врач &nbsp;<u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</u></div>' +
+      '<div style="margin-top:8mm;font-size:10pt;">Дата: ' + d.dd + '.' + d.mm + '.' + d.yyyy + '</div>' +
+      '<div style="margin-top:12mm;display:flex;justify-content:space-between;font-size:10pt;">' +
+        '<div>Дерматовенеролог: ___________________</div>' +
+        '<div>М.П.</div>' +
       '</div>' +
     '</div>';
   }
-  function kozhPreview() {
-    var fio=kozhGetFIO(), dob=(document.getElementById('kozhDob').value||'').trim();
-    if(!fio||!dob){alert('ФИО және туған күнін жазыңыз!');return;}
-    var gender=kozhGetGender(), date=mazokFormatDate(new Date());
-    var last=parseInt(localStorage.getItem('kozh_counter')||'0');
-    var box=document.getElementById('kozhPreviewBox');
-    if(!box) return;
-    var d=kozhBuildText(last+1,fio,dob,gender,date);
-    box.style.display='';
-    box.innerHTML=
-      '<div style="font-size:11px;font-weight:700;color:#dc2626;margin-bottom:8px;">👁 Алдын ала қарау:</div>'+
-      '<b>Справка №'+(last+1)+'</b><br>'+
-      fio+', '+dob+' года рождения в том что <b>'+gender+'</b> действительно «ДУ» у врача кожвенеролога не состоит...<br>'+
-      '<span style="font-size:11px;color:var(--gray);">Дата: '+date+'</span>';
-  }
+
   function kozhGenerate() {
-    var fio=kozhGetFIO(), dob=(document.getElementById('kozhDob').value||'').trim();
-    if(!fio||!dob){alert('ФИО және туған күнін жазыңыз!');return;}
-    var gender=kozhGetGender(), date=mazokFormatDate(new Date());
-    var last=parseInt(localStorage.getItem('kozh_counter')||'0');
-    var n=last+1;
-    localStorage.setItem('kozh_counter',String(n));
+    var fio    = kozhGetFIO();
+    var dob    = (document.getElementById('kozhDob').value || '').trim();
+    var gender = kozhGetGender();
+    if (!fio || !dob) { alert('ФИО және туған күнін жазыңыз!'); return; }
+    var dateStr = mazokFormatDate(new Date());
+    var last = parseInt(localStorage.getItem('kozh_counter') || '0');
+    var num = last + 1;
+    localStorage.setItem('kozh_counter', String(num));
     kozhUpdateCounter();
-    var d=kozhBuildText(n,fio,dob,gender,date);
-    var bodyHtml=kozhBuildHTML(d);
-    var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Справка кожвенеролога — '+fio+'</title>'+
-      '<style>@page{size:A4;margin:0;} body{margin:0;padding:0;} @media print{.no-print{display:none;}}</style>'+
-      '</head><body>'+
-      '<div class="no-print" style="padding:10px;background:#fff5f5;text-align:center;font-family:Arial,sans-serif;">'+
-        '<button onclick="window.print()" style="padding:10px 28px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>'+
-        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>'+
-      '</div>'+bodyHtml+'</body></html>';
-    var w=window.open('','_blank'); w.document.write(html); w.document.close();
-    var hist=document.getElementById('kozhHistory');
-    if(hist) hist.innerHTML='<div style="margin-top:10px;padding:10px 14px;background:#fff5f5;border-left:3px solid #dc2626;border-radius:0 8px 8px 0;font-size:13px;">'+
-      '<span style="font-weight:700;color:#dc2626;">✓ Жасалды: №'+n+'</span> — '+fio+', '+dob+' — '+date+'</div>'+hist.innerHTML;
+    var d = kozhBuildText(num, fio, dob, gender, dateStr);
+    var docHtml = kozhBuildHTML(d);
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Справка кожвенеролога — ' + fio + '</title>' +
+      '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
+      '</head><body>' +
+      '<div class="no-print" style="padding:10px;background:#fef2f2;text-align:center;font-family:Arial,sans-serif;">' +
+        '<button onclick="window.print()" style="padding:10px 28px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>' +
+        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
+      '</div>' + docHtml + '</body></html>';
+    var w = window.open('', '_blank');
+    if (!w) { alert('Popup блокталған!'); return; }
+    w.document.write(html); w.document.close();
+    kozhAddHistory(num, fio, dob, dateStr);
   }
-  function kozhInit() { kozhInitDate(); kozhUpdateCounter(); }
+
+  function kozhPreview() {
+    var fio    = kozhGetFIO();
+    var dob    = (document.getElementById('kozhDob').value || '').trim();
+    var gender = kozhGetGender();
+    if (!fio || !dob) { alert('ФИО және туған күнін жазыңыз!'); return; }
+    var last = parseInt(localStorage.getItem('kozh_counter') || '0');
+    var hist = document.getElementById('kozhHistory');
+    if (!hist) return;
+    hist.innerHTML = '<div style="margin-top:12px;padding:14px 16px;background:#fef2f2;border:1.5px solid rgba(220,38,38,0.3);border-radius:10px;">' +
+      '<div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:8px;">👁 Алдын ала қарау:</div>' +
+      '<div style="font-size:13px;"><b>№' + (last+1) + '</b> — ' + fio + ' — ' + dob + ' — ' + gender + '</div>' +
+    '</div>';
+  }
+
+  function kozhAddHistory(num, fio, dob, dateStr) {
+    var hist = document.getElementById('kozhHistory');
+    if (!hist) return;
+    var item = '<div style="margin-top:10px;padding:10px 14px;background:#fef2f2;border-left:3px solid #dc2626;border-radius:0 8px 8px 0;font-size:13px;">' +
+      '<span style="font-weight:700;color:#dc2626;">✓ Жасалды: №' + num + '</span> — ' + fio + ' — ' + dob + ' — ' + dateStr + '</div>';
+    hist.innerHTML = item + hist.innerHTML;
+  }
+
+  function kozhInit() {
+    kozhInitDate();
+    kozhUpdateCounter();
+  }
+
+  // ===== БРУЦЕЛЛЕЗ ГЕНЕРАТОР =====
+  function brcUpdateCounter() {
+    var last = parseInt(localStorage.getItem('brc_counter') || '0');
+    var elL = document.getElementById('brcLastNum');
+    var elN = document.getElementById('brcNextNum');
+    if (elL) elL.textContent = last === 0 ? '—' : '№' + last;
+    if (elN) elN.textContent = '№' + (last + 1);
+  }
+
+  function brcResetCounter() {
+    if (!confirm('Счётчикті нөлге қоясыз ба?')) return;
+    localStorage.setItem('brc_counter', '0');
+    brcUpdateCounter();
+    var h = document.getElementById('brcHistory');
+    if (h) h.innerHTML = '';
+  }
+
+  function brcGetFIO() {
+    var f = (document.getElementById('brcFam').value || '').trim();
+    var i = (document.getElementById('brcIm').value || '').trim();
+    var o = (document.getElementById('brcOtch').value || '').trim();
+    return [f, i, o].filter(Boolean).join(' ');
+  }
+
+  function brcBuildDoc(num, fio, dob, dateOut) {
+    return '<div style="width:175mm;padding:5mm 8mm 8mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:10pt;page-break-inside:avoid;">' +
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:4mm;">' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;width:55%;">Қазақстан Республикасы Денсаулық сақтау министірлігі<br>Министерство здравоохранения Республики Казахстан</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;text-align:center;">ҚҰЖЖ бойынша ұйым коды<br>Код организации по ОКПО<br><br></td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">ЖШС «Азия мед – МО»<br>ТОО «Азия мед – МО»</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Медицинская документация форма №221/у</td>' +
+        '</tr>' +
+      '</table>' +
+      '<div style="text-align:center;font-size:11pt;font-weight:bold;margin:3mm 0 1mm;">Результат серологических исследований</div>' +
+      '<div style="text-align:center;font-size:9pt;margin-bottom:2mm;">(анализ крови на бруцеллез)</div>' +
+      '<div style="text-align:right;font-size:10pt;margin-bottom:3mm;padding-right:4mm;">Анализ № <u>&nbsp;&nbsp;' + num + '&nbsp;&nbsp;</u></div>' +
+      '<table style="width:100%;border-collapse:collapse;">' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;width:55%;">ТАӘ / Фамилия Имя Отчество:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;font-weight:bold;">' + fio + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Туған күні / Дата рождения:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dob + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата выдачи:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dateOut + '</td></tr>' +
+      '</table>' +
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-top:4mm;">' +
+        '<tr style="background:#f5f5f5;">' +
+          '<th style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:left;">Реакция</th>' +
+          '<th style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:center;">Результат</th>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;">Р. ХЕДДЕЛЬСОНА</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:center;">отрицательная (-)</td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;">Р. РАЙТА</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:center;">отрицательная (-)</td>' +
+        '</tr>' +
+      '</table>' +
+      '<div style="margin-top:5mm;font-size:9.5pt;">Бактериолог: Ж.Абдрахманов.</div>' +
+    '</div>';
+  }
+
+  function brcGenerate() {
+    var fio = brcGetFIO();
+    var dob = (document.getElementById('brcDob').value || '').trim();
+    if (!fio || !dob) { alert('ФИО және туған күнін жазыңыз!'); return; }
+    var last = parseInt(localStorage.getItem('brc_counter') || '0');
+    var num = last + 1;
+    localStorage.setItem('brc_counter', String(num));
+    brcUpdateCounter();
+    var dateOut = mazokFormatDate(new Date());
+    var doc = brcBuildDoc(num, fio, dob, dateOut);
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Бруцеллез — ' + fio + '</title>' +
+      '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
+      '</head><body>' +
+      '<div class="no-print" style="padding:10px;background:#fff7ed;text-align:center;font-family:Arial,sans-serif;">' +
+        '<button onclick="window.print()" style="padding:10px 28px;background:#f97316;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>' +
+        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
+      '</div>' + doc + '</body></html>';
+    var w = window.open('', '_blank');
+    if (!w) { alert('Popup блокталған!'); return; }
+    w.document.write(html); w.document.close();
+    brcAddHistory(num, fio, dob, dateOut);
+  }
+
+  function brcAddHistory(num, fio, dob, dateOut) {
+    var hist = document.getElementById('brcHistory');
+    if (!hist) return;
+    var item = '<div style="margin-top:10px;padding:10px 14px;background:#fff7ed;border-left:3px solid #f97316;border-radius:0 8px 8px 0;font-size:13px;">' +
+      '<span style="font-weight:700;color:#f97316;">✓ Жасалды: №' + num + '</span> — ' + fio + ' — ' + dob + ' — ' + dateOut + '</div>';
+    hist.innerHTML = item + hist.innerHTML;
+  }
+
+  function brcInit() {
+    var el = document.getElementById('brcDateOut');
+    if (el) el.textContent = mazokFormatDate(new Date());
+    brcUpdateCounter();
+  }
+
+  // ===== МИКРОРЕАКЦИЯ ГЕНЕРАТОР =====
+  function micUpdateCounter() {
+    var last = parseInt(localStorage.getItem('mic_counter') || '0');
+    var elL = document.getElementById('micLastNum');
+    var elN = document.getElementById('micNextNum');
+    if (elL) elL.textContent = last === 0 ? '—' : '№' + last;
+    if (elN) elN.textContent = '№' + (last + 1);
+  }
+
+  function micResetCounter() {
+    if (!confirm('Счётчикті нөлге қоясыз ба?')) return;
+    localStorage.setItem('mic_counter', '0');
+    micUpdateCounter();
+    var h = document.getElementById('micHistory');
+    if (h) h.innerHTML = '';
+  }
+
+  function micGetFIO() {
+    var f = (document.getElementById('micFam').value || '').trim();
+    var i = (document.getElementById('micIm').value || '').trim();
+    var o = (document.getElementById('micOtch').value || '').trim();
+    return [f, i, o].filter(Boolean).join(' ');
+  }
+
+  function micBuildDoc(num, fio, god, dateIn, dateOut) {
+    return '<div style="width:175mm;padding:5mm 8mm 8mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:10pt;page-break-inside:avoid;">' +
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:4mm;">' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;width:55%;">Қазақстан Республикасы Денсаулық сақтау министірлігі<br>Министерство здравоохранения Республики Казахстан</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;text-align:center;">ҚҰЖЖ бойынша ұйым коды<br>Код организации по ОКПО<br><br></td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">ЖШС «Азия мед – МО»<br>ТОО «Азия мед – МО»</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Медицинская документация форма №013/у<br>Утверждена приказом министра здравоохранения РК 30 октября 2010г №175</td>' +
+        '</tr>' +
+      '</table>' +
+      '<div style="text-align:center;font-size:11pt;font-weight:bold;margin:3mm 0 1mm;">Результат серологических исследований</div>' +
+      '<div style="text-align:center;font-size:9pt;margin-bottom:2mm;">(кровь — экспресс метод на сифилис)</div>' +
+      '<div style="text-align:right;font-size:10pt;margin-bottom:3mm;padding-right:4mm;">№ <u>&nbsp;&nbsp;' + num + '&nbsp;&nbsp;</u></div>' +
+      '<table style="width:100%;border-collapse:collapse;">' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;width:55%;">Фамилия Имя Отчество:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;font-weight:bold;">' + fio + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Год рождения:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;font-weight:bold;">' + god + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата поступления анализа:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dateIn + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата выдачи анализа:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dateOut + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Материал исследования:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Кровь</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Микрореакция преципитации:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">отрицательная</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;font-size:9.5pt;">Бактериолог:</td><td style="padding:1.5mm 2mm;font-size:9.5pt;">Сайбеков Қанат.</td></tr>' +
+      '</table>' +
+    '</div>';
+  }
+
+  function micGenerate() {
+    var fio = micGetFIO();
+    var dob = (document.getElementById('micDob').value || '').trim();
+    if (!fio || !dob) { alert('ФИО және туған күнін жазыңыз!'); return; }
+    var god = dob.split('.')[2] || dob;
+    var today  = new Date();
+    var minus1 = new Date(today); minus1.setDate(today.getDate() - 1);
+    var dateIn  = mazokFormatDate(minus1);
+    var dateOut = mazokFormatDate(today);
+    var last = parseInt(localStorage.getItem('mic_counter') || '0');
+    var num = last + 1;
+    localStorage.setItem('mic_counter', String(num));
+    micUpdateCounter();
+    var doc = micBuildDoc(num, fio, god, dateIn, dateOut);
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Микрореакция — ' + fio + '</title>' +
+      '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
+      '</head><body>' +
+      '<div class="no-print" style="padding:10px;background:#eff6ff;text-align:center;font-family:Arial,sans-serif;">' +
+        '<button onclick="window.print()" style="padding:10px 28px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>' +
+        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
+      '</div>' + doc + '</body></html>';
+    var w = window.open('', '_blank');
+    if (!w) { alert('Popup блокталған!'); return; }
+    w.document.write(html); w.document.close();
+    micAddHistory(num, fio, dob, dateOut);
+  }
+
+  function micAddHistory(num, fio, dob, dateOut) {
+    var hist = document.getElementById('micHistory');
+    if (!hist) return;
+    var item = '<div style="margin-top:10px;padding:10px 14px;background:#eff6ff;border-left:3px solid #3b82f6;border-radius:0 8px 8px 0;font-size:13px;">' +
+      '<span style="font-weight:700;color:#3b82f6;">✓ Жасалды: №' + num + '</span> — ' + fio + ' — ' + dob + ' — ' + dateOut + '</div>';
+    hist.innerHTML = item + hist.innerHTML;
+  }
+
+  function micInit() {
+    var el = document.getElementById('micDateOut');
+    if (el) el.textContent = mazokFormatDate(new Date());
+    micUpdateCounter();
+  }
+
+  // ===== ДИФТЕРИЯ ГЕНЕРАТОР =====
+  function difUpdateCounter() {
+    var last = parseInt(localStorage.getItem('dif_counter') || '0');
+    var elL = document.getElementById('difLastNum');
+    var elN = document.getElementById('difNextNum');
+    if (elL) elL.textContent = last === 0 ? '—' : '№' + last;
+    if (elN) elN.textContent = '№' + (last + 1);
+  }
+
+  function difResetCounter() {
+    if (!confirm('Счётчикті нөлге қоясыз ба?')) return;
+    localStorage.setItem('dif_counter', '0');
+    difUpdateCounter();
+    var h = document.getElementById('difHistory');
+    if (h) h.innerHTML = '';
+  }
+
+  function difGetFIO() {
+    var f = (document.getElementById('difFam').value || '').trim();
+    var i = (document.getElementById('difIm').value || '').trim();
+    var o = (document.getElementById('difOtch').value || '').trim();
+    return [f, i, o].filter(Boolean).join(' ');
+  }
+
+  function difBuildDoc(num, fio, god, dateIn, dateOut) {
+    return '<div style="width:175mm;padding:5mm 8mm 8mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:10pt;page-break-inside:avoid;">' +
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:4mm;">' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;width:55%;">Қазақстан Республикасы Денсаулық сақтау министірлігі<br>Министерство здравоохранения Республики Казахстан</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;text-align:center;">ҚҰЖЖ бойынша ұйым коды<br>Код организации по ОКПО<br><br></td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">ЖШС «Азия мед – МО»<br>ТОО «Азия мед – МО»</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Медицинская документация форма №057/у<br>Утверждена приказом министра здравоохранения РК 30 октября 2010г №175</td>' +
+        '</tr>' +
+      '</table>' +
+      '<div style="text-align:center;font-size:11pt;font-weight:bold;margin:3mm 0 1mm;">Результат микробиологических исследований</div>' +
+      '<div style="text-align:center;font-size:9pt;margin-bottom:2mm;">(мазок из зева на дифтерию и стафилококк)</div>' +
+      '<div style="text-align:right;font-size:10pt;margin-bottom:3mm;padding-right:4mm;">№ <u>&nbsp;&nbsp;' + num + '&nbsp;&nbsp;</u></div>' +
+      '<table style="width:100%;border-collapse:collapse;">' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;width:55%;">Фамилия Имя Отчество:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;font-weight:bold;">' + fio + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Год рождения:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;font-weight:bold;">' + god + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата поступления анализа:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dateIn + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата выдачи анализа:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dateOut + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Взятый материал:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Мазок из зева</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Наименование микроорганизма:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Отрицательно</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;font-size:9.5pt;">Бактериолог:</td><td style="padding:1.5mm 2mm;font-size:9.5pt;">Абдрахманов Жадигер Шалабайұлы.</td></tr>' +
+      '</table>' +
+    '</div>';
+  }
+
+  function difGenerate() {
+    var fio = difGetFIO();
+    var dob = (document.getElementById('difDob').value || '').trim();
+    if (!fio || !dob) { alert('ФИО және туған күнін жазыңыз!'); return; }
+    var god = dob.split('.')[2] || dob;
+    var today  = new Date();
+    var minus1 = new Date(today); minus1.setDate(today.getDate() - 1);
+    var dateIn  = mazokFormatDate(minus1);
+    var dateOut = mazokFormatDate(today);
+    var last = parseInt(localStorage.getItem('dif_counter') || '0');
+    var num = last + 1;
+    localStorage.setItem('dif_counter', String(num));
+    difUpdateCounter();
+    var doc = difBuildDoc(num, fio, god, dateIn, dateOut);
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Дифтерия — ' + fio + '</title>' +
+      '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
+      '</head><body>' +
+      '<div class="no-print" style="padding:10px;background:#f5f3ff;text-align:center;font-family:Arial,sans-serif;">' +
+        '<button onclick="window.print()" style="padding:10px 28px;background:#8b5cf6;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>' +
+        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
+      '</div>' + doc + '</body></html>';
+    var w = window.open('', '_blank');
+    if (!w) { alert('Popup блокталған!'); return; }
+    w.document.write(html); w.document.close();
+    difAddHistory(num, fio, dob, dateOut);
+  }
+
+  function difAddHistory(num, fio, dob, dateOut) {
+    var hist = document.getElementById('difHistory');
+    if (!hist) return;
+    var item = '<div style="margin-top:10px;padding:10px 14px;background:#f5f3ff;border-left:3px solid #8b5cf6;border-radius:0 8px 8px 0;font-size:13px;">' +
+      '<span style="font-weight:700;color:#8b5cf6;">✓ Жасалды: №' + num + '</span> — ' + fio + ' — ' + dob + ' — ' + dateOut + '</div>';
+    hist.innerHTML = item + hist.innerHTML;
+  }
+
+  function difInit() {
+    var el = document.getElementById('difDateOut');
+    if (el) el.textContent = mazokFormatDate(new Date());
+    difUpdateCounter();
+  }
+
+  // ===== МЕНИНГИТ ГЕНЕРАТОР =====
+  function menUpdateCounter() {
+    var last = parseInt(localStorage.getItem('men_counter') || '0');
+    var elL = document.getElementById('menLastNum');
+    var elN = document.getElementById('menNextNum');
+    if (elL) elL.textContent = last === 0 ? '—' : '№' + last;
+    if (elN) elN.textContent = '№' + (last + 1);
+  }
+
+  function menResetCounter() {
+    if (!confirm('Счётчикті нөлге қоясыз ба?')) return;
+    localStorage.setItem('men_counter', '0');
+    menUpdateCounter();
+    var h = document.getElementById('menHistory');
+    if (h) h.innerHTML = '';
+  }
+
+  function menGetFIO() {
+    var f = (document.getElementById('menFam').value || '').trim();
+    var i = (document.getElementById('menIm').value || '').trim();
+    var o = (document.getElementById('menOtch').value || '').trim();
+    return [f, i, o].filter(Boolean).join(' ');
+  }
+
+  function menBuildDoc(num, fio, god, dateIn, dateOut) {
+    return '<div style="width:175mm;padding:5mm 8mm 8mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:10pt;page-break-inside:avoid;">' +
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:4mm;">' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;width:55%;">Қазақстан Республикасы Денсаулық сақтау министірлігі<br>Министерство здравоохранения Республики Казахстан</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;text-align:center;">ҚҰЖЖ бойынша ұйым коды<br>Код организации по ОКПО<br><br></td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">ЖШС «Азия мед – МО»<br>ТОО «Азия мед – МО»</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Медицинская документация форма №375/у<br>Утверждена приказом министра здравоохранения РК 30 октября 2010г №175</td>' +
+        '</tr>' +
+      '</table>' +
+      '<div style="text-align:center;font-size:11pt;font-weight:bold;margin:3mm 0 1mm;">Результат микробиологических исследований</div>' +
+      '<div style="text-align:center;font-size:9pt;margin-bottom:2mm;">(мазок задней стенки носоглотки на менингококк)</div>' +
+      '<div style="text-align:right;font-size:10pt;margin-bottom:3mm;padding-right:4mm;">№ <u>&nbsp;&nbsp;' + num + '&nbsp;&nbsp;</u></div>' +
+      '<table style="width:100%;border-collapse:collapse;">' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;width:55%;">Фамилия Имя Отчество:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;font-weight:bold;">' + fio + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Год рождения:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;font-weight:bold;">' + god + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата поступления анализа:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dateIn + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата выдачи анализа:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dateOut + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Взятый материал:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Мазок задней стенки носоглотки</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Наименование микроорганизма:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Отрицательно</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;font-size:9.5pt;">Бактериолог:</td><td style="padding:1.5mm 2mm;font-size:9.5pt;">Абдрахманов Жадигер Шалабайұлы.</td></tr>' +
+      '</table>' +
+    '</div>';
+  }
+
+  function menGenerate() {
+    var fio = menGetFIO();
+    var dob = (document.getElementById('menDob').value || '').trim();
+    if (!fio || !dob) { alert('ФИО және туған күнін жазыңыз!'); return; }
+    var god = dob.split('.')[2] || dob;
+    var today  = new Date();
+    var minus1 = new Date(today); minus1.setDate(today.getDate() - 1);
+    var dateIn  = mazokFormatDate(minus1);
+    var dateOut = mazokFormatDate(today);
+    var last = parseInt(localStorage.getItem('men_counter') || '0');
+    var num = last + 1;
+    localStorage.setItem('men_counter', String(num));
+    menUpdateCounter();
+    var doc = menBuildDoc(num, fio, god, dateIn, dateOut);
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Менингит — ' + fio + '</title>' +
+      '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
+      '</head><body>' +
+      '<div class="no-print" style="padding:10px;background:#f0fdfa;text-align:center;font-family:Arial,sans-serif;">' +
+        '<button onclick="window.print()" style="padding:10px 28px;background:#0d9488;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>' +
+        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
+      '</div>' + doc + '</body></html>';
+    var w = window.open('', '_blank');
+    if (!w) { alert('Popup блокталған!'); return; }
+    w.document.write(html); w.document.close();
+    menAddHistory(num, fio, dob, dateOut);
+  }
+
+  function menAddHistory(num, fio, dob, dateOut) {
+    var hist = document.getElementById('menHistory');
+    if (!hist) return;
+    var item = '<div style="margin-top:10px;padding:10px 14px;background:#f0fdfa;border-left:3px solid #0d9488;border-radius:0 8px 8px 0;font-size:13px;">' +
+      '<span style="font-weight:700;color:#0d9488;">✓ Жасалды: №' + num + '</span> — ' + fio + ' — ' + dob + ' — ' + dateOut + '</div>';
+    hist.innerHTML = item + hist.innerHTML;
+  }
+
+  function menInit() {
+    var el = document.getElementById('menDateOut');
+    if (el) el.textContent = mazokFormatDate(new Date());
+    menUpdateCounter();
+  }
+
+  // ===== ГЕПАТИТ В ЖӘНЕ С ГЕНЕРАТОР =====
+  function hepUpdateCounter() {
+    var last = parseInt(localStorage.getItem('hep_counter') || '0');
+    var elL = document.getElementById('hepLastNum');
+    var elN = document.getElementById('hepNextNum');
+    if (elL) elL.textContent = last === 0 ? '—' : '№' + last;
+    if (elN) elN.textContent = '№' + (last + 1);
+  }
+
+  function hepResetCounter() {
+    if (!confirm('Счётчикті нөлге қоясыз ба?')) return;
+    localStorage.setItem('hep_counter', '0');
+    hepUpdateCounter();
+    var h = document.getElementById('hepHistory');
+    if (h) h.innerHTML = '';
+  }
+
+  function hepGetFIO() {
+    var f = (document.getElementById('hepFam').value || '').trim();
+    var i = (document.getElementById('hepIm').value || '').trim();
+    var o = (document.getElementById('hepOtch').value || '').trim();
+    return [f, i, o].filter(Boolean).join(' ');
+  }
+
+  function hepBuildDoc(num, fio, dob, dateOut) {
+    return '<div style="width:175mm;padding:5mm 8mm 8mm;box-sizing:border-box;font-family:Times New Roman,serif;font-size:10pt;page-break-inside:avoid;">' +
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-bottom:4mm;">' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;width:55%;">Қазақстан Республикасы Денсаулық сақтау министірлігі<br>Министерство здравоохранения Республики Казахстан</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;text-align:center;">ҚҰЖЖ бойынша ұйым коды<br>Код организации по ОКПО<br><br></td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">ЖШС «Азия мед – МО»<br>ТОО «Азия мед – МО»</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:8pt;">Медицинская документация форма №244/у</td>' +
+        '</tr>' +
+      '</table>' +
+      '<div style="text-align:center;font-size:11pt;font-weight:bold;margin:3mm 0 1mm;">Результат иммуноферментного анализа</div>' +
+      '<div style="text-align:center;font-size:9pt;margin-bottom:2mm;">(ИФА крови на маркеры гепатита В и С)</div>' +
+      '<div style="text-align:right;font-size:10pt;margin-bottom:3mm;padding-right:4mm;">№ <u>&nbsp;&nbsp;' + num + '&nbsp;&nbsp;</u></div>' +
+      '<table style="width:100%;border-collapse:collapse;">' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;width:55%;">Фамилия Имя Отчество:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;font-weight:bold;">' + fio + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата рождения:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dob + '</td></tr>' +
+        '<tr><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">Дата выдачи:</td><td style="padding:1.5mm 2mm;border-bottom:1px solid #ccc;font-size:9.5pt;">' + dateOut + '</td></tr>' +
+      '</table>' +
+      '<table style="width:100%;border-collapse:collapse;border:1px solid #000;margin-top:4mm;">' +
+        '<tr style="background:#f5f5f5;">' +
+          '<th style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:left;">Показатель</th>' +
+          '<th style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:center;">Результат</th>' +
+          '<th style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:center;">Норма</th>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;">HBsAg (поверхностный антиген гепатита В)</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:center;">0,07</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:center;">До 1</td>' +
+        '</tr>' +
+        '<tr>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;">Anti-HCV (антитела к вирусу гепатита С)</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:center;">0,06</td>' +
+          '<td style="border:1px solid #000;padding:2mm 3mm;font-size:9.5pt;text-align:center;">До 1</td>' +
+        '</tr>' +
+      '</table>' +
+      '<div style="margin-top:4mm;font-size:9pt;font-style:italic;">Результат: отрицательный (гепатит В и С не обнаружены)</div>' +
+    '</div>';
+  }
+
+  function hepGenerate() {
+    var fio = hepGetFIO();
+    var dob = (document.getElementById('hepDob').value || '').trim();
+    if (!fio || !dob) { alert('ФИО және туған күнін жазыңыз!'); return; }
+    var last = parseInt(localStorage.getItem('hep_counter') || '0');
+    var num = last + 1;
+    localStorage.setItem('hep_counter', String(num));
+    hepUpdateCounter();
+    var dateOut = mazokFormatDate(new Date());
+    var doc = hepBuildDoc(num, fio, dob, dateOut);
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Гепатит — ' + fio + '</title>' +
+      '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
+      '</head><body>' +
+      '<div class="no-print" style="padding:10px;background:#f0fdf4;text-align:center;font-family:Arial,sans-serif;">' +
+        '<button onclick="window.print()" style="padding:10px 28px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-right:10px;">🖨️ Басып шығару</button>' +
+        '<button onclick="window.close()" style="padding:10px 20px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:14px;cursor:pointer;">Жабу</button>' +
+      '</div>' + doc + '</body></html>';
+    var w = window.open('', '_blank');
+    if (!w) { alert('Popup блокталған!'); return; }
+    w.document.write(html); w.document.close();
+    hepAddHistory(num, fio, dob, dateOut);
+  }
+
+  function hepAddHistory(num, fio, dob, dateOut) {
+    var hist = document.getElementById('hepHistory');
+    if (!hist) return;
+    var item = '<div style="margin-top:10px;padding:10px 14px;background:#f0fdf4;border-left:3px solid #16a34a;border-radius:0 8px 8px 0;font-size:13px;">' +
+      '<span style="font-weight:700;color:#16a34a;">✓ Жасалды: №' + num + '</span> — ' + fio + ' — ' + dob + ' — ' + dateOut + '</div>';
+    hist.innerHTML = item + hist.innerHTML;
+  }
+
+  function hepInit() {
+    var el = document.getElementById('hepDateOut');
+    if (el) el.textContent = mazokFormatDate(new Date());
+    hepUpdateCounter();
+  }
 
 </script>
 </body>
