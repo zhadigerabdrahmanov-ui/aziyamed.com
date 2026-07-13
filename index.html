@@ -5226,8 +5226,13 @@ html.dark .kz-tile { opacity:0.22; }
     <div id="mkEditName" style="font-size:13px;font-weight:700;color:#dc2626;margin-bottom:16px;padding:10px 14px;background:rgba(220,38,38,0.06);border-radius:8px;"></div>
     <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Кітапша мерзімі (соңғы жарамды күн)</label>
     <input id="mkEditDate" type="date" style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid rgba(220,38,38,0.4);font-size:14px;font-weight:600;box-sizing:border-box;margin-bottom:14px;">
-    <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Файл аты (міндетті емес)</label>
-    <input id="mkEditFile" type="text" placeholder="мысалы: Аманбаева_2026.pdf" style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.15);font-size:13px;box-sizing:border-box;margin-bottom:20px;">
+    <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:6px;">Кітапша файлы</label>
+    <div id="mkEditFileInfo" style="font-size:12px;color:#64748b;margin-bottom:8px;padding:8px 12px;background:#f8fafc;border-radius:8px;min-height:32px;display:flex;align-items:center;gap:8px;"></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+      <button onclick="document.getElementById('mkEditFileInput').click()" style="padding:8px 16px;background:rgba(220,38,38,0.08);color:#dc2626;border:1.5px solid rgba(220,38,38,0.3);border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">📎 Файл тіркеу</button>
+      <input id="mkEditFileInput" type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.webp" style="display:none;" onchange="mkEditFileSelected(this)">
+      <span id="mkEditFileName" style="font-size:12px;color:#16a34a;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+    </div>
     <div style="display:flex;gap:10px;justify-content:flex-end;">
       <button onclick="mkEditSave()" style="padding:10px 24px;background:#dc2626;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:800;cursor:pointer;">✅ Сақтау</button>
       <button onclick="document.getElementById('mkEditModal').style.display='none'" style="padding:10px 18px;background:#e5e7eb;color:#374151;border:none;border-radius:9px;font-size:13px;cursor:pointer;">Болдырмау</button>
@@ -11221,26 +11226,53 @@ function toggleStaffFolder(id) {
   function mkOpenEdit(iin, name) {
     mk_editIin = iin;
     var rec = mkGetData()[iin] || {};
-    var nameEl = document.getElementById('mkEditName');
-    var dateEl = document.getElementById('mkEditDate');
-    var fileEl = document.getElementById('mkEditFile');
-    var modal  = document.getElementById('mkEditModal');
+    var nameEl  = document.getElementById('mkEditName');
+    var dateEl  = document.getElementById('mkEditDate');
+    var fileInfo = document.getElementById('mkEditFileInfo');
+    var fileNameEl = document.getElementById('mkEditFileName');
+    var fileInput  = document.getElementById('mkEditFileInput');
+    var modal   = document.getElementById('mkEditModal');
     if (nameEl) nameEl.textContent = '👤 ' + name;
     if (dateEl) dateEl.value = mkStrToInput(rec.date || '');
-    if (fileEl) fileEl.value = rec.file || '';
+    if (fileInput) fileInput.value = '';
+    if (fileNameEl) fileNameEl.textContent = '';
+    if (fileInfo) {
+      if (rec.file && mk_idbKeys.has(iin)) {
+        fileInfo.innerHTML =
+          '<span style="color:#16a34a;font-weight:600;">📎 ' + rec.file + '</span>' +
+          '<button onclick="mkDownloadFile(\'' + iin + '\')" style="padding:3px 10px;background:rgba(34,164,85,0.1);color:#16a34a;border:1px solid rgba(34,164,85,0.3);border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">📥 Жүктеу</button>';
+      } else if (rec.file) {
+        fileInfo.innerHTML = '<span style="color:#94a3b8;">📎 ' + rec.file + ' (файл сақталмаған)</span>';
+      } else {
+        fileInfo.innerHTML = '<span style="color:#94a3b8;">Файл тіркелмеген</span>';
+      }
+    }
     if (modal) modal.style.display = 'flex';
+  }
+
+  function mkEditFileSelected(input) {
+    var file = input.files && input.files[0];
+    var el = document.getElementById('mkEditFileName');
+    if (el) el.textContent = file ? ('📎 ' + file.name) : '';
   }
 
   function mkEditSave() {
     if (!mk_editIin) return;
     var dateVal = (document.getElementById('mkEditDate')||{}).value;
-    var fileVal = ((document.getElementById('mkEditFile')||{}).value || '').trim();
     if (!dateVal) { alert('Мерзімді енгізіңіз!'); return; }
     var data = mkGetData();
-    data[mk_editIin] = { date: mkInputToStr(dateVal), file: fileVal, updated: mazokFormatDate(new Date()) };
+    var rec = data[mk_editIin] || {};
+    var fileInput = document.getElementById('mkEditFileInput');
+    var newFile = fileInput && fileInput.files && fileInput.files[0];
+    var fileName = newFile ? newFile.name : (rec.file || '');
+    data[mk_editIin] = { date: mkInputToStr(dateVal), file: fileName, updated: mazokFormatDate(new Date()) };
     mkSaveData(data);
     document.getElementById('mkEditModal').style.display = 'none';
-    mkRenderTable();
+    if (newFile) {
+      mkSaveFileIDB(mk_editIin, newFile).then(function() { mkLoadIDBKeys(); });
+    } else {
+      mkRenderTable();
+    }
   }
 
   function mkDeleteRecord(iin) {
