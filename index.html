@@ -11439,6 +11439,16 @@ function toggleStaffFolder(id) {
     return all.length ? all[all.length - 1].str : null;
   }
 
+  function mkExtractIIN(text) {
+    // IIN — 12 цифра қатарынан
+    var re = /\b(\d{12})\b/g, m;
+    while ((m = re.exec(text)) !== null) {
+      var found = MK_STAFF.filter(function(s){ return s.iin === m[1]; });
+      if (found.length) return found[0];
+    }
+    return null;
+  }
+
   function mkExtractName(text) {
     var norm = text.toUpperCase().replace(/\s+/g, ' ');
     var best = null, bestScore = 0;
@@ -11466,7 +11476,7 @@ function toggleStaffFolder(id) {
       var result = await Tesseract.recognize(file, 'rus', { logger: function(m) {} });
       var text = result.data.text;
       var detectedDate = mkExtractDate(text);
-      var detectedStaff = mkExtractName(text);
+      var detectedStaff = mkExtractIIN(text) || mkExtractName(text);
       if (detectedStaff && empEl) { empEl.value = detectedStaff.iin; empEl.style.borderColor = 'rgba(34,164,85,0.5)'; }
       if (detectedDate && dateEl) {
         var p = detectedDate.split('.');
