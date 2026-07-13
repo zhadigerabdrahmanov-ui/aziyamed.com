@@ -11209,6 +11209,7 @@ function toggleStaffFolder(id) {
         '<td style="padding:9px 12px;text-align:center;">'+fileStr+'</td>' +
         '<td style="padding:9px 12px;text-align:center;white-space:nowrap;">' +
           '<button onclick="mkOpenEdit(\''+iinSafe+'\',\''+nameSafe+'\')" style="padding:4px 11px;background:rgba(220,38,38,0.08);color:#dc2626;border:1px solid rgba(220,38,38,0.2);border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;margin-right:3px;">✏️</button>' +
+          (mk_idbKeys.has(s.iin) ? '<button onclick="mkDownloadFile(\''+iinSafe+'\')" title="Файлды жүктеу" style="padding:4px 9px;background:rgba(34,164,85,0.08);color:#16a34a;border:1px solid rgba(34,164,85,0.2);border-radius:7px;font-size:11px;cursor:pointer;margin-right:3px;">📥</button>' : '') +
           (rec ? '<button onclick="mkDeleteRecord(\''+iinSafe+'\')" style="padding:4px 9px;background:rgba(0,0,0,0.04);color:#94a3b8;border:1px solid rgba(0,0,0,0.08);border-radius:7px;font-size:11px;cursor:pointer;">🗑</button>' : '') +
         '</td>' +
         '</tr>';
@@ -11247,6 +11248,7 @@ function toggleStaffFolder(id) {
     var data = mkGetData();
     delete data[iin];
     mkSaveData(data);
+    mkDeleteFileIDB(iin);
     mkRenderTable();
   }
 
@@ -11283,49 +11285,55 @@ function toggleStaffFolder(id) {
       var item = document.createElement('div');
       item.id = key;
       item.style.cssText = 'border:1.5px solid rgba(0,0,0,0.1);border-radius:12px;padding:14px 16px;background:#fafafa;';
-      var prevId = key+'_prev';
+      var prevId = key + '_prev';
       item.innerHTML =
         '<div style="display:flex;gap:14px;align-items:flex-start;">' +
-          '<div id="'+prevId+'" style="width:76px;height:76px;border-radius:8px;overflow:hidden;background:#e5e7eb;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:34px;">'+(isPdf?'📄':'🖼️')+'</div>' +
+          '<div id="' + prevId + '" style="width:76px;height:76px;border-radius:8px;overflow:hidden;background:#e5e7eb;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:34px;">' + (isPdf ? '📄' : '🖼️') + '</div>' +
           '<div style="flex:1;min-width:0;">' +
-            '<div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+file.name+'">'+file.name+'</div>' +
+            '<div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + file.name + '">' + file.name + '</div>' +
+            '<div id="' + key + '_status" style="margin-bottom:8px;min-height:18px;"></div>' +
             '<label style="font-size:11px;font-weight:700;color:var(--gray);display:block;margin-bottom:3px;">Қызметкер</label>' +
-            '<select id="'+key+'_emp" style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid rgba(0,0,0,0.15);font-size:12px;margin-bottom:8px;box-sizing:border-box;">'+mkBuildEmpOptions()+'</select>' +
+            '<select id="' + key + '_emp" style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid rgba(0,0,0,0.15);font-size:12px;margin-bottom:8px;box-sizing:border-box;">' + mkBuildEmpOptions() + '</select>' +
             '<label style="font-size:11px;font-weight:700;color:var(--gray);display:block;margin-bottom:3px;">Кітапша мерзімі</label>' +
-            '<input id="'+key+'_date" type="date" style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid rgba(220,38,38,0.35);font-size:13px;box-sizing:border-box;">' +
+            '<input id="' + key + '_date" type="date" style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid rgba(220,38,38,0.35);font-size:13px;box-sizing:border-box;">' +
           '</div>' +
-          '<button onclick="document.getElementById(\''+key+'\').remove();mk_pendingFiles=mk_pendingFiles.filter(function(x){return x.key!==\''+key+'\';})" style="background:none;border:none;font-size:18px;cursor:pointer;color:#94a3b8;flex-shrink:0;padding:0;">✕</button>' +
+          '<button onclick="document.getElementById(\'' + key + '\').remove();mk_pendingFiles=mk_pendingFiles.filter(function(x){return x.key!==\'' + key + '\';})" style="background:none;border:none;font-size:18px;cursor:pointer;color:#94a3b8;flex-shrink:0;padding:0;">✕</button>' +
         '</div>';
       list.appendChild(item);
       if (isImg) {
         var reader = new FileReader();
         reader.onload = function(e) {
           var prev = document.getElementById(prevId);
-          if (prev) prev.innerHTML = '<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover;">';
+          if (prev) prev.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover;">';
         };
         reader.readAsDataURL(file);
       }
+      mkRunOCR(file, key);
     });
   }
 
   function mkSaveAll() {
     var data = mkGetData();
-    var saved = 0, errs = [];
+    var toSave = [], errs = [];
     mk_pendingFiles.forEach(function(pf) {
-      var empEl = document.getElementById(pf.key+'_emp');
-      var dateEl = document.getElementById(pf.key+'_date');
+      var empEl = document.getElementById(pf.key + '_emp');
+      var dateEl = document.getElementById(pf.key + '_date');
       if (!empEl || !dateEl) return;
       var iin = empEl.value, dateVal = dateEl.value;
-      if (!iin) { errs.push(pf.file.name+': қызметкер таңдалмады'); return; }
-      if (!dateVal) { errs.push(pf.file.name+': мерзім енгізілмеді'); return; }
+      if (!iin) { errs.push(pf.file.name + ': қызметкер таңдалмады'); return; }
+      if (!dateVal) { errs.push(pf.file.name + ': мерзім анықталмады'); return; }
       data[iin] = { date: mkInputToStr(dateVal), file: pf.file.name, updated: mazokFormatDate(new Date()) };
-      saved++;
+      toSave.push({ iin: iin, file: pf.file });
     });
-    if (errs.length) { alert('Қате:\n'+errs.join('\n')); return; }
+    if (errs.length) { alert('Қате:\n' + errs.join('\n')); return; }
     mkSaveData(data);
-    mkCloseUpload();
-    mkRenderTable();
-    if (saved > 0) alert('✅ '+saved+' қызметкердің деректері сақталды!');
+    var promises = toSave.map(function(x) { return mkSaveFileIDB(x.iin, x.file); });
+    Promise.all(promises).then(function() {
+      mkLoadIDBKeys();
+      mkCloseUpload();
+      mkRenderTable();
+      if (toSave.length) alert('✅ ' + toSave.length + ' қызметкердің деректері сақталды!');
+    });
   }
 
   function mkExportCSV() {
@@ -11344,7 +11352,139 @@ function toggleStaffFolder(id) {
     a.click();
   }
 
-  function mkInit() { mkFilterSet('all'); mkRenderTable(); }
+
+  // ---- IndexedDB: file storage ----
+  var mk_idbKeys = new Set();
+  var mk_tesseractLoaded = false;
+
+  function mkIDBOpen() {
+    return new Promise(function(resolve, reject) {
+      var req = indexedDB.open('mkFilesDB', 1);
+      req.onupgradeneeded = function(e) {
+        e.target.result.createObjectStore('files', { keyPath: 'iin' });
+      };
+      req.onsuccess = function(e) { resolve(e.target.result); };
+      req.onerror = function() { reject(); };
+    });
+  }
+
+  function mkLoadIDBKeys() {
+    mkIDBOpen().then(function(db) {
+      var tx = db.transaction('files', 'readonly');
+      var req = tx.objectStore('files').getAllKeys();
+      req.onsuccess = function(e) { mk_idbKeys = new Set(e.target.result); mkRenderTable(); };
+    }).catch(function() { mkRenderTable(); });
+  }
+
+  function mkSaveFileIDB(iin, file) {
+    return mkIDBOpen().then(function(db) {
+      return new Promise(function(resolve) {
+        var reader = new FileReader();
+        reader.onload = function(ev) {
+          var tx = db.transaction('files', 'readwrite');
+          tx.objectStore('files').put({ iin: iin, name: file.name, type: file.type || 'application/octet-stream', data: ev.target.result });
+          tx.oncomplete = function() { mk_idbKeys.add(iin); resolve(); };
+          tx.onerror = function() { resolve(); };
+        };
+        reader.readAsArrayBuffer(file);
+      });
+    }).catch(function() {});
+  }
+
+  function mkDownloadFile(iin) {
+    mkIDBOpen().then(function(db) {
+      var tx = db.transaction('files', 'readonly');
+      var req = tx.objectStore('files').get(iin);
+      req.onsuccess = function(e) {
+        var rec = e.target.result;
+        if (!rec) { alert('Файл табылмады! Файлды қайта жүктеңіз.'); return; }
+        var blob = new Blob([rec.data], { type: rec.type });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = rec.name;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(a.href); }, 1000);
+      };
+    }).catch(function() { alert('Файл табылмады!'); });
+  }
+
+  function mkDeleteFileIDB(iin) {
+    mkIDBOpen().then(function(db) {
+      var tx = db.transaction('files', 'readwrite');
+      tx.objectStore('files').delete(iin);
+      tx.oncomplete = function() { mk_idbKeys.delete(iin); };
+    }).catch(function() {});
+  }
+
+  // ---- OCR (Tesseract.js) ----
+  function mkLoadTesseract() {
+    return new Promise(function(resolve) {
+      if (mk_tesseractLoaded || typeof Tesseract !== 'undefined') { mk_tesseractLoaded = true; resolve(); return; }
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+      s.onload = function() { mk_tesseractLoaded = true; resolve(); };
+      s.onerror = function() { resolve(); };
+      document.head.appendChild(s);
+    });
+  }
+
+  function mkExtractDate(text) {
+    var all = [], re = /(\d{1,2})[.\-\/](\d{1,2})[.\-\/](20\d{2})/g, m;
+    while ((m = re.exec(text)) !== null) {
+      var d = parseInt(m[1]), mo = parseInt(m[2]), y = parseInt(m[3]);
+      if (d >= 1 && d <= 31 && mo >= 1 && mo <= 12 && y >= 2020 && y <= 2035) {
+        all.push({ str: (d<10?'0':'')+d+'.'+(mo<10?'0':'')+mo+'.'+y });
+      }
+    }
+    return all.length ? all[all.length - 1].str : null;
+  }
+
+  function mkExtractName(text) {
+    var norm = text.toUpperCase().replace(/\s+/g, ' ');
+    var best = null, bestScore = 0;
+    MK_STAFF.forEach(function(s) {
+      var parts = s.name.toUpperCase().split(' ').filter(function(p) { return p.length > 2; });
+      if (!parts.length) return;
+      var hits = parts.filter(function(p) { return norm.indexOf(p) >= 0; });
+      var score = hits.length / parts.length;
+      if (score > bestScore) { bestScore = score; best = s; }
+    });
+    return bestScore >= 0.5 ? best : null;
+  }
+
+  async function mkRunOCR(file, key) {
+    var statusEl = document.getElementById(key + '_status');
+    var empEl = document.getElementById(key + '_emp');
+    var dateEl = document.getElementById(key + '_date');
+    if (statusEl) statusEl.innerHTML = '<span style="color:#ca8a04;font-size:11px;">🔍 Кітапша сканерленуде...</span>';
+    await mkLoadTesseract();
+    if (typeof Tesseract === 'undefined') {
+      if (statusEl) statusEl.innerHTML = '<span style="color:#94a3b8;font-size:11px;">⚠️ OCR интернетсіз жұмыс істемейді — өзіңіз таңдаңыз</span>';
+      return;
+    }
+    try {
+      var result = await Tesseract.recognize(file, 'rus', { logger: function(m) {} });
+      var text = result.data.text;
+      var detectedDate = mkExtractDate(text);
+      var detectedStaff = mkExtractName(text);
+      if (detectedStaff && empEl) { empEl.value = detectedStaff.iin; empEl.style.borderColor = 'rgba(34,164,85,0.5)'; }
+      if (detectedDate && dateEl) {
+        var p = detectedDate.split('.');
+        dateEl.value = p[2] + '-' + p[1].padStart(2,'0') + '-' + p[0].padStart(2,'0');
+        dateEl.style.borderColor = 'rgba(34,164,85,0.5)';
+      }
+      var info = [];
+      if (detectedStaff) info.push('👤 ' + detectedStaff.name.split(' ')[0]);
+      if (detectedDate) info.push('📅 ' + detectedDate);
+      if (statusEl) statusEl.innerHTML = info.length
+        ? '<span style="color:#16a34a;font-size:11px;">✅ ' + info.join(' · ') + ' — тексеріп растаңыз</span>'
+        : '<span style="color:#dc2626;font-size:11px;">❌ Анықталмады — өзіңіз таңдаңыз</span>';
+    } catch(e) {
+      if (statusEl) statusEl.innerHTML = '<span style="color:#dc2626;font-size:11px;">❌ Оқу қатесі — өзіңіз таңдаңыз</span>';
+    }
+  }
+
+  function mkInit() { mkFilterSet('all'); mkLoadIDBKeys(); }
 
 </script>
 </body>
