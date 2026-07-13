@@ -11481,6 +11481,25 @@ function toggleStaffFolder(id) {
     return null;
   }
 
+  function mkExtractIIN(text) {
+    // 12 consecutive digits
+    var re1 = /\b(\d{12})\b/g, m;
+    while ((m = re1.exec(text)) !== null) {
+      var found = MK_STAFF.filter(function(s){ return s.iin === m[1]; });
+      if (found.length) return found[0];
+    }
+    // Digits with spaces: "920 123 300 487" or "9201 2330 0487" etc.
+    var re2 = /(\d[\d ]{10,16}\d)/g;
+    while ((m = re2.exec(text)) !== null) {
+      var iin = m[1].replace(/\s/g, '');
+      if (iin.length === 12) {
+        var found = MK_STAFF.filter(function(s){ return s.iin === iin; });
+        if (found.length) return found[0];
+      }
+    }
+    return null;
+  }
+
   function mkExtractName(text) {
     var norm = text.toUpperCase().replace(/\s+/g, ' ');
     var best = null, bestScore = 0;
@@ -11494,22 +11513,78 @@ function toggleStaffFolder(id) {
     return bestScore >= 0.5 ? best : null;
   }
 
+  // ---- PDF.js text extraction ----
+  var mk_pdfJsLoaded = false;
+
+  function mkLoadPdfJs() {
+    return new Promise(function(resolve) {
+      if (mk_pdfJsLoaded || (typeof pdfjsLib !== 'undefined')) { mk_pdfJsLoaded = true; resolve(); return; }
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      s.onload = function() {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        mk_pdfJsLoaded = true; resolve();
+      };
+      s.onerror = function() { resolve(); };
+      document.head.appendChild(s);
+    });
+  }
+
+  async function mkExtractPDFText(file) {
+    await mkLoadPdfJs();
+    if (typeof pdfjsLib === 'undefined') return '';
+    try {
+      var ab = await file.arrayBuffer();
+      var pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+      var text = '';
+      for (var i = 1; i <= pdf.numPages; i++) {
+        var page = await pdf.getPage(i);
+        var c = await page.getTextContent();
+        text += c.items.map(function(it){ return it.str; }).join(' ') + '\n';
+      }
+      return text;
+    } catch(e) { return ''; }
+  }
+
+  async function mkOCRFile(file) {
+    await mkLoadTesseract();
+    if (typeof Tesseract === 'undefined') return '';
+    try {
+      var result = await Tesseract.recognize(file, 'rus', { logger: function(m){} });
+      return result.data.text;
+    } catch(e) { return ''; }
+  }
+
   async function mkRunOCR(file, key) {
     var statusEl = document.getElementById(key + '_status');
-    var empEl = document.getElementById(key + '_emp');
-    var dateEl = document.getElementById(key + '_date');
+    var empEl    = document.getElementById(key + '_emp');
+    var dateEl   = document.getElementById(key + '_date');
     if (statusEl) statusEl.innerHTML = '<span style="color:#ca8a04;font-size:11px;">🔍 Кітапша сканерленуде...</span>';
-    await mkLoadTesseract();
-    if (typeof Tesseract === 'undefined') {
-      if (statusEl) statusEl.innerHTML = '<span style="color:#94a3b8;font-size:11px;">⚠️ OCR интернетсіз жұмыс істемейді — өзіңіз таңдаңыз</span>';
-      return;
-    }
+
+    var isPdf = /\.pdf$/i.test(file.name);
+    var text = '';
+
     try {
-      var result = await Tesseract.recognize(file, 'rus', { logger: function(m) {} });
-      var text = result.data.text;
-      var detectedDate = mkExtractDate(text);
+      if (isPdf) {
+        // PDF: алдымен тікелей мәтін алу (цифрлық PDF)
+        text = await mkExtractPDFText(file);
+        if (text.trim().length < 20) {
+          // Сканерленген PDF болса — OCR
+          text = await mkOCRFile(file);
+        }
+      } else {
+        // Фото/сурет — OCR
+        text = await mkOCRFile(file);
+      }
+
+      var detectedDate  = mkExtractDate(text);
       var detectedStaff = mkExtractIIN(text) || mkExtractName(text);
-      if (detectedStaff && empEl) { empEl.value = detectedStaff.iin; empEl.style.borderColor = 'rgba(34,164,85,0.5)'; }
+
+      if (detectedStaff && empEl) {
+        empEl.value = detectedStaff.iin;
+        empEl.style.borderColor = 'rgba(34,164,85,0.5)';
+      }
       if (detectedDate && dateEl) {
         var p = detectedDate.split('.');
         dateEl.value = p[2] + '-' + p[1].padStart(2,'0') + '-' + p[0].padStart(2,'0');
@@ -11517,7 +11592,7 @@ function toggleStaffFolder(id) {
       }
       var info = [];
       if (detectedStaff) info.push('👤 ' + detectedStaff.name.split(' ')[0]);
-      if (detectedDate) info.push('📅 ' + detectedDate);
+      if (detectedDate)  info.push('📅 ' + detectedDate);
       if (statusEl) statusEl.innerHTML = info.length
         ? '<span style="color:#16a34a;font-size:11px;">✅ ' + info.join(' · ') + ' — тексеріп растаңыз</span>'
         : '<span style="color:#dc2626;font-size:11px;">❌ Анықталмады — өзіңіз таңдаңыз</span>';
