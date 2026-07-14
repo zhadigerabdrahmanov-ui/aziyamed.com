@@ -3888,34 +3888,6 @@ html.dark .kz-tile { opacity:0.22; }
     <div class="kuraldar-tile-title">Медициналық кітапша</div>
     <div class="kuraldar-tile-desc">Мерзімін тексеру және бақылау</div>
   </div>
-cat << 'EOF'
-      <div class="kuraldar-tile" id="tileakkreditatsiya" onclick="window.open('akkreditatsiya.html','_blank')" style="--tile-color:37,99,235;">
-        <div class="kuraldar-tile-icon">📑</div>
-        <div class="kuraldar-tile-title">Аккредитация</div>
-        <div class="kuraldar-tile-desc">Аккредитация құжаттарын генерациялау</div>
-      </div>
-EOF
-Output
-
-      <div class="kuraldar-tile" id="tileakkreditatsiya" onclick="window.open('akkreditatsiya.html','_blank')" style="--tile-color:37,99,235;">
-        <div class="kuraldar-tile-icon">📑</div>
-        <div class="kuraldar-tile-title">Аккредитация</div>
-        <div class="kuraldar-tile-desc">Аккредитация құжаттарын генерациялау</div>
-      </div>
-Done
-Нақты қадам:
-
-Экрандағы 3890-жолдың (</div> — медициналық кітапша плиткасының соңы) соңына курсорды апарып, Enter басыңыз.
-Жоғарыдағы кодты сол жерге жапсырыңыз.
-Нәтижесінде 3886–3892 аралығы шамамен былай болу керек:
-3886–3890: Медициналық кітапша плиткасы (бар болып тұр)
-жаңа 5 жол: Аккредитация плиткасы
-3891 (енді 3896 болады): сыртқы </div> (kuraldar-tiles контейнерінің жабылуы)
-Жоғарыдағы жасыл «Commit changes...» батырмасын басып, main тармаққа тікелей сақтаңыз.
-Сақтағаннан кейін хабарласыңыз, мен сайтты қайта тексеремін.
-
-
-
 </div>
 
 <div id="kuraldarPanel" style="display:none;margin-top:20px;">
