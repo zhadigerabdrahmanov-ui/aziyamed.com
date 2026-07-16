@@ -11237,7 +11237,37 @@ function toggleStaffFolder(id) {
     });
     mkRenderTable();
   }
+function mkGetAllStaff() {
+  try { return JSON.parse(localStorage.getItem('mk_staff') || '[]'); } catch(e) { return []; }
+}
 
+function mkSaveAllStaff(list) {
+  localStorage.setItem('mk_staff', JSON.stringify(list));
+}
+
+function mkAddStaffSave() {
+  var iinEl = document.getElementById('mkAddIIN');
+  var nameEl = document.getElementById('mkAddName');
+  var posEl = document.getElementById('mkAddPos');
+  var iin = iinEl ? iinEl.value.trim() : '';
+  var name = nameEl ? nameEl.value.trim() : '';
+  var pos = posEl ? posEl.value.trim() : '';
+  if (!/^\d{12}$/.test(iin)) { alert('ИИН 12 саннан тұруы керек'); return; }
+  if (!name) { alert('Аты-жөнін енгізіңіз'); return; }
+  var staff = mkGetAllStaff();
+  if (staff.some(function(s){ return s.iin === iin; })) { alert('Бұл ИИН тізімде бар'); return; }
+  var maxId = 0;
+  staff.forEach(function(s){ var n = parseInt(s.id,10); if(!isNaN(n) && n>maxId) maxId=n; });
+  staff.push({ iin: iin, id: maxId+1, name: name, pos: pos });
+  mkSaveAllStaff(staff);
+  if (iinEl) iinEl.value = '';
+  if (nameEl) nameEl.value = '';
+  if (posEl) posEl.value = '';
+  var modal = document.getElementById('mkAddModal');
+  if (modal) modal.style.display = 'none';
+  if (typeof mkRenderTable === 'function') mkRenderTable();
+  if (typeof mkUpdateStats === 'function') mkUpdateStats();
+}
   function mkRenderTable() {
     var data = mkGetData();
     var q = ((document.getElementById('mkSearch')||{}).value||'').toLowerCase();
