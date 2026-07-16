@@ -11718,15 +11718,16 @@ function toggleStaffFolder(id) {
         dateEl.value = p[2] + '-' + p[1].padStart(2,'0') + '-' + p[0].padStart(2,'0');
         dateEl.style.borderColor = 'rgba(34,164,85,0.5)';
       }
+      console.log('[OCR text]', text.slice(0, 500));
       var info = [];
       if (detectedStaff) info.push('👤 ' + detectedStaff.name.split(' ')[0]);
       if (detectedDate)  info.push('📅 ' + detectedDate);
       if (statusEl) statusEl.innerHTML = info.length
         ? '<span style="color:#16a34a;font-size:11px;">✅ ' + info.join(' · ') + ' — тексеріп растаңыз</span>'
-        : '<span style="color:#dc2626;font-size:11px;">❌ Анықталмады — өзіңіз таңдаңыз</span>';
+        : '<span style="color:#dc2626;font-size:11px;">❌ Анықталмады — өзіңіз таңдаңыз<br><span style="color:#94a3b8;font-size:10px;word-break:break-all;">' + text.slice(0,120).replace(/</g,'&lt;') + '...</span></span>';
     } catch(e) {
       console.error('[mkRunOCR error]', e);
-      if (statusEl) statusEl.innerHTML = '<span style="color:#dc2626;font-size:11px;">❌ Анықталмады — өзіңіз таңдаңыз</span>';
+      if (statusEl) statusEl.innerHTML = '<span style="color:#dc2626;font-size:11px;">❌ Қате: ' + e.message + '</span>';
     }
   }
 
