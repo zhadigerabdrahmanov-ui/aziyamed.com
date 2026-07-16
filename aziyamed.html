@@ -5167,6 +5167,7 @@ html.dark .kz-tile { opacity:0.22; }
     <button onclick="mkFilterSet('ok')" id="mkFiltOk" style="padding:9px 16px;background:rgba(34,164,85,0.1);color:#16a34a;border:1.5px solid rgba(34,164,85,0.2);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">🟢 Жарамды</button>
     <button onclick="mkFilterSet('none')" id="mkFiltNone" style="padding:9px 16px;background:rgba(0,0,0,0.05);color:#64748b;border:1.5px solid rgba(0,0,0,0.1);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">⚫ Жоқ</button>
     <button onclick="mkExportCSV()" style="margin-left:auto;padding:9px 16px;background:rgba(34,164,85,0.1);color:#16a34a;border:1.5px solid rgba(34,164,85,0.2);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">⬇️ CSV</button>
+    <button onclick="mkManualSync()" id="mkSyncBtn" style="padding:9px 16px;background:rgba(59,130,246,0.1);color:#2563eb;border:1.5px solid rgba(59,130,246,0.3);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;" title="Деректерді Firebase-ке жіберу">☁️ Синхрондау</button>
   </div>
 
   <!-- ІЗДЕУ -->
@@ -11719,18 +11720,35 @@ function toggleStaffFolder(id) {
     }
   }
 
+  async function mkManualSync() {
+    var btn = document.getElementById('mkSyncBtn');
+    if (btn) { btn.textContent = '⏳ Жіберілуде...'; btn.disabled = true; }
+    var d = mkGetData();
+    await mkCloudSave(d);
+    if (btn) { btn.textContent = '✅ Жіберілді!'; setTimeout(function(){ btn.textContent = '☁️ Синхрондау'; btn.disabled = false; }, 2000); }
+  }
+
   async function mkInit() {
     mkFilterSet('all');
     mkLoadIDBKeys();
     var cloudData = await mkCloudGet();
-    if (cloudData) {
+    var localData = mkGetData();
+    var localKeys = Object.keys(localData).length;
+    var cloudKeys = (cloudData && typeof cloudData === 'object') ? Object.keys(cloudData).length : 0;
+    if (cloudKeys > 0 && cloudKeys >= localKeys) {
+      // Firebase-та деректер бар және локалдан кем емес — Firebase-тен аламыз
       localStorage.setItem('mk_data', JSON.stringify(cloudData));
-      mkRenderTable();
+    } else if (localKeys > 0 && MK_CLOUD_URL) {
+      // Локалда деректер бар, Firebase бос немесе аз — Firebase-ке жіберемін
+      mkCloudSave(localData);
     }
+    mkRenderTable();
     if (MK_CLOUD_URL) {
       setInterval(async function() {
         var d = await mkCloudGet();
-        if (!d) return;
+        if (!d || typeof d !== 'object') return;
+        var dKeys = Object.keys(d).length;
+        if (dKeys === 0) return; // Firebase бос болса, локалды өшірмейміз
         var local = JSON.stringify(mkGetData());
         if (JSON.stringify(d) !== local) {
           localStorage.setItem('mk_data', JSON.stringify(d));
