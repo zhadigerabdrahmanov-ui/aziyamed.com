@@ -2297,6 +2297,25 @@ html.dark .kz-tile { opacity:0.22; }
   #panelaccred h2{font-size:16px !important;font-weight:700 !important;margin:0 !important}
   #panelaccred h3{font-size:14px !important;font-weight:700 !important;margin:0 0 8px !important}
   #kuraldarPanel{grid-column:1/-1}
+
+  /* ===== МЕДКНИЖКА ===== */
+  .mkb-tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid #e5e7eb}
+  .mkb-tab-btn{padding:9px 20px;border:none;background:none;font-weight:600;font-size:13px;cursor:pointer;color:#94a3b8;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.15s}
+  .mkb-tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
+  .mkb-tbl{width:100%;border-collapse:collapse;font-size:13px}
+  .mkb-tbl th{background:#f8fafc;padding:9px 12px;text-align:left;font-weight:700;color:#64748b;border-bottom:2px solid #e5e7eb;white-space:nowrap}
+  .mkb-tbl td{padding:9px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+  .mkb-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+  .mkb-badge-valid{background:#dcfce7;color:#16a34a}
+  .mkb-badge-exp{background:#fef9c3;color:#ca8a04}
+  .mkb-badge-old{background:#fee2e2;color:#dc2626}
+  .mkb-badge-none{background:#f1f5f9;color:#94a3b8}
+  .mkb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:8500;align-items:center;justify-content:center;padding:16px}
+  .mkb-overlay.show{display:flex}
+  .mkb-modal{background:#fff;border-radius:16px;max-width:660px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;position:relative}
+  .mkb-view-frame{width:100%;height:70vh;border:none;border-radius:8px;background:#f1f5f9}
+  .mkb-drop{border:2px dashed #c7d2fe;border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:.2s}
+  .mkb-drop:hover{border-color:var(--green);background:#f0fdf4}
 </style>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
@@ -3934,6 +3953,11 @@ html.dark .kz-tile { opacity:0.22; }
     <div class="kuraldar-tile-title">Аккредитация</div>
     <div class="kuraldar-tile-desc">I санат · 2026–2029 · IQAH сертификаты</div>
   </div>
+  <div class="kuraldar-tile" id="tilemkbook" onclick="openKuralPanel('mkbook')" style="--tile-color:14,165,233;">
+    <div class="kuraldar-tile-icon">📋</div>
+    <div class="kuraldar-tile-title">Медкнижка</div>
+    <div class="kuraldar-tile-desc">Мерзімін тексеру · OCR · Firebase</div>
+  </div>
 <div id="kuraldarPanel" style="display:none;margin-top:20px;">
   <div id="paneliin" class="kuraldar-panel-content" style="display:none;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid rgba(37,99,235,0.15);">
@@ -5169,6 +5193,45 @@ html.dark .kz-tile { opacity:0.22; }
 
           </div>
   </div>
+
+<div id="panelmkbook" class="kuraldar-panel-content" style="display:none;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid #e5e7eb;">
+    <span style="font-size:26px;">📋</span>
+    <div>
+      <div style="font-size:15px;font-weight:800;color:var(--dark);">Медициналық кітапшалар</div>
+      <div style="font-size:12px;color:var(--gray);">Мерзімін тексеру · OCR · Firebase сақтау</div>
+    </div>
+    <button onclick="openKuralPanel('mkbook')" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8">✕</button>
+  </div>
+  <div class="mkb-tabs">
+    <button class="mkb-tab-btn active" id="mkbTabListBtn" onclick="mkbShowTab('list')">📋 Тізім</button>
+    <button class="mkb-tab-btn" id="mkbTabAddBtn" onclick="mkbShowTab('add')">➕ Қызметкер қосу</button>
+  </div>
+  <div id="mkbTabListPane">
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+      <input id="mkbSearch" type="text" oninput="mkbRenderList(this.value)" placeholder="🔍 ФИО немесе ИИН..." style="flex:1;min-width:180px;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;">
+      <button onclick="mkbLoadAll()" style="padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:13px;cursor:pointer;">🔄 Жаңарту</button>
+    </div>
+    <div id="mkbLoading" style="text-align:center;padding:20px;color:#94a3b8;">⏳ Деректер жүктелуде...</div>
+    <div style="overflow-x:auto;">
+      <table class="mkb-tbl" id="mkbTable" style="display:none;">
+        <thead><tr><th>ФИО</th><th>ИИН</th><th>Допуск до</th><th>Статус</th><th>Іс-әрекет</th></tr></thead>
+        <tbody id="mkbTbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div id="mkbTabAddPane" style="display:none;">
+    <div style="background:#f8fafc;border-radius:12px;padding:18px;max-width:420px;">
+      <div style="font-size:13px;font-weight:800;margin-bottom:14px;">Жаңа қызметкер қосу</div>
+      <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:4px;">ФИО *</label>
+      <input id="mkbNewName" type="text" placeholder="ИВАНОВ ИВАН ИВАНОВИЧ" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;margin-bottom:10px;box-sizing:border-box;text-transform:uppercase;">
+      <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:4px;">ИИН (12 сан) *</label>
+      <input id="mkbNewIIN" type="text" maxlength="12" placeholder="920123300487" inputmode="numeric" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;margin-bottom:14px;box-sizing:border-box;">
+      <button onclick="mkbAddStaff()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">✅ Тізімге қосу</button>
+      <div id="mkbAddMsg" style="margin-top:10px;font-size:12px;min-height:18px;"></div>
+    </div>
+  </div>
+</div>
 
 <div id="panelaccred" class="kuraldar-panel-content" style="display:none;">
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid rgba(180,130,0,0.2);">
@@ -6718,26 +6781,102 @@ function submitBooking(e) {
 
 // ─── REGISTRATION MODAL ──────────────────────────────────────────────────────
 const STAFF_IINS = new Set([
-  '890628400669','920402301461','870813301444','920123300487','831023000277',
-  '890509401481','720701302186','900129301573','890705301768','670801402858',
-  '870510000698','940807301398','911206302297','580727401978','601204401557',
-  '841027402027','000726500109','900301402215','000713600739','600611402674',
-  '971104400580','930415300426','890917300683','950708300748','931217302141',
-  '871225401070','820711402613','880719401164','750131302341','951104301350',
-  '780612400074','610203301712','970623300365','930801400857','030131500060',
-  '960314400746','900212402261','961117401141','670916402546','751224402871',
-  '980611400556','000226000070','021107600691','930712402146','931030401956',
-  '821110401343','910109402382','951007401341','960510000815','980807300179',
-  '030715600656','780212401226','951115401159','890206403014','011215601467',
-  '920511402617','950726401237','930828400527','870615402105','760120400551',
-  '870114401926','631110401125','741014402687','910201402590','790909401722',
-  '980514401438','910917401882','800701402596','940301401135','940824402226',
-  '020121601069','890526402462','960725401779','901102402513','791113400690',
-  '580304402531','020224500410','980710300677','610505402075','931208400995',
-  '590923401231','511010402561','020603600704','910202301175','890127302656',
-  '000820500477','990922301312','000131501468','981110300172','650218301008',
-  '900724302784','990612301258','660126301159','810426302517','860420401968',
-  '750304050104','930308401331','690104402093','870703403548'
+  '000131501468',
+  '000226000070',
+  '000713600739',
+  '000726500109',
+  '000820500477',
+  '020121601069',
+  '020224500410',
+  '020603600704',
+  '021107600691',
+  '030131500060',
+  '030715600656',
+  '511010402561',
+  '580304402531',
+  '580727401978',
+  '590923401231',
+  '600611402674',
+  '601204401557',
+  '610203301712',
+  '610505402075',
+  '631110401125',
+  '650218301008',
+  '660126301159',
+  '670801402858',
+  '670916402546',
+  '690104402093',
+  '720701302186',
+  '741014402687',
+  '750131302341',
+  '750304050104',
+  '751224402871',
+  '760120400551',
+  '780212401226',
+  '780612400074',
+  '790909401722',
+  '791113400690',
+  '800701402596',
+  '810426302517',
+  '820711402613',
+  '821110401343',
+  '831023000277',
+  '841027402027',
+  '860420401968',
+  '870114401926',
+  '870510000698',
+  '870615402105',
+  '870703403548',
+  '870813301444',
+  '871225401070',
+  '880719401164',
+  '890127302656',
+  '890206403014',
+  '890509401481',
+  '890526402462',
+  '890628400669',
+  '890705301768',
+  '890917300683',
+  '900129301573',
+  '900212402261',
+  '900301402215',
+  '900724302784',
+  '901102402513',
+  '910109402382',
+  '910201402590',
+  '910202301175',
+  '910917401882',
+  '911206302297',
+  '920123300487',
+  '920402301461',
+  '920511402617',
+  '930308401331',
+  '930415300426',
+  '930712402146',
+  '930801400857',
+  '930828400527',
+  '931030401956',
+  '931208400995',
+  '931217302141',
+  '940301401135',
+  '940807301398',
+  '940824402226',
+  '950708300748',
+  '950726401237',
+  '951007401341',
+  '951104301350',
+  '951115401159',
+  '960314400746',
+  '960510000815',
+  '960725401779',
+  '961117401141',
+  '970623300365',
+  '971104400580',
+  '980514401438',
+  '980611400556',
+  '980807300179',
+  '981110300172',
+  '990922301312'
 ]);
 
 function openReg() {
@@ -10522,6 +10661,7 @@ function openKuralPanel(panelId) {
   wrapper.style.display = 'block';
   panel.style.display = 'block';
   if (tile) tile.classList.add('active');
+  if (panelId === 'mkbook') { setTimeout(mkbLoadAll, 50); }
 
   setTimeout(function(){
     wrapper.scrollIntoView({ behavior:'smooth', block:'nearest' });
@@ -11673,6 +11813,7 @@ function akkGen(std,i,lang,preview){
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
+  mkbInitStaff();
   akkLoad();
   AKK_FIELDS.forEach(f=>document.getElementById('akk-'+f).addEventListener('change',akkSave));
   akkRenderDocs();
@@ -18350,9 +18491,273 @@ const AKK_REGISTRY={
   st24:{prefix:'Ст24',docs:AKK_DOCS_ST24}
 };
 
+/* ===== МЕДКНИЖКА МОДУЛІ ===== */
+var MKB_FB='https://aziyamed-b0714-default-rtdb.asia-southeast1.firebasedatabase.app/';
+
+/* ===== МКБ БАСТАПҚЫ ТІЗІМ ===== */
+var MKB_INITIAL_STAFF = {"890628400669":{"name":"АМАНБАЕВА ПЕРИЗАТ ЕРСИНБАЕВНА","iin":"890628400669","pos":"Руководитель"},"920402301461":{"name":"ЕДИЛОВ НУРҒАЛИАБДИКАРИМҰЛЫ","iin":"920402301461","pos":"Заместитель руководителя по лечебной части"},"870813301444":{"name":"ТЕМІР БАҚЫТ МЫҢЖАСАРҰЛЫ","iin":"870813301444","pos":"Врач-кардиолог, заведующий стационара"},"920123300487":{"name":"АБДРАХМАНОВ ЖАДИГЕР ШАЛАБАЙҰЛЫ","iin":"920123300487","pos":"Врач-эпидемиолог"},"831023000277":{"name":"КАРИМСАКОВА КАМИЛА АЛГАЗИЕВНА","iin":"831023000277","pos":"Врач-терапевт,"},"890509401481":{"name":"ЖАНҚАЛ ЖАДЫРА АСҚАРБЕКҚЫЗЫ","iin":"890509401481","pos":"Врач-акушер гинеколог"},"720701302186":{"name":"АМЗЕЕВ ОРКЕН САУРБАЕВИЧ","iin":"720701302186","pos":"Врач-уролог, врач-УЗД"},"900129301573":{"name":"ШОАЛИЕВ ШОХРОН АБДУРАИМОВИЧ","iin":"900129301573","pos":"Врач-невропатолог (взрослый, детский)"},"890705301768":{"name":"МУСРЕПОВ КАЗБЕК АБДУХАШИМОВИЧ","iin":"890705301768","pos":"Врач профпатолог"},"670801402858":{"name":"ТОЛЫБАЕВА ГУЛИ КУЧКАРОВНА","iin":"670801402858","pos":"Врач-стоматолог"},"870510000698":{"name":"САЙБЕКОВ КАНАТ ЕРКИНБЕКОВИЧ","iin":"870510000698","pos":"Врач-лаборант"},"940807301398":{"name":"ҚАЗЫҒҰЛ ЕРАЛЫ ЕРГЕШБЕКҰЛЫ","iin":"940807301398","pos":"Учасковый педиатр, врач инфекционист"},"911206302297":{"name":"БАЙГУЛОВ БЕКСУЛТАН БАХТИЯРОВИЧ","iin":"911206302297","pos":"Врач-акушер-гинеколог"},"580727401978":{"name":"ДАЛИЕВА ГУЛЬЖАМИЛЯ БИЛЯЛОВНА","iin":"580727401978","pos":"Учасковый ВОП"},"601204401557":{"name":"БУРИБАЕВА САУЛЕШ САГИМАНОВНА","iin":"601204401557","pos":"Учасковый ВОП"},"841027402027":{"name":"ЖОЛДЫБАЕВА АЖАР ШУКИРОВНА","iin":"841027402027","pos":"Учасковый ВОП , заведующий учаскового отделения"},"000726500109":{"name":"ЮСУПОВ ХАМЗААЛИ АБДУЛВАХАБОВИЧ","iin":"000726500109","pos":"Учасковый ВОП"},"900301402215":{"name":"ИШИМОВА ШАХЛО БАХТИЯРОВНА","iin":"900301402215","pos":"Учасковый ВОП, хирург, эксперт"},"000713600739":{"name":"БЕКУЗАҚ АЙЫМ АҢСАБЕКҚЫЗЫ","iin":"000713600739","pos":"Учасковый ВОП"},"600611402674":{"name":"РАХИМОВА ГАЛИНА САУРБАЕВНА","iin":"600611402674","pos":"Учасковый ВОП"},"971104400580":{"name":"ЕСТӨРЕ ТҰЙҒЫН ЖӘНІБЕКҚЫЗЫ","iin":"971104400580","pos":"Врач-УЗД"},"930415300426":{"name":"ТАГАРОВ АСАН ХАМИТҰЛЫ","iin":"930415300426","pos":"Врач-хирург"},"890917300683":{"name":"САПАРБЕКОВ САПАРГАЛИ КАМИЛЖАНОВИЧ","iin":"890917300683","pos":"Врач-реабилитолог"},"950708300748":{"name":"ЕРКИНБАЕВ УМИДЖОН УРХИНБАЕВИЧ","iin":"950708300748","pos":"Врач-детский кардиолог"},"931217302141":{"name":"ОМАР ЕРКЕБУЛАН ОСПАНҰЛЫ","iin":"931217302141","pos":"Врач-травматолог-ортопед"},"871225401070":{"name":"УМАРОВА МЕРУЕРТ ЖАНИБЕКОВНА","iin":"871225401070","pos":"Врач-иммунолог"},"820711402613":{"name":"АЛМАНОВА МАДИНА УЛЫМБЕКОВНА","iin":"820711402613","pos":"врач-эндокринолог"},"880719401164":{"name":"НАВРУЗОВА МАКПАЛ КЕНЕСОВНА","iin":"880719401164","pos":"Врач-маммолог, врач-окулист"},"750131302341":{"name":"НАЗИМОВ АСКАР ИСАЕВИЧ","iin":"750131302341","pos":"Лор-врач"},"951104301350":{"name":"ДЖУРАБЕКОВ НУРИСЛАМ БУХАРБАЙҰЛЫ","iin":"951104301350","pos":"Врач-рентгенолог, врач-УЗД"},"780612400074":{"name":"АСАНОВА БОЛДЫГЫЗ ЖОЛДАСОВНА","iin":"780612400074","pos":"Врач фтизио педиатр"},"610203301712":{"name":"УСИПБЕКОВ КУАНДЫК САПАРБЕКОВИЧ","iin":"610203301712","pos":"Врач-фтизиатр"},"970623300365":{"name":"СЕРІКБАЙ НҰРСАПАР КЕНШІНБАЙҰЛЫ","iin":"970623300365","pos":"Заместиельь по орг.метод, медстатист"},"930801400857":{"name":"ЖАҚЫПБАЙ АЙДАНА ӘБДІНҰРҚЫЗЫ","iin":"930801400857","pos":"Главная медсестра"},"030131500060":{"name":"САЙФЕТДИНОВ ИЛНУР РИНАТОВИЧ","iin":"030131500060","pos":"Фельдшер до врачебного кабинета"},"960314400746":{"name":"МУСАЕВА ДИЯНА МУКТАРОВНА","iin":"960314400746","pos":"медсестра до врачебного кабинета"},"900212402261":{"name":"МЫРЗАШЕВА ГУЛАЙЫМ БАКТИЯРОВНА","iin":"900212402261","pos":"медсестра до врачебного кабинета"},"961117401141":{"name":"МҮСЛІМ ГУЛДЕРАЙЫМ ТЕМУРҚЫЗЫ","iin":"961117401141","pos":"медсестра до врачебного кабинета"},"670916402546":{"name":"БАЙМУРАТОВА КУЛАЙШАТ МУРАТОВНА","iin":"670916402546","pos":"Прививочная медсестра"},"751224402871":{"name":"ХАЛБАЕВА НИГОРА РАХМАТУЛЛАЕВНА","iin":"751224402871","pos":"медсестра по вакцинации"},"980611400556":{"name":"МАХАН БАТПА СҮНДЕТҚЫЗЫ","iin":"980611400556","pos":"Медседсестра Лор-кабинета"},"000226000070":{"name":"КАНИБЕКОВА ДИАНА АЛМАС КИЗИ","iin":"000226000070","pos":"Медсестра кабин.УЗД"},"021107600691":{"name":"КЕНЕС ГУЛНУР ЕРЖАНҚЫЗЫ","iin":"021107600691","pos":"Учасковая медсестра педиатра"},"930712402146":{"name":"УЙСИНБАЕВА ТАНШОЛПАН АБДУАЛИЕЕВНА","iin":"930712402146","pos":"Учасковая медсестра педиатра"},"931030401956":{"name":"АЙНАБЕКОВА ЖАНАР БАЙҒОЛҚЫЗЫ","iin":"931030401956","pos":"Учасковая медсестра педиатра"},"821110401343":{"name":"ЖҮРСІНБАЙ САЛТАНАТ ӘЛІШЕРҚЫЗЫ","iin":"821110401343","pos":"Учасковая медсестра"},"910109402382":{"name":"САМУРАТОВА ЮЛЫЗ ТАЛГАТОВНА","iin":"910109402382","pos":"Учасковая медсестра"},"951007401341":{"name":"АНАРОВА ДАНА МУРАТҚЫЗЫ","iin":"951007401341","pos":"Учасковая медсестра"},"960510000815":{"name":"МУРАТОВА ТАЗАГУЛ ДАУЫЛБАЕВНА","iin":"960510000815","pos":"Учасковая медсестра"},"980807300179":{"name":"РАХЫМОВ БЕКЗАТ ҒАНИҰЛЫ","iin":"980807300179","pos":"Учасковый медбрат"},"030715600656":{"name":"БАЛАГАЗОВА ДИНАРА ЖЕНИСҚЫЗЫ","iin":"030715600656","pos":"Учасковая медсестра"},"780212401226":{"name":"НАХИПБЕКОВА АЙГЕРИМ ОРАЗАЛИЕВНА","iin":"780212401226","pos":"Учасковая медсестра"},"951115401159":{"name":"БУДЕНОВА АКЕРКЕ АЛИМЖАНОВА","iin":"951115401159","pos":"Учасковая медсестра"},"890206403014":{"name":"МУХАТОВА АЙГЕРИМ РУСТЕМОВНА","iin":"890206403014","pos":"Учасковая медсестра"},"920511402617":{"name":"АЛИМТАЕВА ШАХНОЗА НУРМУХАММАДКИЗИ","iin":"920511402617","pos":"Учасковая медсестра"},"950726401237":{"name":"ҚҰРБАН АЙДАНА МҰХТАРҚЫЗЫ","iin":"950726401237","pos":"Учасковая медсестра"},"930828400527":{"name":"ШОРАЕВА МЕРУЕРТ ЖОСАЛЫҚЫЗЫ","iin":"930828400527","pos":"Учасковая медсестра"},"870615402105":{"name":"ОРУМБАЕВА ЗУЛЬФИЯ АМИРБЕКОВНА","iin":"870615402105","pos":"Учасковая медсестра"},"760120400551":{"name":"АХМЕТОВА ЖУЛДЫЗ ТОШБОЛАТОВНА","iin":"760120400551","pos":"Учасковая медсестра"},"870114401926":{"name":"ЖАМБАЕВА АКМАРЖАН СЕРИКОВНА","iin":"870114401926","pos":"Акушерка"},"631110401125":{"name":"ИСАЕВА РАУШАН АБДИХАДИРОВНА","iin":"631110401125","pos":"Акушерка"},"741014402687":{"name":"ДОСАНОВА ЖАНЫЛСЫН САЙЫНОВНА","iin":"741014402687","pos":"Постовая-медсестра"},"910201402590":{"name":"БИСЕНБАЕВА БАНУ АБДУЛЛАЕВНА","iin":"910201402590","pos":"Постовая-медсестра"},"790909401722":{"name":"НИЯЗОВА ЖИБЕК ТАСТЕМИРОВНА","iin":"790909401722","pos":"Постовая-медсестра"},"980514401438":{"name":"ЗИЯБЕК ЖАЗИРА СӘКЕНҚЫЗЫ","iin":"980514401438","pos":"Постовая-медсестра"},"910917401882":{"name":"ДАРЖАНОВА АЛТЫНАЙ ТОЙШЫБЕКОВНА","iin":"910917401882","pos":"Медседсестра кабинета стоматолога"},"800701402596":{"name":"МАХАНОВА РЫСКУЛ ТУРСЫНБАЕВНА","iin":"800701402596","pos":"Медсестра кабинета хирурга,травматолога"},"940301401135":{"name":"КАРАБАЕВА ҰЛДАНА СЕРЖАНҚЫЗЫ","iin":"940301401135","pos":"Медсестра физкабинета массажист"},"940824402226":{"name":"БАЙДУЛЛА ӘСЕЛҚАНЫМ САБИТҚЫЗЫ","iin":"940824402226","pos":"Медсесттра физкабинета массажист"},"020121601069":{"name":"ИЛЬЯСОВА УЛЖАНА КАНАТОВНА","iin":"020121601069","pos":"Медсестра кабинета УЗД"},"890526402462":{"name":"АБДИХАЙРОВА ЛАУРА ИСКЕНДЕРОВНА","iin":"890526402462","pos":"Лаборантка клин. лаборатории"},"960725401779":{"name":"ШЫНТАЙ БАЛНҰР ҚЫЙЛЫБЕКҚЫЗЫ","iin":"960725401779","pos":"Лаборантка клин. лаборатории"},"901102402513":{"name":"РИСКУЛОВА ОЙЖАМАЛ АСИЛБЕКОВНА","iin":"901102402513","pos":"Медсестра лаборатории"},"791113400690":{"name":"АМИРКУЛОВА ЖАДРА ЖАКСИБАЕВНА","iin":"791113400690","pos":"Медсестра лаборатории"},"580304402531":{"name":"КЕЛИМБЕТОВА ГУЛЬЗИНА АБАЖАЕВНА","iin":"580304402531","pos":"Помощник врача –эпидемиолога"},"020224500410":{"name":"КИМЕБАЙ ТИМУР ТУРЖАНҰЛЫ","iin":"020224500410","pos":"Рентгенолаборант"},"610505402075":{"name":"НАЗИЕВА ЖУМАГУЛЬ ТОЛХУНБАЕВНА","iin":"610505402075","pos":"Рентгенолаборант"},"931208400995":{"name":"ҚҰЛБАТЫР НАЗИРА САРСЕНБАЙҚЫЗЫ","iin":"931208400995","pos":"Медрегистратор"},"590923401231":{"name":"КАЛАЕВА МАНЗУРА САПАРОВНА","iin":"590923401231","pos":"Экономист,бухгалтер"},"511010402561":{"name":"МАМБЕТОВА МАДИНА БЕЛЯЛОВНА","iin":"511010402561","pos":"Специалист по кадрам"},"020603600704":{"name":"АСИЛМАМАТОВА АЙКУМИС БАХЫТЖАНҚЫЗЫ","iin":"020603600704","pos":"Психолог"},"910202301175":{"name":"ШАМЕТОВ КАЗБЕК ИСЛАМҰЛЫ","iin":"910202301175","pos":"Специалист Iй-Ти, мед.техник, бухгалтер"},"890127302656":{"name":"БАРАТОВ АКМАЛ ЖОРАБАЕВИЧ","iin":"890127302656","pos":"Провизор"},"000820500477":{"name":"МЫРЗАҚОЖА АҚЖОЛ БАҚЫТЖАНҰЛЫ","iin":"000820500477","pos":"Провизор"},"990922301312":{"name":"АМАНБАЙ НУРСАЙЫН ЕРСИНБАЙҰЛЫ","iin":"990922301312","pos":"Менеджер"},"000131501468":{"name":"ЕГЕМТАЙ ОРЫНБАСАР АББАСҰЛЫ","iin":"000131501468","pos":"Менеджер"},"981110300172":{"name":"АМАНГЕЛДІ ЫБЫРАЙ","iin":"981110300172","pos":"Менеджер"},"650218301008":{"name":"КУРБАНБАЕВ ЕРСИНБАЙ АМАНБАЕВИЧ","iin":"650218301008","pos":"Заместитель . по хозяйст. части"},"900724302784":{"name":"УТАПОВ БЕКЖАН ХАЛМУРЗАЕВИЧ","iin":"900724302784","pos":"Специалист Ай-Ти, программист"},"660126301159":{"name":"ЕЛИКБАЕВ ОМАР САЙЛАУОВИЧ","iin":"660126301159","pos":"водитель"},"810426302517":{"name":"МЕДЫТБЕКОВ МУХТАР НОРМАТОВИЧ","iin":"810426302517","pos":"Плотник"},"860420401968":{"name":"ТАЖИБАЕВА БАХЫТГУЛЬ КУРБАНБЕКОВНА","iin":"860420401968","pos":"Повар"},"750304050104":{"name":"ИРГАШЕВА ГУЛЖАМОЛ МЕКЕНБАЕВНА","iin":"750304050104","pos":"Сестрахозяйка, оператор маш. стирки белья"},"930308401331":{"name":"ДОСАНОВА БАГИЛА КИЛИЧБЕКОВНА","iin":"930308401331","pos":"Санитарка"},"690104402093":{"name":"ИМАМБЕРДИЕВА КҮЛІМХАН ДҮЙСЕНБІҚЫЗЫ","iin":"690104402093","pos":"Санитарка"},"870703403548":{"name":"АЛИЕВА ГУЛЬБАХАР ПЕРДЕБЕКОВНА","iin":"870703403548","pos":"Санитарка"}};
+
+async function mkbInitStaff() {
+  // If mk_staff is empty in Firebase, populate it with initial data
+  try {
+    var r = await fetch(MKB_FB + 'mk_staff.json').then(function(x){return x.json();});
+    if (!r || typeof r !== 'object' || Object.keys(r).length === 0) {
+      await fetch(MKB_FB + 'mk_staff.json', {method:'PUT', body:JSON.stringify(MKB_INITIAL_STAFF)});
+      console.log('mk_staff Firebase-ке жүктелді: 96 қызметкер');
+    }
+  } catch(e) { console.warn('mkbInitStaff:', e); }
+}
+
+var mkbStaffData={};var mkbBooksData={};
+var mkbCurrentIIN=null;var mkbCurrentFileB64=null;var mkbCurrentFileType=null;
+
+async function mkbLoadAll(){
+  var lo=document.getElementById('mkbLoading'),tb=document.getElementById('mkbTable');
+  if(lo)lo.style.display='';if(tb)tb.style.display='none';
+  try{
+    var r=await Promise.all([
+      fetch(MKB_FB+'mk_staff.json').then(function(x){return x.json();}),
+      fetch(MKB_FB+'mk_books.json').then(function(x){return x.json();})
+    ]);
+    mkbStaffData=(r[0]&&typeof r[0]==='object')?r[0]:{};
+    mkbBooksData=(r[1]&&typeof r[1]==='object')?r[1]:{};
+    Object.keys(mkbStaffData).forEach(function(i){STAFF_IINS.add(i);});
+  }catch(e){console.error('mkbLoadAll:',e);}
+  if(lo)lo.style.display='none';if(tb)tb.style.display='';
+  mkbRenderList(document.getElementById('mkbSearch')?document.getElementById('mkbSearch').value:'');
+}
+
+function mkbDateObj(s){if(!s)return null;var p=s.split('.');return p.length===3?new Date(+p[2],+p[1]-1,+p[0]):null;}
+
+function mkbRenderList(filter){
+  var tbody=document.getElementById('mkbTbody');if(!tbody)return;
+  var today=new Date();today.setHours(0,0,0,0);
+  var soon=new Date(today);soon.setDate(soon.getDate()+30);
+  var staff=Object.values(mkbStaffData).sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
+  if(filter){var q=filter.toLowerCase();staff=staff.filter(function(s){return(s.name||'').toLowerCase().includes(q)||(s.iin||'').includes(q);});}
+  if(!staff.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:24px">Қызметкерлер жоқ — “Қызметкер қосу” арқылы қосыңыз</td></tr>';return;}
+  tbody.innerHTML='';
+  staff.forEach(function(s){
+    var book=mkbBooksData[s.iin];
+    var badge='<span class="mkb-badge mkb-badge-none">Жоқ</span>';
+    var dateStr='—';
+    var btns='<button onclick="mkbOpenUpload(\''+s.iin+'\')" style="padding:4px 10px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer">📎 Жүктеу</button>';
+    if(book&&book.valid_until){
+      var exp=mkbDateObj(book.valid_until);dateStr=book.valid_until;
+      if(exp){
+        if(exp<today)badge='<span class="mkb-badge mkb-badge-old">⛔ Өтті</span>';
+        else if(exp<=soon)badge='<span class="mkb-badge mkb-badge-exp">⚠️ Бітеді</span>';
+        else badge='<span class="mkb-badge mkb-badge-valid">✅ Жарамды</span>';
+      }
+      btns='<button onclick="mkbViewBook(\''+s.iin+'\')" style="padding:4px 9px;background:#3b82f6;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-right:4px">👁 Қарау</button>'
+          +'<button onclick="mkbOpenUpload(\''+s.iin+'\')" style="padding:4px 9px;background:#f1f5f9;color:#374151;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-right:4px">🔄</button>';
+    }
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td style="font-weight:600">'+(s.name||'—')+'</td>'
+      +'<td style="font-family:monospace;font-size:11px;color:#64748b">'+(s.iin||'—')+'</td>'
+      +'<td>'+dateStr+'</td>'+'<td>'+badge+'</td>'
+      +'<td>'+btns+'<button onclick="mkbDeleteStaff(\''+s.iin+'\')" style="padding:4px 8px;background:none;border:1px solid #fca5a5;color:#ef4444;border-radius:6px;font-size:11px;cursor:pointer;margin-left:2px">🗑</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function mkbShowTab(tab){
+  document.getElementById('mkbTabListPane').style.display=tab==='list'?'':'none';
+  document.getElementById('mkbTabAddPane').style.display=tab==='add'?'':'none';
+  document.getElementById('mkbTabListBtn').classList.toggle('active',tab==='list');
+  document.getElementById('mkbTabAddBtn').classList.toggle('active',tab==='add');
+}
+
+async function mkbAddStaff(){
+  var name=(document.getElementById('mkbNewName').value||'').trim().toUpperCase();
+  var iin=(document.getElementById('mkbNewIIN').value||'').replace(/\D/g,'');
+  var msg=document.getElementById('mkbAddMsg');
+  if(!name){msg.style.color='#dc2626';msg.textContent='⚠️ ФИО міндетті';return;}
+  if(iin.length!==12){msg.style.color='#dc2626';msg.textContent='⚠️ ИИН 12 сан болуы керек';return;}
+  if(mkbStaffData[iin]){msg.style.color='#dc2626';msg.textContent='⚠️ Бұл ИИН тізімде бар';return;}
+  msg.style.color='#64748b';msg.textContent='⏳ Сақталуда...';
+  var entry={name:name,iin:iin};
+  try{
+    await fetch(MKB_FB+'mk_staff/'+iin+'.json',{method:'PUT',body:JSON.stringify(entry)});
+    mkbStaffData[iin]=entry;STAFF_IINS.add(iin);
+    document.getElementById('mkbNewName').value='';document.getElementById('mkbNewIIN').value='';
+    msg.style.color='#16a34a';msg.textContent='✅ Қосылды!';
+    mkbRenderList('');
+    setTimeout(function(){msg.textContent='';},3000);
+  }catch(e){msg.style.color='#dc2626';msg.textContent='❌ Қате: '+e.message;}
+}
+
+async function mkbDeleteStaff(iin){
+  var name=(mkbStaffData[iin]||{}).name||iin;
+  if(!confirm('Жою керек пе?\n'+name))return;
+  try{
+    await fetch(MKB_FB+'mk_staff/'+iin+'.json',{method:'DELETE'});
+    delete mkbStaffData[iin];STAFF_IINS.delete(iin);
+    mkbRenderList(document.getElementById('mkbSearch').value||'');
+  }catch(e){alert('Қате: '+e.message);}
+}
+
+function mkbOpenUpload(iin){
+  mkbCurrentIIN=iin;mkbCurrentFileB64=null;mkbCurrentFileType=null;
+  var s=mkbStaffData[iin]||{};
+  document.getElementById('mkbUploadTitle').textContent='📎 '+(s.name||iin);
+  document.getElementById('mkbUploadSubtitle').textContent='ИИН: '+iin;
+  document.getElementById('mkbOcrResult').style.display='none';
+  document.getElementById('mkbSaveBtn').style.display='none';
+  document.getElementById('mkbUploadStatus').textContent='';
+  document.getElementById('mkbFileInput').value='';
+  document.getElementById('mkbUploadOverlay').classList.add('show');
+}
+function mkbCloseUpload(){document.getElementById('mkbUploadOverlay').classList.remove('show');mkbCurrentIIN=null;mkbCurrentFileB64=null;}
+
+function mkbHandleDrop(e){
+  e.preventDefault();document.getElementById('mkbDropZone').style.borderColor='#c7d2fe';
+  if(e.dataTransfer.files[0])mkbHandleFile(e.dataTransfer.files[0]);
+}
+
+function mkbHandleFile(file){
+  if(!file)return;
+  if(file.size>5*1024*1024){document.getElementById('mkbUploadStatus').textContent='⚠️ Файл 5 МБ-тан аспауы керек';return;}
+  document.getElementById('mkbUploadStatus').textContent='📖 Файл оқылуда...';
+  document.getElementById('mkbOcrResult').style.display='none';
+  document.getElementById('mkbSaveBtn').style.display='none';
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    mkbCurrentFileB64=ev.target.result;mkbCurrentFileType=file.type;
+    if(file.type==='application/pdf')mkbExtractPDF(ev.target.result);
+    else mkbExtractImage(ev.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+async function mkbExtractPDF(dataUrl){
+  document.getElementById('mkbUploadStatus').textContent='📄 PDF мәтін анықталуда...';
+  try{
+    if(typeof pdfjsLib==='undefined'){
+      await new Promise(function(res){
+        var s=document.createElement('script');
+        s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        s.onload=function(){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';res();};
+        document.head.appendChild(s);
+      });
+    }
+    var b64=dataUrl.split(',')[1],bin=atob(b64),bytes=new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+    var pdf=await pdfjsLib.getDocument({data:bytes}).promise,text='';
+    for(var p=1;p<=Math.min(pdf.numPages,3);p++){
+      var pg=await pdf.getPage(p),tc=await pg.getTextContent();
+      text+=tc.items.map(function(i){return i.str;}).join(' ')+'\n';
+    }
+    mkbParseText(text);
+  }catch(e){console.error('PDF:',e);document.getElementById('mkbUploadStatus').textContent='⚠️ PDF оқу қатесі. Қолмен енгізіңіз.';mkbShowOcr('','','');}
+}
+
+function mkbExtractImage(dataUrl){
+  document.getElementById('mkbUploadStatus').textContent='🔍 OCR орындалуда...';
+  if(typeof Tesseract==='undefined'){document.getElementById('mkbUploadStatus').textContent='⚠️ OCR жүктелмеді. Қолмен енгізіңіз.';mkbShowOcr('','','');return;}
+  Tesseract.recognize(dataUrl,'rus',{logger:function(m){if(m.status==='recognizing text')document.getElementById('mkbUploadStatus').textContent='🔍 OCR: '+Math.round(m.progress*100)+'%';}})
+    .then(function(r){mkbParseText(r.data.text);})
+    .catch(function(){mkbShowOcr('','','');});
+}
+
+function mkbParseText(text){
+  var iinM=text.match(/\b(\d{12})\b/);
+  var iin=iinM?iinM[1]:'';
+  var nameM=text.match(/ФИО[\s\S]{0,10}?([А-ЯA-ZҒҚҢӨҰҮІ][А-ЯA-ZҒҚҢӨҰҮІа-яa-zғқңөұүіё\s]{5,60})/);
+  var name=nameM?nameM[1].trim():'';
+  var dateM=text.match(/[Дд]опуск\s+к\s+работе\s+до[\s:]*(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})/i);
+  var date=dateM?dateM[1].replace(/[-\/]/g,'.'):'';
+  mkbShowOcr(name,iin,date);
+}
+
+function mkbShowOcr(name,iin,date){
+  document.getElementById('mkbOcrName').value=name;
+  document.getElementById('mkbOcrIIN').value=iin;
+  document.getElementById('mkbOcrDate').value=date;
+  document.getElementById('mkbOcrResult').style.display='';
+  document.getElementById('mkbSaveBtn').style.display='';
+  var info='';
+  if(iin&&mkbCurrentIIN&&iin===mkbCurrentIIN)info='✅ ИИН сәйкес келді';
+  else if(iin&&mkbCurrentIIN&&iin!==mkbCurrentIIN)info='⚠️ Кітапша ИИН: '+iin+' / Тізім: '+mkbCurrentIIN;
+  document.getElementById('mkbMatchInfo').textContent=info;
+  document.getElementById('mkbUploadStatus').textContent=(name||iin||date)?'✅ Деректер анықталды — тексеріп растаңыз':'⚠️ Авто-анықтау мүмкін болмады — қолмен толтырыңыз';
+}
+
+async function mkbSaveBook(){
+  var name=(document.getElementById('mkbOcrName').value||'').trim();
+  var date=(document.getElementById('mkbOcrDate').value||'').trim();
+  if(!date){alert('Допуск к работе до мерзімін енгізіңіз');return;}
+  if(!mkbCurrentFileB64){alert('Файл жүктелмеген');return;}
+  var statusEl=document.getElementById('mkbUploadStatus'),saveBtn=document.getElementById('mkbSaveBtn');
+  statusEl.textContent='⏳ Firebase-ке сақталуда...';saveBtn.disabled=true;
+  var entry={name:name||(mkbStaffData[mkbCurrentIIN]||{}).name||'',iin:mkbCurrentIIN,valid_until:date,
+    uploaded_at:new Date().toISOString(),file_b64:mkbCurrentFileB64,file_type:mkbCurrentFileType||'application/octet-stream'};
+  try{
+    await fetch(MKB_FB+'mk_books/'+mkbCurrentIIN+'.json',{method:'PUT',body:JSON.stringify(entry)});
+    mkbBooksData[mkbCurrentIIN]=entry;
+    statusEl.textContent='✅ Сақталды!';
+    setTimeout(function(){mkbCloseUpload();mkbRenderList(document.getElementById('mkbSearch').value||'');},1200);
+  }catch(e){statusEl.textContent='❌ Қате: '+e.message;saveBtn.disabled=false;}
+}
+
+function mkbViewBook(iin){
+  var book=mkbBooksData[iin];
+  if(!book||!book.file_b64){alert('Файл жоқ');return;}
+  var s=mkbStaffData[iin]||{};
+  document.getElementById('mkbViewTitle').textContent='📄 '+(s.name||iin)+' — Допуск до: '+(book.valid_until||'—');
+  var c=document.getElementById('mkbViewContent');
+  if((book.file_type||'').includes('pdf'))
+    c.innerHTML='<iframe src="'+book.file_b64+'" class="mkb-view-frame"></iframe>';
+  else
+    c.innerHTML='<img src="'+book.file_b64+'" style="max-width:100%;border-radius:8px;">';
+  document.getElementById('mkbViewOverlay').classList.add('show');
+}
+
 </script>
 
 </script>
+
+<!-- MKB UPLOAD MODAL -->
+<div class="mkb-overlay" id="mkbUploadOverlay">
+  <div class="mkb-modal">
+    <button onclick="mkbCloseUpload()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8">✕</button>
+    <div style="font-size:15px;font-weight:800;margin-bottom:2px;" id="mkbUploadTitle">📎 Медкнижка жүктеу</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:14px;" id="mkbUploadSubtitle"></div>
+    <div class="mkb-drop" id="mkbDropZone" onclick="document.getElementById('mkbFileInput').click()"
+      ondragover="event.preventDefault();this.style.borderColor='var(--green)'"
+      ondragleave="this.style.borderColor='#c7d2fe'"
+      ondrop="mkbHandleDrop(event)">
+      <div style="font-size:30px;margin-bottom:6px;">📄</div>
+      <div style="font-size:13px;font-weight:600;color:#64748b;">PDF немесе фото сүйреп апарыңыз</div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:3px;">немесе басып таңдаңыз · макс. 5 МБ</div>
+    </div>
+    <input id="mkbFileInput" type="file" accept=".pdf,.jpg,.jpeg,.png,.heic,.webp" style="display:none;" onchange="mkbHandleFile(this.files[0])">
+    <div id="mkbOcrResult" style="display:none;background:#f8fafc;border-radius:10px;padding:14px;margin-top:12px;">
+      <div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:10px;">📊 Нәтиже — тексеріп растаңыз:</div>
+      <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px;">ФИО</label>
+      <input id="mkbOcrName" style="width:100%;padding:8px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:13px;margin-bottom:8px;box-sizing:border-box;">
+      <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px;">ИИН</label>
+      <input id="mkbOcrIIN" maxlength="12" style="width:100%;padding:8px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:13px;margin-bottom:8px;box-sizing:border-box;">
+      <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px;">Допуск к работе до (ДД.ММ.ЖЖЖЖ)</label>
+      <input id="mkbOcrDate" placeholder="03.01.2027" style="width:100%;padding:8px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:13px;margin-bottom:6px;box-sizing:border-box;">
+      <div id="mkbMatchInfo" style="font-size:12px;color:#64748b;min-height:16px;"></div>
+    </div>
+    <div id="mkbUploadStatus" style="font-size:13px;color:#64748b;margin-top:10px;min-height:20px;"></div>
+    <div style="display:flex;gap:10px;margin-top:12px;">
+      <button id="mkbSaveBtn" onclick="mkbSaveBook()" style="display:none;padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">💾 Firebase-ке сақтау</button>
+      <button onclick="mkbCloseUpload()" style="padding:10px 18px;background:#f1f5f9;color:#374151;border:none;border-radius:9px;font-size:13px;cursor:pointer;">Болдырмау</button>
+    </div>
+  </div>
+</div>
+
+<!-- MKB VIEW MODAL -->
+<div class="mkb-overlay" id="mkbViewOverlay">
+  <div class="mkb-modal" style="max-width:820px;">
+    <button onclick="document.getElementById('mkbViewOverlay').classList.remove('show')" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8">✕</button>
+    <div style="font-size:14px;font-weight:800;margin-bottom:14px;" id="mkbViewTitle">📄 Медкнижка</div>
+    <div id="mkbViewContent"></div>
+  </div>
+</div>
 
 <!-- АКК МОДАЛ -->
 <div class="akk-modal" id="akk-modal">
