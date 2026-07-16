@@ -3888,11 +3888,6 @@ html.dark .kz-tile { opacity:0.22; }
     <div class="kuraldar-tile-title">Медициналық кітапша</div>
     <div class="kuraldar-tile-desc">Мерзімін тексеру және бақылау</div>
   </div>
-  <div class="kuraldar-tile" id="tileakkreditatsiya" onclick="window.open('akkreditatsiya.html','_blank')" style="--tile-color:37,99,235;">
-<div class="kuraldar-tile-icon">📑</div>
-<div class="kuraldar-tile-title">Аккредитация</div>
-<div class="kuraldar-tile-desc">Аккредитация құжаттарын генерациялау</div>
-</div>
 </div>
 
 <div id="kuraldarPanel" style="display:none;margin-top:20px;">
@@ -5165,6 +5160,7 @@ html.dark .kz-tile { opacity:0.22; }
     <button onclick="mkOpenUpload()" style="padding:10px 20px;background:#dc2626;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">
       📎 Файл жүктеу (PDF / Фото)
     </button>
+    <button onclick="mkOpenAddStaff()" style="padding:10px 18px;background:rgba(34,164,85,0.1);color:#16a34a;border:1.5px solid rgba(34,164,85,0.3);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">➕ Жаңа қызметкер</button>
     <button onclick="mkFilterSet('all')" id="mkFiltAll" style="padding:9px 16px;background:#1e293b;color:#fff;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">Барлығы</button>
     <button onclick="mkFilterSet('exp')" id="mkFiltExp" style="padding:9px 16px;background:rgba(220,38,38,0.1);color:#dc2626;border:1.5px solid rgba(220,38,38,0.3);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">🔴 Өтті</button>
     <button onclick="mkFilterSet('soon')" id="mkFiltSoon" style="padding:9px 16px;background:rgba(234,179,8,0.1);color:#ca8a04;border:1.5px solid rgba(234,179,8,0.3);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">🟡 Жақында</button>
@@ -5223,6 +5219,24 @@ html.dark .kz-tile { opacity:0.22; }
     </div>
   </div>
 </div>
+
+<!-- ЖАҢА ҚЫЗМЕТКЕР МОДАЛЫ -->
+<div id="mkAddModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:9999;align-items:flex-start;justify-content:center;padding:80px 20px;box-sizing:border-box;">
+  <div style="max-width:460px;width:100%;background:#fff;border-radius:16px;padding:28px;">
+    <div style="font-size:15px;font-weight:800;color:var(--dark);margin-bottom:16px;">➕ Жаңа қызметкерді қосу</div>
+    <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">ИИН (12 цифр)</label>
+    <input id="mkAddIIN" type="text" maxlength="12" placeholder="890628400669" style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.2);font-size:14px;box-sizing:border-box;margin-bottom:12px;">
+    <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Аты-жөні (Толық)</label>
+    <input id="mkAddName" type="text" placeholder="Иванов Иван Иванович" style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.2);font-size:14px;box-sizing:border-box;margin-bottom:12px;">
+    <label style="font-size:12px;font-weight:700;color:var(--gray);display:block;margin-bottom:5px;">Лауазымы</label>
+    <input id="mkAddPos" type="text" placeholder="Медбике" style="width:100%;padding:10px 12px;border-radius:9px;border:1.5px solid rgba(0,0,0,0.2);font-size:14px;box-sizing:border-box;margin-bottom:20px;">
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button onclick="mkAddStaffSave()" style="padding:10px 24px;background:#16a34a;color:#fff;border:none;border-radius:9px;font-size:14px;font-weight:800;cursor:pointer;">✅ Қосу</button>
+      <button onclick="document.getElementById('mkAddModal').style.display='none'" style="padding:10px 18px;background:#e5e7eb;color:#374151;border:none;border-radius:9px;font-size:13px;cursor:pointer;">Болдырмау</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- ӨЗГЕРТУ МОДАЛЫ -->
 <div id="mkEditModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.55);z-index:9999;align-items:flex-start;justify-content:center;padding:80px 20px;box-sizing:border-box;">
@@ -11126,11 +11140,41 @@ function toggleStaffFolder(id) {
   var mk_editIin = null;
   var mk_pendingFiles = [];
 
+  // ---- Бұлттық синхронизация (Firebase Realtime DB) ----
+  // Firebase жобасын ашып, Realtime Database URL-ін осында қойыңыз:
+  // https://console.firebase.google.com → Project → Realtime Database → Data
+  // Мысал: "https://aziyamed-default-rtdb.firebaseio.com/mk_data.json"
+  var MK_CLOUD_URL = '';
+
+  async function mkCloudGet() {
+    if (!MK_CLOUD_URL) return null;
+    try {
+      var res = await fetch(MK_CLOUD_URL);
+      if (!res.ok) return null;
+      var d = await res.json();
+      return (d && typeof d === 'object') ? d : null;
+    } catch(e) { return null; }
+  }
+
+  async function mkCloudSave(data) {
+    if (!MK_CLOUD_URL) return;
+    try {
+      await fetch(MK_CLOUD_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+    } catch(e) {}
+  }
+
   function mkGetData() {
     try { return JSON.parse(localStorage.getItem('mk_data') || '{}'); } catch(e) { return {}; }
   }
 
-  function mkSaveData(d) { localStorage.setItem('mk_data', JSON.stringify(d)); }
+  function mkSaveData(d) {
+    localStorage.setItem('mk_data', JSON.stringify(d));
+    mkCloudSave(d);
+  }
 
   function mkInputToStr(v) {
     if (!v) return '';
@@ -11167,7 +11211,7 @@ function toggleStaffFolder(id) {
   function mkUpdateStats() {
     var data = mkGetData();
     var cnt = {exp:0,soon:0,ok:0,none:0};
-    MK_STAFF.forEach(function(s) {
+    mkGetAllStaff().forEach(function(s) {
       var rec = data[s.iin];
       cnt[rec ? mkGetStatus(rec.date) : 'none']++;
     });
@@ -11195,7 +11239,7 @@ function toggleStaffFolder(id) {
     if (!tbody) return;
     var rows = '';
     var rn = 0;
-    MK_STAFF.forEach(function(s) {
+    mkGetAllStaff().forEach(function(s) {
       var rec = data[s.iin] || null;
       var st = rec ? mkGetStatus(rec.date) : 'none';
       if (mk_filter !== 'all' && st !== mk_filter) return;
@@ -11220,6 +11264,7 @@ function toggleStaffFolder(id) {
         '<td style="padding:9px 12px;text-align:center;white-space:nowrap;">' +
           '<button onclick="mkOpenEdit(\''+iinSafe+'\',\''+nameSafe+'\')" style="padding:4px 11px;background:rgba(220,38,38,0.08);color:#dc2626;border:1px solid rgba(220,38,38,0.2);border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;margin-right:3px;">✏️</button>' +
           (mk_idbKeys.has(s.iin) ? '<button onclick="mkDownloadFile(\''+iinSafe+'\')" title="Файлды жүктеу" style="padding:4px 9px;background:rgba(34,164,85,0.08);color:#16a34a;border:1px solid rgba(34,164,85,0.2);border-radius:7px;font-size:11px;cursor:pointer;margin-right:3px;">📥</button>' : '') +
+          '<button onclick="mkRemoveStaff(\''+iinSafe+'\',\''+nameSafe+'\')" title="Жұмыстан шықты" style="padding:4px 9px;background:rgba(234,179,8,0.08);color:#ca8a04;border:1px solid rgba(234,179,8,0.3);border-radius:7px;font-size:11px;cursor:pointer;margin-right:3px;">🚫</button>' +
           (rec ? '<button onclick="mkDeleteRecord(\''+iinSafe+'\')" style="padding:4px 9px;background:rgba(0,0,0,0.04);color:#94a3b8;border:1px solid rgba(0,0,0,0.08);border-radius:7px;font-size:11px;cursor:pointer;">🗑</button>' : '') +
         '</td>' +
         '</tr>';
@@ -11307,7 +11352,7 @@ function toggleStaffFolder(id) {
 
   function mkBuildEmpOptions() {
     return '<option value="">— Қызметкерді таңдаңыз —</option>' +
-      MK_STAFF.map(function(s){ return '<option value="'+s.iin+'">'+s.id+'. '+s.name+'</option>'; }).join('');
+      mkGetAllStaff().map(function(s){ return '<option value="'+s.iin+'">'+s.id+'. '+s.name+'</option>'; }).join('');
   }
 
   function mkHandleFiles(files) {
@@ -11377,7 +11422,7 @@ function toggleStaffFolder(id) {
     var data = mkGetData();
     var stMap = {exp:'Мерзімі өтті', soon:'Жақында өтеді', ok:'Жарамды', none:'Деректер жоқ'};
     var rows = ['№,Аты-жөні,Лауазымы,ИИН,Мерзімі,Статусы,Файл,Жаңартылды'];
-    MK_STAFF.forEach(function(s) {
+    mkGetAllStaff().forEach(function(s) {
       var rec = data[s.iin];
       var st = rec ? mkGetStatus(rec.date) : 'none';
       rows.push([s.id,'"'+s.name+'"','"'+s.pos+'"',s.iin,rec?rec.date:'',stMap[st],rec&&rec.file?'"'+rec.file+'"':'',rec&&rec.updated?rec.updated:''].join(','));
@@ -11466,21 +11511,32 @@ function toggleStaffFolder(id) {
   }
 
   function mkExtractDate(text) {
-    var all = [], re = /(\d{1,2})[.\-\/](\d{1,2})[.\-\/](20\d{2})/g, m;
-    while ((m = re.exec(text)) !== null) {
-      var d = parseInt(m[1]), mo = parseInt(m[2]), y = parseInt(m[3]);
-      if (d >= 1 && d <= 31 && mo >= 1 && mo <= 12 && y >= 2020 && y <= 2035) {
-        all.push({ str: (d<10?'0':'')+d+'.'+(mo<10?'0':'')+mo+'.'+y });
-      }
+    function toStr(d, mo, y) {
+      return (d<10?'0':'')+d+'.'+(mo<10?'0':'')+mo+'.'+y;
     }
-    return all.length ? all[all.length - 1].str : null;
+    function valid(d, mo, y) {
+      return d>=1&&d<=31&&mo>=1&&mo<=12&&y>=2020&&y<=2035;
+    }
+    // Приоритет: "до:" немесе "дейін" сөзінен кейінгі күн (допуск к работе до)
+    var rePrio = /(?:до\s*:|дейін)\s*(\d{1,2})[.\-\/](\d{1,2})[.\-\/](20\d{2})/gi, m;
+    while ((m = rePrio.exec(text)) !== null) {
+      var d=parseInt(m[1]),mo=parseInt(m[2]),y=parseInt(m[3]);
+      if (valid(d,mo,y)) return toStr(d,mo,y);
+    }
+    // Запас: барлық күндер, соңғысын аламыз
+    var all = [], re = /(\d{1,2})[.\-\/](\d{1,2})[.\-\/](20\d{2})/g;
+    while ((m = re.exec(text)) !== null) {
+      var d=parseInt(m[1]),mo=parseInt(m[2]),y=parseInt(m[3]);
+      if (valid(d,mo,y)) all.push(toStr(d,mo,y));
+    }
+    return all.length ? all[all.length-1] : null;
   }
 
   function mkExtractIIN(text) {
     // IIN — 12 цифра қатарынан
     var re = /\b(\d{12})\b/g, m;
     while ((m = re.exec(text)) !== null) {
-      var found = MK_STAFF.filter(function(s){ return s.iin === m[1]; });
+      var found = (MK_STAFF.concat(mkGetExtraStaff())).filter(function(s){ return s.iin === m[1]; });
       if (found.length) return found[0];
     }
     return null;
@@ -11490,7 +11546,7 @@ function toggleStaffFolder(id) {
     // 12 consecutive digits
     var re1 = /\b(\d{12})\b/g, m;
     while ((m = re1.exec(text)) !== null) {
-      var found = MK_STAFF.filter(function(s){ return s.iin === m[1]; });
+      var found = (MK_STAFF.concat(mkGetExtraStaff())).filter(function(s){ return s.iin === m[1]; });
       if (found.length) return found[0];
     }
     // Digits with spaces: "920 123 300 487" or "9201 2330 0487" etc.
@@ -11498,7 +11554,7 @@ function toggleStaffFolder(id) {
     while ((m = re2.exec(text)) !== null) {
       var iin = m[1].replace(/\s/g, '');
       if (iin.length === 12) {
-        var found = MK_STAFF.filter(function(s){ return s.iin === iin; });
+        var found = (MK_STAFF.concat(mkGetExtraStaff())).filter(function(s){ return s.iin === iin; });
         if (found.length) return found[0];
       }
     }
@@ -11506,16 +11562,40 @@ function toggleStaffFolder(id) {
   }
 
   function mkExtractName(text) {
-    var norm = text.toUpperCase().replace(/\s+/g, ' ');
-    var best = null, bestScore = 0;
-    MK_STAFF.forEach(function(s) {
-      var parts = s.name.toUpperCase().split(' ').filter(function(p) { return p.length > 2; });
-      if (!parts.length) return;
-      var hits = parts.filter(function(p) { return norm.indexOf(p) >= 0; });
-      var score = hits.length / parts.length;
-      if (score > bestScore) { bestScore = score; best = s; }
-    });
-    return bestScore >= 0.5 ? best : null;
+    // Тек "ФИО" / "ПАСПОРТНЫЕ ДАННЫЕ" бөлімінен алаты-жөнін
+    // Бүкіл мәтінді сканерлемейміз — дәрігер аттары қате сәйкестік береді
+    var allStaff = MK_STAFF.concat(mkGetExtraStaff());
+
+    // "ФИО ... [name]" немесе "ФИО ИИН ... \n [name]" паттерндер
+    var fioPatterns = [
+      /ФИО\s+ИИН[^\n]*\n\s*([А-ЯҰҮІӘҚҒҢҺӨа-яұүіәқғңһөёЁ]+\s+[А-ЯҰҮІӘҚҒҢҺӨа-яұүіәқғңһөёЁ]+(?:\s+[А-ЯҰҮІӘҚҒҢҺӨа-яұүіәқғңһөёЁ]+)?)/i,
+      /ПАСПОРТНЫЕ\s+ДАННЫЕ[^А-Я]*([А-ЯҰҮІӘҚҒҢҺӨа-яұүіәқғңһөёЁ]{3,}\s+[А-ЯҰҮІӘҚҒҢҺӨа-яұүіәқғңһөёЁ]{3,}(?:\s+[А-ЯҰҮІӘҚҒҢҺӨа-яұүіәқғңһөёЁ]{3,})?)/i,
+      /(?:ФИО|Аты-жөні)\s*[:\|]?\s*([А-ЯҰҮІӘҚҒҢҺӨа-яұүіәқғңһөёЁ]+\s+[А-ЯҰҮІӘҚҒҢҺӨа-яұүіәқғңһөёЁ]+(?:\s+[А-ЯҰҮІӘҚҒҢҺӨа-яұүіәқғңһөёЁ]+)?)/i
+    ];
+
+    function matchStaff(candidate) {
+      var c = candidate.toUpperCase().trim();
+      var best = null, bestScore = 0;
+      allStaff.forEach(function(s) {
+        var parts = s.name.toUpperCase().split(' ').filter(function(p){ return p.length > 2; });
+        if (!parts.length) return;
+        var hits = parts.filter(function(p){ return c.indexOf(p) >= 0; });
+        var score = hits.length / parts.length;
+        if (score > bestScore) { bestScore = score; best = s; }
+      });
+      return bestScore >= 0.4 ? best : null;
+    }
+
+    for (var i = 0; i < fioPatterns.length; i++) {
+      var m = text.match(fioPatterns[i]);
+      if (m && m[1]) {
+        var found = matchStaff(m[1]);
+        if (found) return found;
+      }
+    }
+
+    // ФИО табылмаса — null (қате дәрігер аттарын таңдамас үшін)
+    return null;
   }
 
   // ---- PDF.js text extraction ----
@@ -11572,14 +11652,9 @@ function toggleStaffFolder(id) {
 
     try {
       if (isPdf) {
-        // PDF: алдымен тікелей мәтін алу (цифрлық PDF)
         text = await mkExtractPDFText(file);
-        if (text.trim().length < 20) {
-          // Сканерленген PDF болса — OCR
-          text = await mkOCRFile(file);
-        }
+        if (text.trim().length < 20) text = await mkOCRFile(file);
       } else {
-        // Фото/сурет — OCR
         text = await mkOCRFile(file);
       }
 
@@ -11606,7 +11681,172 @@ function toggleStaffFolder(id) {
     }
   }
 
-  function mkInit() { mkFilterSet('all'); mkLoadIDBKeys(); }
+
+  // ---- Қосымша қызметкерлер (extra staff) ----
+  function mkGetExtraStaff() {
+    try { return JSON.parse(localStorage.getItem('mk_extra_staff') || '[]'); } catch(e) { return []; }
+  }
+  function mkSaveExtraStaff(arr) {
+    localStorage.setItem('mk_extra_staff', JSON.stringify(arr));
+    mkCloudSave({ _data: mkGetData(), _extra: arr, _removed: [...mkGetRemovedIINs()] });
+  }
+
+  // ---- Жұмыстан шыққандар ----
+  function mkGetRemovedIINs() {
+    try { return new Set(JSON.parse(localStorage.getItem('mk_removed_iins') || '[]')); } catch(e) { return new Set(); }
+  }
+  function mkSaveRemovedIINs(set) {
+    localStorage.setItem('mk_removed_iins', JSON.stringify([...set]));
+  }
+
+  // ---- Барлық белсенді қызметкерлер ----
+  function mkGetAllStaff() {
+    var removed = mkGetRemovedIINs();
+    var extra = mkGetExtraStaff();
+    var base = MK_STAFF.filter(function(s) { return !removed.has(s.iin); });
+    var extraActive = extra.filter(function(s) { return !removed.has(s.iin); });
+    return base.concat(extraActive);
+  }
+
+  // ---- Жаңа қызметкер қосу ----
+  function mkOpenAddStaff() {
+    ['mkAddIIN','mkAddName','mkAddPos'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    var modal = document.getElementById('mkAddModal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function mkAddStaffSave() {
+    var iin  = ((document.getElementById('mkAddIIN')||{}).value||'').trim();
+    var name = ((document.getElementById('mkAddName')||{}).value||'').trim();
+    var pos  = ((document.getElementById('mkAddPos')||{}).value||'').trim();
+    if (!iin || !name || !pos) { alert('Барлық өрістерді толтырыңыз!'); return; }
+    if (!/^\d{12}$/.test(iin)) { alert('ИИН 12 цифрдан тұруы керек!'); return; }
+    var allIINs = MK_STAFF.concat(mkGetExtraStaff()).map(function(s){ return s.iin; });
+    if (allIINs.indexOf(iin) >= 0) { alert('Бұл ИИН тізімде бар!'); return; }
+    var extra = mkGetExtraStaff();
+    var maxId = MK_STAFF.length + extra.length + 1;
+    extra.push({ id: maxId, iin: iin, name: name, pos: pos, extra: true });
+    mkSaveExtraStaff(extra);
+    localStorage.setItem('mk_extra_staff', JSON.stringify(extra));
+    document.getElementById('mkAddModal').style.display = 'none';
+    mkRenderTable();
+    alert('✅ ' + name + ' тізімге қосылды!');
+  }
+
+  function mkRemoveStaff(iin, name) {
+    if (!confirm('"' + name + '" қызметкерін тізімнен жою керек пе?\n(Деректері сақталып қалады, тізімнен ғана алынады)')) return;
+    var removed = mkGetRemovedIINs();
+    removed.add(iin);
+    mkSaveRemovedIINs(removed);
+    mkRenderTable();
+  }
+
+  // ---- PDF.js text extraction ----
+  var mk_pdfJsLoaded = false;
+
+  function mkLoadPdfJs() {
+    return new Promise(function(resolve) {
+      if (mk_pdfJsLoaded || (typeof pdfjsLib !== 'undefined')) { mk_pdfJsLoaded = true; resolve(); return; }
+      var s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+      s.onload = function() {
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        mk_pdfJsLoaded = true; resolve();
+      };
+      s.onerror = function() { resolve(); };
+      document.head.appendChild(s);
+    });
+  }
+
+  async function mkExtractPDFText(file) {
+    await mkLoadPdfJs();
+    if (typeof pdfjsLib === 'undefined') return '';
+    try {
+      var ab = await file.arrayBuffer();
+      var pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+      var text = '';
+      for (var i = 1; i <= pdf.numPages; i++) {
+        var page = await pdf.getPage(i);
+        var c = await page.getTextContent();
+        text += c.items.map(function(it){ return it.str; }).join(' ') + '\n';
+      }
+      return text;
+    } catch(e) { return ''; }
+  }
+
+  async function mkOCRFile(file) {
+    await mkLoadTesseract();
+    if (typeof Tesseract === 'undefined') return '';
+    try {
+      var result = await Tesseract.recognize(file, 'rus', { logger: function(m){} });
+      return result.data.text;
+    } catch(e) { return ''; }
+  }
+
+  async function mkRunOCR(file, key) {
+    var statusEl = document.getElementById(key + '_status');
+    var empEl    = document.getElementById(key + '_emp');
+    var dateEl   = document.getElementById(key + '_date');
+    if (statusEl) statusEl.innerHTML = '<span style="color:#ca8a04;font-size:11px;">🔍 Кітапша сканерленуде...</span>';
+
+    var isPdf = /\.pdf$/i.test(file.name);
+    var text = '';
+
+    try {
+      if (isPdf) {
+        text = await mkExtractPDFText(file);
+        if (text.trim().length < 20) text = await mkOCRFile(file);
+      } else {
+        text = await mkOCRFile(file);
+      }
+
+      var detectedDate  = mkExtractDate(text);
+      var detectedStaff = mkExtractIIN(text) || mkExtractName(text);
+
+      if (detectedStaff && empEl) {
+        empEl.value = detectedStaff.iin;
+        empEl.style.borderColor = 'rgba(34,164,85,0.5)';
+      }
+      if (detectedDate && dateEl) {
+        var p = detectedDate.split('.');
+        dateEl.value = p[2] + '-' + p[1].padStart(2,'0') + '-' + p[0].padStart(2,'0');
+        dateEl.style.borderColor = 'rgba(34,164,85,0.5)';
+      }
+      var info = [];
+      if (detectedStaff) info.push('👤 ' + detectedStaff.name.split(' ')[0]);
+      if (detectedDate)  info.push('📅 ' + detectedDate);
+      if (statusEl) statusEl.innerHTML = info.length
+        ? '<span style="color:#16a34a;font-size:11px;">✅ ' + info.join(' · ') + ' — тексеріп растаңыз</span>'
+        : '<span style="color:#dc2626;font-size:11px;">❌ Анықталмады — өзіңіз таңдаңыз</span>';
+    } catch(e) {
+      if (statusEl) statusEl.innerHTML = '<span style="color:#dc2626;font-size:11px;">❌ Оқу қатесі — өзіңіз таңдаңыз</span>';
+    }
+  }
+
+  async function mkInit() {
+    mkFilterSet('all');
+    mkLoadIDBKeys();
+    var cloudData = await mkCloudGet();
+    if (cloudData) {
+      localStorage.setItem('mk_data', JSON.stringify(cloudData));
+      mkRenderTable();
+    }
+    if (MK_CLOUD_URL) {
+      setInterval(async function() {
+        var d = await mkCloudGet();
+        if (!d) return;
+        var local = JSON.stringify(mkGetData());
+        if (JSON.stringify(d) !== local) {
+          localStorage.setItem('mk_data', JSON.stringify(d));
+          mkRenderTable();
+        }
+      }, 30000);
+    }
+  }
 
 </script>
 </body>
