@@ -18353,5 +18353,21 @@ const AKK_REGISTRY={
 </script>
 
 </script>
+
+<!-- АКК МОДАЛ -->
+<div class="akk-modal" id="akk-modal">
+  <div class="akk-modal-box">
+    <div class="akk-modal-bar">
+      <strong id="akk-modal-title">Құжат</strong>
+      <div>
+        <button class="akk-btn akk-btn-green" onclick="akkDownloadEdited()">⬇ Word жүктеу</button>
+        <button class="akk-btn" onclick="akkPrintEdited()">🖨 Басып шығару</button>
+        <button class="akk-btn akk-btn-gray" onclick="akkCloseModal()">✕ Жабу</button>
+      </div>
+    </div>
+    <p class="akk-hint" style="margin:6px 14px">✏️ Мәтінді тікелей осы жерде түзетуге болады — жүктелетін файлға өзгерістер енеді.</p>
+    <div class="akk-modal-doc" id="akk-modal-doc" contenteditable="true"></div>
+  </div>
+</div>
 </body>
 </html>
