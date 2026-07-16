@@ -11539,16 +11539,6 @@ function toggleStaffFolder(id) {
   }
 
   function mkExtractIIN(text) {
-    // IIN — 12 цифра қатарынан
-    var re = /\b(\d{12})\b/g, m;
-    while ((m = re.exec(text)) !== null) {
-      var found = (MK_STAFF.concat(mkGetExtraStaff())).filter(function(s){ return s.iin === m[1]; });
-      if (found.length) return found[0];
-    }
-    return null;
-  }
-
-  function mkExtractIIN(text) {
     // 12 consecutive digits
     var re1 = /\b(\d{12})\b/g, m;
     while ((m = re1.exec(text)) !== null) {
@@ -11600,7 +11590,26 @@ function toggleStaffFolder(id) {
       }
     }
 
-    // ФИО табылмаса — null (қате дәрігер аттарын таңдамас үшін)
+    // ФИО табылмаса — бүкіл мәтіннен жоғары шекпен іздейміз (2/3 бөлік сәйкес болуы керек)
+    var lines = text.split('\n');
+    for (var li = 0; li < lines.length; li++) {
+      var line = lines[li].trim();
+      if (line.length < 5 || line.length > 80) continue;
+      var wordsKaz = line.match(/[А-ЯҰҮІӘҚҒҢҺӨа-яұүіәқғңһөёЁ]{3,}/g);
+      if (!wordsKaz || wordsKaz.length < 2) continue;
+      var candidate = wordsKaz.join(' ');
+      var best = null, bestScore = 0;
+      allStaff.forEach(function(s) {
+        var parts = s.name.toUpperCase().split(' ').filter(function(p){ return p.length > 2; });
+        if (parts.length < 2) return;
+        var c = candidate.toUpperCase();
+        var hits = parts.filter(function(p){ return c.indexOf(p) >= 0; });
+        var score = hits.length / parts.length;
+        if (score > bestScore) { bestScore = score; best = s; }
+      });
+      // Жоғары шек: 2/3 бөлік сәйкес болуы керек (жалған оң нәтижеден сақтайды)
+      if (bestScore >= 0.67 && best) return best;
+    }
     return null;
   }
 
@@ -11716,7 +11725,8 @@ function toggleStaffFolder(id) {
         ? '<span style="color:#16a34a;font-size:11px;">✅ ' + info.join(' · ') + ' — тексеріп растаңыз</span>'
         : '<span style="color:#dc2626;font-size:11px;">❌ Анықталмады — өзіңіз таңдаңыз</span>';
     } catch(e) {
-      if (statusEl) statusEl.innerHTML = '<span style="color:#dc2626;font-size:11px;">❌ Оқу қатесі — өзіңіз таңдаңыз</span>';
+      console.error('[mkRunOCR error]', e);
+      if (statusEl) statusEl.innerHTML = '<span style="color:#dc2626;font-size:11px;">❌ Анықталмады — өзіңіз таңдаңыз</span>';
     }
   }
 
