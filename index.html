@@ -19137,29 +19137,28 @@ async function mkbSaveBook(){
   if(!mkbCurrentIIN){alert('Қызметкер анықталмады. Терезені жауып қайта ашыңыз.');return;}
   saveBtn.disabled=true;
   try{
-    var stored='',ftype='';
-    if(mkbCurrentFileB64){
-      statusEl.textContent='🗜 Файл дайындалуда...';
-      stored=await mkbCompressImage(mkbCurrentFileB64,mkbCurrentFileType);
-      ftype=(mkbCurrentFileType||'').indexOf('pdf')>=0?mkbCurrentFileType:'image/jpeg';
-    }
-    // 1. Файлды бөлек mk_files-ке сақтау
-    if(stored){
-      statusEl.textContent='⏳ Файл сақталуда...';
-      var fr=await fetch(MKB_FB+'mk_files/'+mkbCurrentIIN+'.json',{method:'PUT',body:JSON.stringify(stored)});
-      if(!fr.ok)throw new Error('файл '+fr.status);
-      mkbFileCache[mkbCurrentIIN]=stored;
-    }
-    // 2. Метадеректі mk_books-қа сақтау (кішкентай, жылдам)
-    statusEl.textContent='⏳ Firebase-ке сақталуда...';
+    var hasFile=!!mkbCurrentFileB64;
+    var ftype=hasFile?((mkbCurrentFileType||'').indexOf('pdf')>=0?mkbCurrentFileType:'image/jpeg'):'';
+    // 1. МЕТАДЕРЕКТІ БІРІНШІ сақтаймыз (кішкентай, әрқашан сенімді) — мерзім жоғалмайды
+    statusEl.textContent='⏳ Сақталуда...';
     var meta={name:name||(mkbStaffData[mkbCurrentIIN]||{}).name||'',iin:mkbCurrentIIN,valid_until:date,
-      uploaded_at:new Date().toISOString(),file_type:ftype,has_file:!!stored};
+      uploaded_at:new Date().toISOString(),file_type:ftype,has_file:hasFile};
     var resp=await fetch(MKB_FB+'mk_books/'+mkbCurrentIIN+'.json',{method:'PUT',body:JSON.stringify(meta)});
-    if(!resp.ok)throw new Error('Firebase жауабы '+resp.status);
+    if(!resp.ok)throw new Error('Firebase '+resp.status);
     mkbBooksData[mkbCurrentIIN]=meta;
     if(name && mkbStaffData[mkbCurrentIIN] && !mkbStaffData[mkbCurrentIIN].name){
       mkbStaffData[mkbCurrentIIN].name=name;
       fetch(MKB_FB+'mk_staff/'+mkbCurrentIIN+'/name.json',{method:'PUT',body:JSON.stringify(name)});
+    }
+    // 2. Файлды сақтау (best-effort — сәтсіз болса да мерзім сақталып қалды)
+    if(hasFile){
+      try{
+        statusEl.textContent='🗜 Файл сақталуда...';
+        var stored=await mkbCompressImage(mkbCurrentFileB64,mkbCurrentFileType);
+        var fr=await fetch(MKB_FB+'mk_files/'+mkbCurrentIIN+'.json',{method:'PUT',body:JSON.stringify(stored)});
+        if(fr.ok){mkbFileCache[mkbCurrentIIN]=stored;}
+        else{ meta.has_file=false; fetch(MKB_FB+'mk_books/'+mkbCurrentIIN+'/has_file.json',{method:'PUT',body:'false'}); }
+      }catch(fe){ console.warn('файл сақтау:',fe); }
     }
     statusEl.textContent='✅ Сақталды!';
     setTimeout(function(){mkbCloseUpload();mkbRenderList();},900);
@@ -19290,15 +19289,17 @@ async function mkbBulkStart(fileList){
         continue;
       }
 
-      // Save to Firebase (суретті сығып, файл мен метадерек бөлек)
-      var storedB=await mkbCompressImage(dataUrl,file.type);
+      // Метадеректі бірінші сақтау (сенімді), сосын файл
       var ftypeB=(file.type||'').indexOf('pdf')>=0?file.type:'image/jpeg';
-      await fetch(MKB_FB+'mk_files/'+iin+'.json',{method:'PUT',body:JSON.stringify(storedB)});
-      mkbFileCache[iin]=storedB;
       var entry={name:mkbStaffData[iin].name||data.name||'',iin:iin,valid_until:data.date,
         uploaded_at:new Date().toISOString(),file_type:ftypeB,has_file:true};
       await fetch(MKB_FB+'mk_books/'+iin+'.json',{method:'PUT',body:JSON.stringify(entry)});
       mkbBooksData[iin]=entry;
+      try{
+        var storedB=await mkbCompressImage(dataUrl,file.type);
+        await fetch(MKB_FB+'mk_files/'+iin+'.json',{method:'PUT',body:JSON.stringify(storedB)});
+        mkbFileCache[iin]=storedB;
+      }catch(fe){console.warn('bulk file:',fe);}
       stEl.innerHTML='✅ '+(mkbStaffData[iin].name||iin)+' · до '+data.date;
       stEl.style.color='#16a34a';ok++;
     }catch(err){
@@ -19337,14 +19338,16 @@ function mkbBulkAddManual(row,dataUrl,fileType,data,presetIin){
     if(!/^\d{2}\.\d{2}\.\d{4}$/.test(date)){alert('Мерзімді ДД.ММ.ЖЖЖЖ форматында енгізіңіз');return;}
     btn.disabled=true;btn.textContent='⏳';
     try{
-      var storedM=await mkbCompressImage(dataUrl,fileType);
       var ftypeM=(fileType||'').indexOf('pdf')>=0?fileType:'image/jpeg';
-      await fetch(MKB_FB+'mk_files/'+iin+'.json',{method:'PUT',body:JSON.stringify(storedM)});
-      mkbFileCache[iin]=storedM;
       var entry={name:mkbStaffData[iin].name||'',iin:iin,valid_until:date,
         uploaded_at:new Date().toISOString(),file_type:ftypeM,has_file:true};
       await fetch(MKB_FB+'mk_books/'+iin+'.json',{method:'PUT',body:JSON.stringify(entry)});
       mkbBooksData[iin]=entry;
+      try{
+        var storedM=await mkbCompressImage(dataUrl,fileType);
+        await fetch(MKB_FB+'mk_files/'+iin+'.json',{method:'PUT',body:JSON.stringify(storedM)});
+        mkbFileCache[iin]=storedM;
+      }catch(fe){console.warn('manual file:',fe);}
       var st=row.querySelector('.st');
       st.innerHTML='✅ '+(mkbStaffData[iin].name||iin)+' · до '+date;st.style.color='#16a34a';
       box.remove();
