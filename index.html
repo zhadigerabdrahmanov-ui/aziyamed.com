@@ -2321,6 +2321,15 @@ html.dark .kz-tile { opacity:0.22; }
   .mkb-view-frame{width:100%;height:70vh;border:none;border-radius:8px;background:#f1f5f9}
   .mkb-drop{border:2px dashed #c7d2fe;border-radius:12px;padding:28px;text-align:center;cursor:pointer;transition:.2s}
   .mkb-drop:hover{border-color:var(--green);background:#f0fdf4}
+  .mkb-toast{position:fixed;left:20px;bottom:20px;z-index:10050;max-width:340px;background:#fff;border-radius:14px;box-shadow:0 10px 40px rgba(0,0,0,.22);padding:16px 16px 14px;border-left:5px solid #ef4444;animation:mkbToastIn .35s ease}
+  @keyframes mkbToastIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .mkb-toast.hide{animation:mkbToastOut .3s ease forwards}
+  @keyframes mkbToastOut{to{opacity:0;transform:translateY(20px)}}
+  .mkb-toast-title{font-size:13px;font-weight:800;color:#1e293b;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  .mkb-toast-row{font-size:12.5px;color:#475569;margin:5px 0;line-height:1.4}
+  .mkb-toast-x{position:absolute;top:10px;right:12px;background:none;border:none;font-size:16px;color:#94a3b8;cursor:pointer;line-height:1}
+  .mkb-toast-btn{margin-top:10px;width:100%;padding:8px;background:#ef4444;color:#fff;border:none;border-radius:8px;font-size:12.5px;font-weight:700;cursor:pointer}
+  .mkb-toast-btn:hover{opacity:.9}
 </style>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
@@ -10688,7 +10697,7 @@ function openKuralPanel(panelId) {
   wrapper.style.display = 'block';
   panel.style.display = 'block';
   if (tile) tile.classList.add('active');
-  if (panelId === 'mkbook') { setTimeout(mkbLoadAll, 50); }
+  if (panelId === 'mkbook') { setTimeout(function(){ mkbLoadAll().then(mkbShowExpiryToast); }, 50); }
 
   setTimeout(function(){
     wrapper.scrollIntoView({ behavior:'smooth', block:'nearest' });
@@ -18610,6 +18619,45 @@ function mkbStatusOf(s,today,soon){
   if(exp<today)return 'expired';
   if(exp<=soon)return 'soon';
   return 'valid';
+}
+
+// Мерзімі өткен/бітетіндер туралы сол жақ төменгі бұрыштағы хабарлама
+function mkbCloseToast(){
+  var t=document.getElementById('mkbExpiryToast');
+  if(t){t.classList.add('hide');setTimeout(function(){if(t)t.remove();},300);}
+}
+function mkbToastFilter(status){
+  mkbCloseToast();
+  var sel=document.getElementById('mkbStatusFilter');
+  if(sel){sel.value=status;mkbRenderList();}
+  var w=document.getElementById('kuraldarPanel');
+  if(w)w.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function mkbShowExpiryToast(){
+  var today=new Date();today.setHours(0,0,0,0);
+  var soon=new Date(today);soon.setDate(soon.getDate()+30);
+  var expired=0,soonC=0;
+  Object.values(mkbStaffData).forEach(function(s){
+    var st=mkbStatusOf(s,today,soon);
+    if(st==='expired')expired++;else if(st==='soon')soonC++;
+  });
+  var old=document.getElementById('mkbExpiryToast');if(old)old.remove();
+  if(!expired && !soonC)return; // ескерту қажет болмаса — көрсетпейміз
+
+  var t=document.createElement('div');
+  t.id='mkbExpiryToast';t.className='mkb-toast';
+  if(!expired)t.style.borderLeftColor='#f59e0b';
+  var html='<button class="mkb-toast-x" onclick="mkbCloseToast()">✕</button>';
+  html+='<div class="mkb-toast-title">🔔 Медкнижка мерзімі</div>';
+  if(expired)html+='<div class="mkb-toast-row">⛔ <b>'+expired+'</b> қызметкердің мерзімі <b>өтіп кеткен</b></div>';
+  if(soonC)html+='<div class="mkb-toast-row">⚠️ <b>'+soonC+'</b> қызметкердікі 30 күн ішінде бітеді</div>';
+  var focus=expired?'expired':'soon';
+  var label=expired?'⛔ Өткендерді көру':'⚠️ Бітетіндерді көру';
+  html+='<button class="mkb-toast-btn" onclick="mkbToastFilter(\''+focus+'\')">'+label+'</button>';
+  t.innerHTML=html;
+  document.body.appendChild(t);
+  // 12 секундтан кейін өзі жабылады
+  setTimeout(function(){mkbCloseToast();},12000);
 }
 
 function mkbRenderList(filterArg){
