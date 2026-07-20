@@ -18836,23 +18836,25 @@ async function mkbExtractDataFromDataUrl(dataUrl,fileType,onProgress){
   catch(e){console.error('bulk img err:',e);return {name:'',iin:'',date:''};}
 }
 
-// Суретті OCR-ға дайындау: масштабтау + сұр реңк + контраст (+ қаласа инверт)
-function mkbImgToCanvas(dataUrl,invert){
+// Суреттің белгілі бір тік аймағын кесіп алып, OCR-ға дайындау
+// yStart..yEnd — 0..1 (биіктік үлесі), invert — қара фон үшін
+function mkbCropCanvas(dataUrl,yStart,yEnd,invert){
   return new Promise(function(res,rej){
     var img=new Image();
     img.onload=function(){
       try{
-        var scale=Math.max(1, 1700/(img.width||1));
-        if(scale>3)scale=3;
-        var w=Math.round((img.width||1)*scale),h=Math.round((img.height||1)*scale);
+        var iw=img.width||1, ih=img.height||1;
+        var sy=Math.round(ih*yStart), sh=Math.max(1,Math.round(ih*(yEnd-yStart)));
+        var scale=Math.max(1, 1800/iw); if(scale>3.5)scale=3.5;
+        var w=Math.round(iw*scale), h=Math.round(sh*scale);
         var c=document.createElement('canvas');c.width=w;c.height=h;
         var ctx=c.getContext('2d');
-        ctx.drawImage(img,0,0,w,h);
+        ctx.drawImage(img, 0, sy, iw, sh, 0, 0, w, h);
         var d=ctx.getImageData(0,0,w,h),p=d.data;
         for(var i=0;i<p.length;i+=4){
           var g=0.299*p[i]+0.587*p[i+1]+0.114*p[i+2];
-          g=(g-128)*1.45+128;            // контраст
-          if(invert)g=255-g;              // қара фондағы ақ мәтін үшін
+          g=(g-128)*1.55+128;            // контраст
+          if(invert)g=255-g;              // қара фондағы ақ мәтінді аудару
           g=g<0?0:(g>255?255:g);
           p[i]=p[i+1]=p[i+2]=g;
         }
@@ -18865,38 +18867,65 @@ function mkbImgToCanvas(dataUrl,invert){
   });
 }
 
-// Екі рет OCR: (1) қалыпты — ашық ортаңғы бөлік; (2) инверт — қара фондағы ФИО/ИИН/мерзім
+function mkbRecognize(imgUrl,prog,label){
+  return Tesseract.recognize(imgUrl,'rus',{
+    logger:function(m){if(m.status==='recognizing text'&&prog)prog('🔍 '+label+' · '+Math.round(m.progress*100)+'%');}
+  }).then(function(r){return (r.data&&r.data.text)||'';});
+}
+
+// «Доступ к работе до» мерзімін алу (footer мәтінінен)
+function mkbFooterDate(text){
+  if(!text)return '';
+  var m=text.match(/до:?[\s\S]{0,120}?(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})[\s]+(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})/i);
+  if(m)return m[2].replace(/[-\/]/g,'.');
+  m=text.match(/до:?\s*(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})/i);
+  if(m)return m[1].replace(/[-\/]/g,'.');
+  // Белгі табылмаса — барлық күндердің ең кейінгісін ал (до > от)
+  var all=text.match(/\d{2}[.\-\/]\d{2}[.\-\/]\d{4}/g);
+  if(all&&all.length){
+    var best='',bv=0;
+    all.forEach(function(s){var dn=s.replace(/[-\/]/g,'.'),pp=dn.split('.');var v=(+pp[2])*10000+(+pp[1])*100+(+pp[0]);if(v>bv){bv=v;best=dn;}});
+    return best;
+  }
+  return '';
+}
+
+// Аймақтарды бөліп OCR: жоғарғы хедер → ФИО+ИИН, төменгі бар → мерзім
 async function mkbOcrImage(dataUrl,prog){
   await mkbLoadTesseract();
-  var normImg,invImg;
-  try{ normImg=await mkbImgToCanvas(dataUrl,false); }catch(e){ normImg=dataUrl; }
-  try{ invImg=await mkbImgToCanvas(dataUrl,true); }catch(e){ invImg=null; }
+  var name='',iin='',date='';
 
-  if(prog)prog('🔍 1/2...');
-  var r1=await Tesseract.recognize(normImg,'rus',{
-    logger:function(m){if(m.status==='recognizing text'&&prog)prog('🔍 1/2 · '+Math.round(m.progress*100)+'%');}
-  });
-  var text1=r1.data.text||'';
+  // 1. ЖОҒАРҒЫ ХЕДЕР (Паспортные данные) — инверт
+  try{
+    if(prog)prog('🔍 хедер...');
+    var headImg=await mkbCropCanvas(dataUrl, 0.0, 0.34, true);
+    var headText=await mkbRecognize(headImg,prog,'хедер');
+    var hd=mkbParseTextData(headText);
+    name=hd.name; iin=hd.iin;
+  }catch(e){console.warn('head ocr:',e);}
 
-  var text2='';
-  if(invImg){
-    if(prog)prog('🔍 2/2...');
-    var r2=await Tesseract.recognize(invImg,'rus',{
-      logger:function(m){if(m.status==='recognizing text'&&prog)prog('🔍 2/2 · '+Math.round(m.progress*100)+'%');}
-    });
-    text2=r2.data.text||'';
+  // 2. ТӨМЕНГІ БАР (Доступ к работе до) — инверт
+  try{
+    if(prog)prog('🔍 мерзім...');
+    var footImg=await mkbCropCanvas(dataUrl, 0.80, 1.0, true);
+    var footText=await mkbRecognize(footImg,prog,'мерзім');
+    date=mkbFooterDate(footText);
+  }catch(e){console.warn('foot ocr:',e);}
+
+  // 3. ИИН табылмаса — толық суретті инверттеп қайта оқу (fallback)
+  if(!iin || !name){
+    try{
+      if(prog)prog('🔍 толық...');
+      var fullImg=await mkbCropCanvas(dataUrl, 0.0, 1.0, true);
+      var fullText=await mkbRecognize(fullImg,prog,'толық');
+      var fd=mkbParseTextData(fullText);
+      if(!iin&&fd.iin)iin=fd.iin;
+      if(!name&&fd.name)name=fd.name;
+      if(!date&&fd.date)date=fd.date;
+    }catch(e){console.warn('full ocr:',e);}
   }
-  // Инверт мәтінді бірінші қоямыз (ФИО+ИИН қара хедерде тұр)
-  var combined=text2+'\n'+text1;
-  var data=mkbParseTextData(combined);
-  // ИИН табылмаса — қалыпты мәтіннен тағы бір рет цифр іздеу
-  if(!data.iin){
-    var alt=mkbParseTextData(text1);
-    if(alt.iin)data.iin=alt.iin;
-    if(!data.name&&alt.name)data.name=alt.name;
-    if(!data.date&&alt.date)data.date=alt.date;
-  }
-  return data;
+
+  return {name:name,iin:iin,date:date};
 }
 
 function mkbLoadTesseract(){
