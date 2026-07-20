@@ -5215,6 +5215,7 @@ html.dark .kz-tile { opacity:0.22; }
   <div id="mkbTabListPane">
     <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
       <input id="mkbSearch" type="text" oninput="mkbRenderList(this.value)" placeholder="🔍 ФИО немесе ИИН..." style="flex:1;min-width:180px;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;">
+      <button onclick="mkbOpenBulk()" style="padding:8px 14px;background:#2563eb;color:#fff;border:none;border-radius:9px;font-size:13px;cursor:pointer;font-weight:600;">📚 Топтап жүктеу</button>
       <button onclick="mkbLoadAll()" style="padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:13px;cursor:pointer;">🔄 Жаңарту</button>
     </div>
     <div id="mkbLoading" style="text-align:center;padding:20px;color:#94a3b8;">⏳ Деректер жүктелуде...</div>
@@ -18775,33 +18776,81 @@ function mkbExtractImage(dataUrl){
   document.head.appendChild(s);
 }
 
-function mkbParseText(text){
+// Pure parser — no UI. Returns {name, iin, date}
+function mkbParseTextData(text){
   // 1. Name + IIN: find all-caps Cyrillic name immediately before 12-digit IIN
-  // Works for format: "...АБДРАХМАНОВ ЖАДИГЕР ШАЛАБАЙҰЛЫ 920123300487..."
   var niM=text.match(/([А-ЯЁҒҚҢӨҰҮІA-Z][А-ЯЁҒҚҢӨҰҮІA-Z\-]{2,}(?:\s+[А-ЯЁҒҚҢӨҰҮІA-Z][А-ЯЁҒҚҢӨҰҮІA-Z\-]{2,}){1,4})\s+(\d{12})\b/);
   var name=niM?niM[1].trim():'';
   var iin=niM?niM[2]:'';
-
-  // Fallback IIN search if not found via name
   if(!iin){var iinM=text.match(/\b(\d{12})\b/);iin=iinM?iinM[1]:'';}
-
-  // Fallback name: look for ФИО keyword then capital-letter word block
   if(!name){
     var nfb=text.match(/Ф\s*И\s*О[\s\S]{0,80}?([А-ЯЁҒҚҢӨҰҮІA-Z][А-ЯЁҒҚҢӨҰҮІA-Z\-]{2,}(?:\s+[А-ЯЁҒҚҢӨҰҮІA-Z][А-ЯЁҒҚҢӨҰҮІA-Z\-]{2,}){1,4})/i);
     name=nfb?nfb[1].trim():'';
   }
-
   // 2. TO date ("Допуск к работе до")
-  // Format A: "до: ... FROM_DATE TO_DATE" — take SECOND date (the TO date)
   var date='';
   var dmA=text.match(/до:[\s\S]{0,150}?(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})[\s]+(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})/i);
   if(dmA){date=dmA[2].replace(/[-\/]/g,'.');}
-  // Format B: "до: DATE" — direct
   if(!date){var dmB=text.match(/до:\s*(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})/i);if(dmB)date=dmB[1].replace(/[-\/]/g,'.');}
-  // Format C: "Допуск к работе до DATE"
   if(!date){var dmC=text.match(/[Дд]опуск\s+к\s+работе\s+до[\s:]*(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})/i);if(dmC)date=dmC[1].replace(/[-\/]/g,'.');}
+  return {name:name,iin:iin,date:date};
+}
 
-  mkbShowOcr(name,iin,date);
+function mkbParseText(text){
+  var d=mkbParseTextData(text);
+  mkbShowOcr(d.name,d.iin,d.date);
+}
+
+// ===== Reusable OCR extraction (no single-file UI) =====
+// Returns Promise<{name, iin, date}>. onProgress(pctText) optional.
+async function mkbExtractDataFromDataUrl(dataUrl,fileType,onProgress){
+  function prog(t){if(onProgress)onProgress(t);}
+  // PDF
+  if((fileType||'').indexOf('pdf')>=0 || /^data:application\/pdf/.test(dataUrl)){
+    try{
+      await mkbLoadPdfJs();
+      var bytes=await mkbPdfToBytes(dataUrl);
+      var pdf=await pdfjsLib.getDocument({data:bytes}).promise;
+      var text='';
+      for(var p=1;p<=Math.min(pdf.numPages,3);p++){
+        var pg=await pdf.getPage(p),tc=await pg.getTextContent();
+        text+=tc.items.map(function(i){return i.str;}).join(' ')+'\n';
+      }
+      if(text.replace(/\s/g,'').length<80){
+        // Scanned PDF → render page 1 to image and OCR
+        prog('🖼 скан');
+        var page=await pdf.getPage(1);
+        var vp=page.getViewport({scale:2.5});
+        var canvas=document.createElement('canvas');
+        canvas.width=vp.width;canvas.height=vp.height;
+        await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+        var imgUrl=canvas.toDataURL('image/jpeg',0.92);
+        return await mkbOcrImage(imgUrl,prog);
+      }
+      return mkbParseTextData(text);
+    }catch(e){console.error('bulk PDF err:',e);return {name:'',iin:'',date:''};}
+  }
+  // Image
+  try{ return await mkbOcrImage(dataUrl,prog); }
+  catch(e){console.error('bulk img err:',e);return {name:'',iin:'',date:''};}
+}
+
+async function mkbOcrImage(dataUrl,prog){
+  await mkbLoadTesseract();
+  var r=await Tesseract.recognize(dataUrl,'rus',{
+    logger:function(m){if(m.status==='recognizing text'&&prog)prog('🔍 '+Math.round(m.progress*100)+'%');}
+  });
+  return mkbParseTextData(r.data.text);
+}
+
+function mkbLoadTesseract(){
+  return new Promise(function(res,rej){
+    if(typeof Tesseract!=='undefined'){res();return;}
+    var s=document.createElement('script');
+    s.src='https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js';
+    s.onload=function(){res();};s.onerror=rej;
+    document.head.appendChild(s);
+  });
 }
 
 function mkbShowOcr(name,iin,date){
@@ -18832,6 +18881,152 @@ async function mkbSaveBook(){
     statusEl.textContent='✅ Сақталды!';
     setTimeout(function(){mkbCloseUpload();mkbRenderList(document.getElementById('mkbSearch').value||'');},1200);
   }catch(e){statusEl.textContent='❌ Қате: '+e.message;saveBtn.disabled=false;}
+}
+
+// ═══════════════ ТОПТАП ЖҮКТЕУ ═══════════════
+function mkbOpenBulk(){
+  document.getElementById('mkbBulkProgress').textContent='';
+  document.getElementById('mkbBulkResults').innerHTML='';
+  document.getElementById('mkbBulkInput').value='';
+  document.getElementById('mkbBulkOverlay').classList.add('show');
+}
+function mkbCloseBulk(){
+  document.getElementById('mkbBulkOverlay').classList.remove('show');
+  mkbRenderList(document.getElementById('mkbSearch')?document.getElementById('mkbSearch').value:'');
+}
+function mkbBulkDrop(e){
+  e.preventDefault();document.getElementById('mkbBulkDrop').style.borderColor='#c7d2fe';
+  if(e.dataTransfer.files&&e.dataTransfer.files.length)mkbBulkStart(e.dataTransfer.files);
+}
+
+// Normalize name for fuzzy matching (uppercase, remove punctuation/spaces)
+function mkbNormName(s){return (s||'').toUpperCase().replace(/[^А-ЯЁҒҚҢӨҰҮІA-Z]/g,'');}
+
+// Try to match extracted data to a staff member. Returns iin or ''.
+function mkbMatchStaff(data){
+  // 1. Direct IIN match
+  if(data.iin && mkbStaffData[data.iin]) return data.iin;
+  // 2. Name match (extracted name contains staff name or vice versa)
+  if(data.name){
+    var nn=mkbNormName(data.name);
+    if(nn.length>=6){
+      var best='';
+      Object.keys(mkbStaffData).forEach(function(iin){
+        var sn=mkbNormName(mkbStaffData[iin].name);
+        if(!sn)return;
+        // match if one contains the other's first 12+ chars
+        if(sn===nn || (sn.length>=10 && nn.indexOf(sn)>=0) || (nn.length>=10 && sn.indexOf(nn)>=0)){best=iin;}
+      });
+      if(best)return best;
+    }
+  }
+  return '';
+}
+
+function mkbReadFile(file){
+  return new Promise(function(res,rej){
+    var r=new FileReader();
+    r.onload=function(ev){res(ev.target.result);};
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+async function mkbBulkStart(fileList){
+  var files=Array.prototype.slice.call(fileList||[]);
+  if(!files.length)return;
+  var prog=document.getElementById('mkbBulkProgress');
+  var out=document.getElementById('mkbBulkResults');
+  out.innerHTML='';
+  var ok=0,fail=0;
+  for(var i=0;i<files.length;i++){
+    var file=files[i];
+    var rowId='mkbBulkRow'+i;
+    var row=document.createElement('div');
+    row.id=rowId;
+    row.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #f1f5f9;font-size:12px;';
+    row.innerHTML='<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#475569;">'+file.name+'</span><span class="st" style="flex-shrink:0;color:#94a3b8;">⏳ өңделуде...</span>';
+    out.appendChild(row);
+    var stEl=row.querySelector('.st');
+    prog.textContent='📂 '+(i+1)+'/'+files.length+' файл өңделуде...';
+
+    if(file.size>5*1024*1024){stEl.textContent='⚠️ 5МБ-тан үлкен';stEl.style.color='#ef4444';fail++;continue;}
+
+    try{
+      var dataUrl=await mkbReadFile(file);
+      (function(el){})(stEl);
+      var data=await mkbExtractDataFromDataUrl(dataUrl,file.type,function(p){stEl.textContent=p;stEl.style.color='#94a3b8';});
+      var iin=mkbMatchStaff(data);
+
+      if(!iin){
+        stEl.textContent='❌ Қызметкер табылмады'+(data.iin?(' (ИИН: '+data.iin+')'):'');
+        stEl.style.color='#ef4444';fail++;
+        // add manual assign dropdown
+        mkbBulkAddManual(row,dataUrl,file.type,data);
+        continue;
+      }
+      if(!data.date){
+        stEl.innerHTML='⚠️ '+(mkbStaffData[iin].name||iin)+' — мерзім табылмады';
+        stEl.style.color='#f59e0b';fail++;
+        mkbBulkAddManual(row,dataUrl,file.type,data,iin);
+        continue;
+      }
+
+      // Save to Firebase
+      var entry={name:mkbStaffData[iin].name||data.name||'',iin:iin,valid_until:data.date,
+        uploaded_at:new Date().toISOString(),file_b64:dataUrl,file_type:file.type||'application/octet-stream'};
+      await fetch(MKB_FB+'mk_books/'+iin+'.json',{method:'PUT',body:JSON.stringify(entry)});
+      mkbBooksData[iin]=entry;
+      stEl.innerHTML='✅ '+(mkbStaffData[iin].name||iin)+' · до '+data.date;
+      stEl.style.color='#16a34a';ok++;
+    }catch(err){
+      console.error('bulk file err:',err);
+      stEl.textContent='❌ Қате: '+err.message;stEl.style.color='#ef4444';fail++;
+    }
+  }
+  prog.innerHTML='<span style="color:#16a34a;">✅ '+ok+' сәтті</span> · <span style="color:#ef4444;">'+fail+' қолмен тексеру керек</span> · барлығы '+files.length;
+  mkbRenderList(document.getElementById('mkbSearch')?document.getElementById('mkbSearch').value:'');
+}
+
+// For unmatched/incomplete files — add inline manual assign controls
+function mkbBulkAddManual(row,dataUrl,fileType,data,presetIin){
+  var box=document.createElement('div');
+  box.style.cssText='flex-basis:100%;display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;align-items:center;';
+  // staff select
+  var sel=document.createElement('select');
+  sel.style.cssText='flex:1;min-width:140px;padding:5px;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;';
+  var opt0=document.createElement('option');opt0.value='';opt0.textContent='— қызметкер таңдаңыз —';sel.appendChild(opt0);
+  Object.keys(mkbStaffData).sort(function(a,b){return (mkbStaffData[a].order||999)-(mkbStaffData[b].order||999);}).forEach(function(iin){
+    var o=document.createElement('option');o.value=iin;o.textContent=mkbStaffData[iin].name+' ('+iin+')';
+    if(presetIin&&iin===presetIin)o.selected=true;
+    sel.appendChild(o);
+  });
+  // date input
+  var dt=document.createElement('input');
+  dt.type='text';dt.placeholder='ДД.ММ.ЖЖЖЖ';dt.value=data.date||'';
+  dt.style.cssText='width:110px;padding:5px;border:1px solid #e2e8f0;border-radius:6px;font-size:11px;';
+  // save button
+  var btn=document.createElement('button');
+  btn.textContent='💾 Сақтау';
+  btn.style.cssText='padding:5px 12px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:11px;cursor:pointer;';
+  btn.onclick=async function(){
+    var iin=sel.value,date=(dt.value||'').trim();
+    if(!iin){alert('Қызметкер таңдаңыз');return;}
+    if(!/^\d{2}\.\d{2}\.\d{4}$/.test(date)){alert('Мерзімді ДД.ММ.ЖЖЖЖ форматында енгізіңіз');return;}
+    btn.disabled=true;btn.textContent='⏳';
+    try{
+      var entry={name:mkbStaffData[iin].name||'',iin:iin,valid_until:date,
+        uploaded_at:new Date().toISOString(),file_b64:dataUrl,file_type:fileType||'application/octet-stream'};
+      await fetch(MKB_FB+'mk_books/'+iin+'.json',{method:'PUT',body:JSON.stringify(entry)});
+      mkbBooksData[iin]=entry;
+      var st=row.querySelector('.st');
+      st.innerHTML='✅ '+(mkbStaffData[iin].name||iin)+' · до '+date;st.style.color='#16a34a';
+      box.remove();
+      mkbRenderList(document.getElementById('mkbSearch')?document.getElementById('mkbSearch').value:'');
+    }catch(e){alert('Қате: '+e.message);btn.disabled=false;btn.textContent='💾 Сақтау';}
+  };
+  box.appendChild(sel);box.appendChild(dt);box.appendChild(btn);
+  row.appendChild(box);
 }
 
 function mkbViewBook(iin){
@@ -18878,6 +19073,29 @@ function mkbViewBook(iin){
     <div style="display:flex;gap:10px;margin-top:12px;">
       <button id="mkbSaveBtn" onclick="mkbSaveBook()" style="display:none;padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">💾 Firebase-ке сақтау</button>
       <button onclick="mkbCloseUpload()" style="padding:10px 18px;background:#f1f5f9;color:#374151;border:none;border-radius:9px;font-size:13px;cursor:pointer;">Болдырмау</button>
+    </div>
+  </div>
+</div>
+
+<!-- MKB BULK UPLOAD MODAL -->
+<div class="mkb-overlay" id="mkbBulkOverlay" style="z-index:10002;">
+  <div class="mkb-modal" style="max-width:720px;">
+    <button onclick="mkbCloseBulk()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8">✕</button>
+    <div style="font-size:15px;font-weight:800;margin-bottom:2px;">📚 Топтап жүктеу</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:14px;">Бірнеше медкнижканы бірден жүктеңіз — база әрқайсысының ИИН-і мен мерзімін өзі анықтап, тиісті қызметкерге байланыстырады</div>
+    <div class="mkb-drop" id="mkbBulkDrop" onclick="document.getElementById('mkbBulkInput').click()"
+      ondragover="event.preventDefault();this.style.borderColor='var(--green)'"
+      ondragleave="this.style.borderColor='#c7d2fe'"
+      ondrop="mkbBulkDrop(event)">
+      <div style="font-size:30px;margin-bottom:6px;">📄📄📄</div>
+      <div style="font-size:13px;font-weight:600;color:#64748b;">PDF/фото файлдарды бірден сүйреп апарыңыз</div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:3px;">немесе басып бірнеше файл таңдаңыз · әрқайсысы макс. 5 МБ</div>
+    </div>
+    <input id="mkbBulkInput" type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.heic,.webp" style="display:none;" onchange="mkbBulkStart(this.files)">
+    <div id="mkbBulkProgress" style="font-size:13px;color:#64748b;margin-top:12px;min-height:20px;font-weight:600;"></div>
+    <div id="mkbBulkResults" style="margin-top:10px;max-height:46vh;overflow-y:auto;"></div>
+    <div style="display:flex;gap:10px;margin-top:14px;">
+      <button onclick="mkbCloseBulk()" style="padding:10px 18px;background:#f1f5f9;color:#374151;border:none;border-radius:9px;font-size:13px;cursor:pointer;">Жабу</button>
     </div>
   </div>
 </div>
