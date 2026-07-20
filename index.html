@@ -18781,7 +18781,7 @@ function mkbParseTextData(text){
 
   // Аты табылмаса — бірінші «тақырып сөз емес» бас әріпті блок
   if(!name){
-    var HEADER=/^(ИИН|ФИО|ФИ|СЕРИЯ|ДАТА|МЕСТО|ДОЛЖНОСТЬ|ПРОФЕССИЯ|СТАТУС|ГОДЕН|ДОСТУП|ЛИЧНАЯ|МЕДИЦИНСКАЯ|КНИЖКА|ПАСПОРТНЫЕ|ДАННЫЕ|КАЗАХСТАН)$/;
+    var HEADER=/^(ИИН|ФИО|ФИ|СЕРИЯ|ДАТА|МЕСТО|ДОЛЖНОСТЬ|ПРОФЕССИЯ|СТАТУС|ГОДЕН|ДОСТУП|ЛИЧНАЯ|ЧНАЯ|МЕДИЦИНСКАЯ|МЕДИЦИНСК|КНИЖКА|ПАСПОРТНЫЕ|ДАННЫЕ|КАЗАХСТАН|СВЕДЕНИЯ|ВЛАДЕЛЬЦЕ|ОСНОВНАЯ|РАБОТЫ|ЖИТЕЛЬСТВА|НОМЕР|ТЕЛЕФОНА|ЦЕЛЕВАЯ|ГРУППА|РЕЗУЛЬТАТЫ|УДОСТ|РОЖДЕНИЯ|НОМЕРА)$/;
     var re=new RegExp('(['+MKB_KZ+']['+MKB_KZ+'\\-]{1,}(?:\\s+['+MKB_KZ+']['+MKB_KZ+'\\-]{1,}){1,4})','g'),mm;
     while((mm=re.exec(text))){
       var first=mm[1].split(/\s+/)[0];
@@ -18918,9 +18918,10 @@ async function mkbOcrImage(dataUrl,prog){
   var worker=await mkbGetWorker();
   var name='',iin='',date='';
 
-  // Хедер суретін бір рет кесіп аламыз (ФИО + ИИН осында)
+  // «Паспортные данные» жолын ТАРЫЛТЫП кесеміз (атаудан төмен, телефон/мекенжайдан жоғары)
+  // — сонда OCR тек ФИО + ИИН-ді оқиды, бөгде нөмірлерді емес
   var headImg=null;
-  try{ headImg=await mkbCropCanvas(dataUrl, 0.0, 0.34, true); }catch(e){}
+  try{ headImg=await mkbCropCanvas(dataUrl, 0.06, 0.24, true); }catch(e){}
 
   // 1. Аты — толық әріп режимі
   if(headImg){
@@ -18937,7 +18938,7 @@ async function mkbOcrImage(dataUrl,prog){
   if(headImg && !iin){
     try{
       if(prog)prog('🔍 ИИН...');
-      var hdig=await mkbRecWith(worker,headImg,'0123456789 .');
+      var hdig=await mkbRecWith(worker,headImg,'0123456789 ');
       var m=mkbParseTextData(hdig);
       if(m.iin)iin=m.iin;
     }catch(e){console.warn('iin ocr:',e);}
@@ -18951,17 +18952,22 @@ async function mkbOcrImage(dataUrl,prog){
     date=mkbFooterDate(ft);
   }catch(e){console.warn('date ocr:',e);}
 
-  // 4. Аты да, ИИН де болмаса — толық суреттен қайта оқу
-  if(!iin && !name){
+  // 4. ИИН табылмаса немесе тізімде жоқ болса — кеңірек хедермен қайта оқу
+  if(!iin || (typeof mkbStaffData!=='undefined' && !mkbStaffData[iin])){
     try{
-      if(prog)prog('🔍 толық...');
-      var fullImg=await mkbCropCanvas(dataUrl, 0.0, 1.0, true);
-      var ftext=await mkbRecWith(worker,fullImg,'');
-      var fd=mkbParseTextData(ftext);
-      if(fd.name)name=fd.name;
-      if(fd.iin)iin=fd.iin;
-      if(!date&&fd.date)date=fd.date;
-    }catch(e){console.warn('full ocr:',e);}
+      if(prog)prog('🔍 қайта...');
+      var wideImg=await mkbCropCanvas(dataUrl, 0.04, 0.30, true);
+      var wtext=await mkbRecWith(worker,wideImg,'0123456789 ');
+      var wd=mkbParseTextData(wtext);
+      // тізімде бар ИИН-ге басымдық береміз
+      if(wd.iin && mkbStaffData && mkbStaffData[wd.iin])iin=wd.iin;
+      else if(!iin && wd.iin)iin=wd.iin;
+      if(!name){
+        var wn=await mkbRecWith(worker,wideImg,'');
+        var wnd=mkbParseTextData(wn);
+        if(wnd.name)name=wnd.name;
+      }
+    }catch(e){console.warn('wide ocr:',e);}
   }
 
   return {name:name,iin:iin,date:date};
