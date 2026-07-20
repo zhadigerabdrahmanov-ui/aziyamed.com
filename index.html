@@ -18578,9 +18578,12 @@ function mkbRenderList(filter){
     // Dept header row (only when not filtering)
     if(!isFiltered&&dept!==currentDept){
       var htr=document.createElement('tr');htr.className='mkb-dept-row';
-      htr.innerHTML='<td colspan=”7”><span>'+dept+'</span>'
-        +'<button class=”mkb-dept-add-btn” onclick=”mkbOpenAddInDept(\''+dept.replace(/'/g,”\\'”)+'\')” title=”Осы бөлімге қызметкер қосу”>➕ Қосу</button></td>';
-      tbody.appendChild(htr);
+      var htd=document.createElement('td');htd.colSpan=7;
+      htd.innerHTML='<span>'+dept+'</span>';
+      var hbtn=document.createElement('button');hbtn.className='mkb-dept-add-btn';
+      hbtn.title='Осы бөлімге қызметкер қосу';hbtn.textContent='➕ Қосу';
+      (function(d){hbtn.onclick=function(){mkbOpenAddInDept(d);};})(dept);
+      htd.appendChild(hbtn);htr.appendChild(htd);tbody.appendChild(htr);
       currentDept=dept;
     }
     globalNum++;
