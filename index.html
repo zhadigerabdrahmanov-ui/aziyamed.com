@@ -18571,29 +18571,35 @@ async function mkbLoadAll(){
     var migrate=[];
     Object.keys(books).forEach(function(iin){
       var b=books[iin]||{};
-      if(b.file_b64){                 // ескі формат — файл ішінде
-        mkbFileCache[iin]=b.file_b64; // жедел қарау үшін кэшке
-        migrate.push(iin);
-      }
-      mkbBooksData[iin]=mkbMetaOnly(b,iin);  // жадта тек метадерек
+      if(b.file_b64){ migrate.push([iin,b]); } // ескі формат — көшіру керек (жадта САҚТАМАЙМЫЗ)
+      mkbBooksData[iin]=mkbMetaOnly(b,iin);     // жадта тек метадерек
     });
+    books=null;  // үлкен файлдарды жадтан босату
     Object.keys(mkbStaffData).forEach(function(i){STAFF_IINS.add(i);});
-    if(migrate.length)mkbMigrateOld(migrate,books); // фонда бөлек сақтауға көшіру
+    if(migrate.length)mkbMigrateOld(migrate); // фонда бөлек сақтауға көшіру
   }catch(e){console.error('mkbLoadAll:',e);}
   if(lo)lo.style.display='none';if(tb)tb.style.display='';
   mkbRenderList();
 }
 
+// Кэшке қосу (25 файлдан аспайтын етіп — жад толмас үшін)
+function mkbCacheFile(iin,data){
+  mkbFileCache[iin]=data;
+  var keys=Object.keys(mkbFileCache);
+  while(keys.length>25){delete mkbFileCache[keys.shift()];}
+}
+
 // Ескі кітапшаларды mk_files-ке көшіріп, mk_books-ты жеңілдету (бір реттік, фонда)
-async function mkbMigrateOld(iins,books){
-  for(var i=0;i<iins.length;i++){
-    var iin=iins[i],b=books[iin];
+async function mkbMigrateOld(pairs){
+  for(var i=0;i<pairs.length;i++){
+    var iin=pairs[i][0],b=pairs[i][1];
     try{
       await fetch(MKB_FB+'mk_files/'+iin+'.json',{method:'PUT',body:JSON.stringify(b.file_b64)});
       await fetch(MKB_FB+'mk_books/'+iin+'.json',{method:'PUT',body:JSON.stringify(mkbMetaOnly(b,iin))});
+      pairs[i][1]=null; // жадтан босату
     }catch(e){console.warn('migrate '+iin+':',e);}
   }
-  console.log('Миграция:',iins.length,'кітапша бөлек сақталды');
+  console.log('Миграция:',pairs.length,'кітапша бөлек сақталды');
 }
 
 // Файлды алу: кэш → mk_files (тек қажет болғанда жүктейді)
@@ -18601,7 +18607,7 @@ async function mkbGetFile(iin){
   if(mkbFileCache[iin])return mkbFileCache[iin];
   try{
     var f=await fetch(MKB_FB+'mk_files/'+iin+'.json').then(function(x){return x.json();});
-    if(f){mkbFileCache[iin]=f;return f;}
+    if(f){mkbCacheFile(iin,f);return f;}
   }catch(e){console.warn('getFile:',e);}
   return '';
 }
@@ -18801,7 +18807,11 @@ function mkbOpenUpload(iin){
   document.getElementById('mkbFileInput').value='';
   document.getElementById('mkbUploadOverlay').classList.add('show');
 }
-function mkbCloseUpload(){document.getElementById('mkbUploadOverlay').classList.remove('show');mkbCurrentIIN=null;mkbCurrentFileB64=null;}
+function mkbCloseUpload(){
+  document.getElementById('mkbUploadOverlay').classList.remove('show');
+  mkbCurrentIIN=null;mkbCurrentFileB64=null;mkbCurrentFileType=null;
+  mkbTerminateWorker();  // OCR worker-ін жауып, жадты босату (көп жүктегенде толып қалмас үшін)
+}
 
 function mkbHandleDrop(e){
   e.preventDefault();document.getElementById('mkbDropZone').style.borderColor='#c7d2fe';
@@ -19156,7 +19166,7 @@ async function mkbSaveBook(){
         statusEl.textContent='🗜 Файл сақталуда...';
         var stored=await mkbCompressImage(mkbCurrentFileB64,mkbCurrentFileType);
         var fr=await fetch(MKB_FB+'mk_files/'+mkbCurrentIIN+'.json',{method:'PUT',body:JSON.stringify(stored)});
-        if(fr.ok){mkbFileCache[mkbCurrentIIN]=stored;}
+        if(fr.ok){mkbCacheFile(mkbCurrentIIN,stored);}
         else{ meta.has_file=false; fetch(MKB_FB+'mk_books/'+mkbCurrentIIN+'/has_file.json',{method:'PUT',body:'false'}); }
       }catch(fe){ console.warn('файл сақтау:',fe); }
     }
@@ -19298,7 +19308,7 @@ async function mkbBulkStart(fileList){
       try{
         var storedB=await mkbCompressImage(dataUrl,file.type);
         await fetch(MKB_FB+'mk_files/'+iin+'.json',{method:'PUT',body:JSON.stringify(storedB)});
-        mkbFileCache[iin]=storedB;
+        mkbCacheFile(iin,storedB);
       }catch(fe){console.warn('bulk file:',fe);}
       stEl.innerHTML='✅ '+(mkbStaffData[iin].name||iin)+' · до '+data.date;
       stEl.style.color='#16a34a';ok++;
@@ -19346,7 +19356,7 @@ function mkbBulkAddManual(row,dataUrl,fileType,data,presetIin){
       try{
         var storedM=await mkbCompressImage(dataUrl,fileType);
         await fetch(MKB_FB+'mk_files/'+iin+'.json',{method:'PUT',body:JSON.stringify(storedM)});
-        mkbFileCache[iin]=storedM;
+        mkbCacheFile(iin,storedM);
       }catch(fe){console.warn('manual file:',fe);}
       var st=row.querySelector('.st');
       st.innerHTML='✅ '+(mkbStaffData[iin].name||iin)+' · до '+date;st.style.color='#16a34a';
