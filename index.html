@@ -18748,32 +18748,15 @@ async function mkbExtractPDF(dataUrl){
 }
 
 function mkbExtractImage(dataUrl){
-  document.getElementById('mkbUploadStatus').textContent='🔍 OCR дайындалуда...';
-  function doOcr(){
-    document.getElementById('mkbUploadStatus').textContent='🔍 Сурет өңделуде...';
-    Tesseract.recognize(dataUrl,'rus',{
-      logger:function(m){
-        if(m.status==='recognizing text')
-          document.getElementById('mkbUploadStatus').textContent='🔍 OCR: '+Math.round(m.progress*100)+'%';
-      }
-    })
-    .then(function(r){mkbParseText(r.data.text);})
+  var st=document.getElementById('mkbUploadStatus');
+  st.textContent='🔍 OCR дайындалуда...';
+  mkbOcrImage(dataUrl,function(p){st.textContent=p;})
+    .then(function(d){mkbShowOcr(d.name,d.iin,d.date);})
     .catch(function(e){
       console.error('OCR error:',e);
-      document.getElementById('mkbUploadStatus').textContent='⚠️ OCR қатесі. Қолмен енгізіңіз.';
+      st.textContent='⚠️ OCR қатесі. Қолмен енгізіңіз.';
       mkbShowOcr('','','');
     });
-  }
-  if(typeof Tesseract!=='undefined'){doOcr();return;}
-  // CDN-нан Tesseract.js жүктеу
-  var s=document.createElement('script');
-  s.src='https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js';
-  s.onload=doOcr;
-  s.onerror=function(){
-    document.getElementById('mkbUploadStatus').textContent='⚠️ OCR жүктелмеді. Интернет байланысын тексеріңіз.';
-    mkbShowOcr('','','');
-  };
-  document.head.appendChild(s);
 }
 
 // Толық қазақ бас әріптер жиыны (Ә, Һ қоса)
@@ -18853,12 +18836,67 @@ async function mkbExtractDataFromDataUrl(dataUrl,fileType,onProgress){
   catch(e){console.error('bulk img err:',e);return {name:'',iin:'',date:''};}
 }
 
+// Суретті OCR-ға дайындау: масштабтау + сұр реңк + контраст (+ қаласа инверт)
+function mkbImgToCanvas(dataUrl,invert){
+  return new Promise(function(res,rej){
+    var img=new Image();
+    img.onload=function(){
+      try{
+        var scale=Math.max(1, 1700/(img.width||1));
+        if(scale>3)scale=3;
+        var w=Math.round((img.width||1)*scale),h=Math.round((img.height||1)*scale);
+        var c=document.createElement('canvas');c.width=w;c.height=h;
+        var ctx=c.getContext('2d');
+        ctx.drawImage(img,0,0,w,h);
+        var d=ctx.getImageData(0,0,w,h),p=d.data;
+        for(var i=0;i<p.length;i+=4){
+          var g=0.299*p[i]+0.587*p[i+1]+0.114*p[i+2];
+          g=(g-128)*1.45+128;            // контраст
+          if(invert)g=255-g;              // қара фондағы ақ мәтін үшін
+          g=g<0?0:(g>255?255:g);
+          p[i]=p[i+1]=p[i+2]=g;
+        }
+        ctx.putImageData(d,0,0);
+        res(c.toDataURL('image/jpeg',0.95));
+      }catch(e){rej(e);}
+    };
+    img.onerror=rej;
+    img.src=dataUrl;
+  });
+}
+
+// Екі рет OCR: (1) қалыпты — ашық ортаңғы бөлік; (2) инверт — қара фондағы ФИО/ИИН/мерзім
 async function mkbOcrImage(dataUrl,prog){
   await mkbLoadTesseract();
-  var r=await Tesseract.recognize(dataUrl,'rus',{
-    logger:function(m){if(m.status==='recognizing text'&&prog)prog('🔍 '+Math.round(m.progress*100)+'%');}
+  var normImg,invImg;
+  try{ normImg=await mkbImgToCanvas(dataUrl,false); }catch(e){ normImg=dataUrl; }
+  try{ invImg=await mkbImgToCanvas(dataUrl,true); }catch(e){ invImg=null; }
+
+  if(prog)prog('🔍 1/2...');
+  var r1=await Tesseract.recognize(normImg,'rus',{
+    logger:function(m){if(m.status==='recognizing text'&&prog)prog('🔍 1/2 · '+Math.round(m.progress*100)+'%');}
   });
-  return mkbParseTextData(r.data.text);
+  var text1=r1.data.text||'';
+
+  var text2='';
+  if(invImg){
+    if(prog)prog('🔍 2/2...');
+    var r2=await Tesseract.recognize(invImg,'rus',{
+      logger:function(m){if(m.status==='recognizing text'&&prog)prog('🔍 2/2 · '+Math.round(m.progress*100)+'%');}
+    });
+    text2=r2.data.text||'';
+  }
+  // Инверт мәтінді бірінші қоямыз (ФИО+ИИН қара хедерде тұр)
+  var combined=text2+'\n'+text1;
+  var data=mkbParseTextData(combined);
+  // ИИН табылмаса — қалыпты мәтіннен тағы бір рет цифр іздеу
+  if(!data.iin){
+    var alt=mkbParseTextData(text1);
+    if(alt.iin)data.iin=alt.iin;
+    if(!data.name&&alt.name)data.name=alt.name;
+    if(!data.date&&alt.date)data.date=alt.date;
+  }
+  return data;
 }
 
 function mkbLoadTesseract(){
