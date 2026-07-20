@@ -18628,26 +18628,26 @@ function mkbRenderList(filterArg){
     }
     globalNum++;
     var book=mkbBooksData[s.iin];
-    var badge='<span class=”mkb-badge mkb-badge-none”>Жоқ</span>';
+    var badge='<span class="mkb-badge mkb-badge-none">Жоқ</span>';
     var dateStr='—';
-    var btns='<button onclick=”mkbOpenUpload(\''+s.iin+'\')” style=”padding:4px 10px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer”>📎 Жүктеу</button>';
+    var btns='<button onclick="mkbOpenUpload(\''+s.iin+'\')" style="padding:4px 10px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer">📎 Жүктеу</button>';
     if(book&&book.valid_until){
       var exp=mkbDateObj(book.valid_until);dateStr=book.valid_until;
       if(exp){
-        if(exp<today)badge='<span class=”mkb-badge mkb-badge-old”>⛔ Өтті</span>';
-        else if(exp<=soon)badge='<span class=”mkb-badge mkb-badge-exp”>⚠️ Бітеді</span>';
-        else badge='<span class=”mkb-badge mkb-badge-valid”>✅ Жарамды</span>';
+        if(exp<today)badge='<span class="mkb-badge mkb-badge-old">⛔ Өтті</span>';
+        else if(exp<=soon)badge='<span class="mkb-badge mkb-badge-exp">⚠️ Бітеді</span>';
+        else badge='<span class="mkb-badge mkb-badge-valid">✅ Жарамды</span>';
       }
-      btns='<button onclick=”mkbViewBook(\''+s.iin+'\')” style=”padding:4px 9px;background:#3b82f6;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-right:4px”>👁 Қарау</button>'
-          +'<button onclick=”mkbOpenUpload(\''+s.iin+'\')” style=”padding:4px 9px;background:#f1f5f9;color:#374151;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-right:4px”>🔄</button>';
+      btns='<button onclick="mkbViewBook(\''+s.iin+'\')" style="padding:4px 9px;background:#3b82f6;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-right:4px">👁 Қарау</button>'
+          +'<button onclick="mkbOpenUpload(\''+s.iin+'\')" style="padding:4px 9px;background:#f1f5f9;color:#374151;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-right:4px">🔄</button>';
     }
     var tr=document.createElement('tr');
-    tr.innerHTML='<td class=”mkb-num-cell”>'+globalNum+'</td>'
-      +'<td style=”font-weight:600;font-size:12px”>'+(s.name||'—')+'</td>'
-      +'<td style=”font-size:11px;color:#64748b”>'+(isFiltered?(s.dept||'—'):'')+'</td>'
-      +'<td style=”font-family:monospace;font-size:11px;color:#64748b”>'+(s.iin||'—')+'</td>'
+    tr.innerHTML='<td class="mkb-num-cell">'+globalNum+'</td>'
+      +'<td style="font-weight:600;font-size:12px">'+(s.name||'—')+'</td>'
+      +'<td style="font-size:11px;color:#64748b">'+(isFiltered?(s.dept||'—'):'')+'</td>'
+      +'<td style="font-family:monospace;font-size:11px;color:#64748b">'+(s.iin||'—')+'</td>'
       +'<td>'+dateStr+'</td>'+'<td>'+badge+'</td>'
-      +'<td>'+btns+'<button onclick=”mkbDeleteStaff(\''+s.iin+'\')” style=”padding:4px 8px;background:none;border:1px solid #fca5a5;color:#ef4444;border-radius:6px;font-size:11px;cursor:pointer;margin-left:2px”>🗑</button></td>';
+      +'<td>'+btns+'<button onclick="mkbDeleteStaff(\''+s.iin+'\')" style="padding:4px 8px;background:none;border:1px solid #fca5a5;color:#ef4444;border-radius:6px;font-size:11px;cursor:pointer;margin-left:2px">🗑</button></td>';
     tbody.appendChild(tr);
   });
 }
