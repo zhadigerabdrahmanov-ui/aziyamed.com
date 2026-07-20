@@ -18802,7 +18802,7 @@ function mkbOpenUpload(iin){
   document.getElementById('mkbUploadTitle').textContent='📎 '+(s.name||iin);
   document.getElementById('mkbUploadSubtitle').textContent='ИИН: '+iin;
   document.getElementById('mkbOcrResult').style.display='none';
-  document.getElementById('mkbSaveBtn').style.display='none';
+  var sb=document.getElementById('mkbSaveBtn');sb.style.display='none';sb.disabled=false;
   document.getElementById('mkbUploadStatus').textContent='';
   document.getElementById('mkbFileInput').value='';
   document.getElementById('mkbUploadOverlay').classList.add('show');
@@ -18810,7 +18810,7 @@ function mkbOpenUpload(iin){
 function mkbCloseUpload(){
   document.getElementById('mkbUploadOverlay').classList.remove('show');
   mkbCurrentIIN=null;mkbCurrentFileB64=null;mkbCurrentFileType=null;
-  mkbTerminateWorker();  // OCR worker-ін жауып, жадты босату (көп жүктегенде толып қалмас үшін)
+  var sb=document.getElementById('mkbSaveBtn');if(sb)sb.disabled=false; // батырманы қайта қосу
 }
 
 function mkbHandleDrop(e){
@@ -19112,7 +19112,7 @@ function mkbShowOcr(name,iin,date){
   document.getElementById('mkbOcrIIN').value=mkbCurrentIIN||iin;
   document.getElementById('mkbOcrDate').value=date;
   document.getElementById('mkbOcrResult').style.display='';
-  document.getElementById('mkbSaveBtn').style.display='';
+  var _sb=document.getElementById('mkbSaveBtn');_sb.style.display='';_sb.disabled=false;
   var info='';
   if(iin&&mkbCurrentIIN&&iin===mkbCurrentIIN)info='✅ ИИН сәйкес келді';
   else if(iin&&mkbCurrentIIN&&iin!==mkbCurrentIIN)info='ℹ️ OCR оқыған ИИН: '+iin+' — тізімдегі '+mkbCurrentIIN+' бойынша сақталады';
