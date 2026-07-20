@@ -18951,62 +18951,48 @@ async function mkbRecWith(worker,img,whitelist){
   return (r.data&&r.data.text)||'';
 }
 
-// Аймақтарды бөліп OCR: аты — толық әріп, ИИН/мерзім — тек цифр режимі
+// ИИН + мерзімге басымдық: ИИН тізіммен сәйкессе, ФИО тізімнен алынады (OCR-мен оқымаймыз)
 async function mkbOcrImage(dataUrl,prog){
   await mkbLoadTesseract();
   var worker=await mkbGetWorker();
   var name='',iin='',date='';
+  var haveStaff=(typeof mkbStaffData!=='undefined');
 
-  // «Паспортные данные» жолын ТАРЫЛТЫП кесеміз (атаудан төмен, телефон/мекенжайдан жоғары)
-  // — сонда OCR тек ФИО + ИИН-ді оқиды, бөгде нөмірлерді емес
-  var headImg=null;
-  try{ headImg=await mkbCropCanvas(dataUrl, 0.06, 0.24, true); }catch(e){}
+  // 1. ИИН — «Паспортные данные» жолынан, ТЕК ЦИФР (ең маңызды әрі жылдам)
+  try{
+    if(prog)prog('🔍 ИИН...');
+    var headImg=await mkbCropCanvas(dataUrl, 0.06, 0.24, true);
+    var m=mkbParseTextData(await mkbRecWith(worker,headImg,'0123456789 '));
+    if(m.iin)iin=m.iin;
+  }catch(e){console.warn('iin ocr:',e);}
 
-  // 1. Аты — толық әріп режимі
-  if(headImg){
-    try{
-      if(prog)prog('🔍 аты...');
-      var ht=await mkbRecWith(worker,headImg,'');
-      var hd=mkbParseTextData(ht);
-      if(hd.name)name=hd.name;
-      if(hd.iin)iin=hd.iin;
-    }catch(e){console.warn('name ocr:',e);}
-  }
-
-  // 2. ИИН — ТЕК ЦИФР режимі (дәлдік әлдеқайда жоғары)
-  if(headImg && !iin){
-    try{
-      if(prog)prog('🔍 ИИН...');
-      var hdig=await mkbRecWith(worker,headImg,'0123456789 ');
-      var m=mkbParseTextData(hdig);
-      if(m.iin)iin=m.iin;
-    }catch(e){console.warn('iin ocr:',e);}
-  }
-
-  // 3. Мерзім — төменгі бар, ТЕК ЦИФР режимі
+  // 2. Мерзім — төменгі бар, ТЕК ЦИФР
   try{
     if(prog)prog('🔍 мерзім...');
     var footImg=await mkbCropCanvas(dataUrl, 0.78, 1.0, true);
-    var ft=await mkbRecWith(worker,footImg,'0123456789 .');
-    date=mkbFooterDate(ft);
+    date=mkbFooterDate(await mkbRecWith(worker,footImg,'0123456789 .'));
   }catch(e){console.warn('date ocr:',e);}
 
-  // 4. ИИН табылмаса немесе тізімде жоқ болса — кеңірек хедермен қайта оқу
-  if(!iin || (typeof mkbStaffData!=='undefined' && !mkbStaffData[iin])){
+  // 3. ИИН табылмаса/тізімде жоқ болса — кеңірек аймақпен ИИН-ді қайта оқу
+  if(!iin || (haveStaff && !mkbStaffData[iin])){
     try{
-      if(prog)prog('🔍 қайта...');
+      if(prog)prog('🔍 ИИН қайта...');
       var wideImg=await mkbCropCanvas(dataUrl, 0.04, 0.30, true);
-      var wtext=await mkbRecWith(worker,wideImg,'0123456789 ');
-      var wd=mkbParseTextData(wtext);
-      // тізімде бар ИИН-ге басымдық береміз
-      if(wd.iin && mkbStaffData && mkbStaffData[wd.iin])iin=wd.iin;
+      var wd=mkbParseTextData(await mkbRecWith(worker,wideImg,'0123456789 '));
+      if(wd.iin && haveStaff && mkbStaffData[wd.iin])iin=wd.iin;
       else if(!iin && wd.iin)iin=wd.iin;
-      if(!name){
-        var wn=await mkbRecWith(worker,wideImg,'');
-        var wnd=mkbParseTextData(wn);
-        if(wnd.name)name=wnd.name;
+      // ИИН әлі тізімде жоқ болса ғана — атын оқып, ат бойынша іздеуге мүмкіндік береміз
+      if(!iin || (haveStaff && !mkbStaffData[iin])){
+        if(prog)prog('🔍 аты...');
+        var wn=mkbParseTextData(await mkbRecWith(worker,wideImg,''));
+        if(wn.name)name=wn.name;
       }
     }catch(e){console.warn('wide ocr:',e);}
+  }
+
+  // ИИН тізімде бар болса — атын OCR-дан алмай, тізімнен береміз (дәл әрі жылдам)
+  if(iin && haveStaff && mkbStaffData[iin] && mkbStaffData[iin].name){
+    name=mkbStaffData[iin].name;
   }
 
   return {name:name,iin:iin,date:date};
@@ -19023,7 +19009,8 @@ function mkbLoadTesseract(){
 }
 
 function mkbShowOcr(name,iin,date){
-  document.getElementById('mkbOcrName').value=name||(mkbStaffData[mkbCurrentIIN]||{}).name||'';
+  // ФИО-ны алдымен тізімнен (осы қатардың қызметкері), OCR атын емес — дәлдік үшін
+  document.getElementById('mkbOcrName').value=(mkbStaffData[mkbCurrentIIN]||{}).name||name||'';
   // ИИН өрісінде ТІЗІМДЕГІ дұрыс ИИН тұрады (осы қатардың ИИН-і), OCR-дікі емес
   document.getElementById('mkbOcrIIN').value=mkbCurrentIIN||iin;
   document.getElementById('mkbOcrDate').value=date;
