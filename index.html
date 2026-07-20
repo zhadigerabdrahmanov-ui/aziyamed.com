@@ -5214,10 +5214,18 @@ html.dark .kz-tile { opacity:0.22; }
   </div>
   <div id="mkbTabListPane">
     <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
-      <input id="mkbSearch" type="text" oninput="mkbRenderList(this.value)" placeholder="🔍 ФИО немесе ИИН..." style="flex:1;min-width:180px;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;">
+      <input id="mkbSearch" type="text" oninput="mkbRenderList()" placeholder="🔍 ФИО немесе ИИН..." style="flex:1;min-width:180px;padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;">
+      <select id="mkbStatusFilter" onchange="mkbRenderList()" style="padding:8px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;background:#fff;cursor:pointer;min-width:150px;">
+        <option value="">Барлық статус</option>
+        <option value="valid">✅ Жарамды</option>
+        <option value="soon">⚠️ Жақында бітеді</option>
+        <option value="expired">⛔ Өтті</option>
+        <option value="none">⬜ Салынбаған</option>
+      </select>
       <button onclick="mkbOpenBulk()" style="padding:8px 14px;background:#2563eb;color:#fff;border:none;border-radius:9px;font-size:13px;cursor:pointer;font-weight:600;">📚 Топтап жүктеу</button>
       <button onclick="mkbLoadAll()" style="padding:8px 14px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:13px;cursor:pointer;">🔄 Жаңарту</button>
     </div>
+    <div id="mkbStatCounts" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;font-size:11px;"></div>
     <div id="mkbLoading" style="text-align:center;padding:20px;color:#94a3b8;">⏳ Деректер жүктелуде...</div>
     <div style="overflow-x:auto;">
       <table class="mkb-tbl" id="mkbTable" style="display:none;">
@@ -18554,10 +18562,28 @@ function mkbDateObj(s){if(!s)return null;var p=s.split('.');return p.length===3?
 
 var MKB_DEPTS=['РУКОВОДИТЕЛИ','УЗКИЕ СПЕЦИАЛИСТЫ','УЧАСКОВЫЕ ВРАЧИ','ВРАЧИ-СОВМЕСТИТЕЛИ','СРЕДНИЙ МЕД. ПЕРСОНАЛ','АУП','Прочие специалисты','САНИТАРКИ'];
 
-function mkbRenderList(filter){
+// Қызметкердің медкнижка статусын есептеу: valid | soon | expired | none
+function mkbStatusOf(s,today,soon){
+  var book=mkbBooksData[s.iin];
+  if(!book||!book.valid_until)return 'none';
+  var exp=mkbDateObj(book.valid_until);
+  if(!exp)return 'none';
+  if(exp<today)return 'expired';
+  if(exp<=soon)return 'soon';
+  return 'valid';
+}
+
+function mkbRenderList(filterArg){
   var tbody=document.getElementById('mkbTbody');if(!tbody)return;
   var today=new Date();today.setHours(0,0,0,0);
   var soon=new Date(today);soon.setDate(soon.getDate()+30);
+
+  // Іздеу мәтіні (аргумент берілмесе — өрістен оқимыз)
+  var searchEl=document.getElementById('mkbSearch');
+  var filter=(typeof filterArg==='string')?filterArg:(searchEl?searchEl.value:'');
+  // Статус фильтрі
+  var statusEl=document.getElementById('mkbStatusFilter');
+  var statusFilter=statusEl?statusEl.value:'';
 
   // Sort: deptOrder → order → name
   var staff=Object.values(mkbStaffData).sort(function(a,b){
@@ -18568,11 +18594,24 @@ function mkbRenderList(filter){
     return(a.name||'').localeCompare(b.name||'','ru');
   });
 
+  // Статус санауышын жаңарту (бүкіл тізім бойынша)
+  var counts={valid:0,soon:0,expired:0,none:0};
+  staff.forEach(function(s){counts[mkbStatusOf(s,today,soon)]++;});
+  var cEl=document.getElementById('mkbStatCounts');
+  if(cEl){
+    cEl.innerHTML=
+       '<span style="background:#dcfce7;color:#16a34a;padding:3px 9px;border-radius:20px;font-weight:600;">✅ Жарамды: '+counts.valid+'</span>'
+      +'<span style="background:#fef9c3;color:#ca8a04;padding:3px 9px;border-radius:20px;font-weight:600;">⚠️ Жақында: '+counts.soon+'</span>'
+      +'<span style="background:#fee2e2;color:#dc2626;padding:3px 9px;border-radius:20px;font-weight:600;">⛔ Өтті: '+counts.expired+'</span>'
+      +'<span style="background:#f1f5f9;color:#64748b;padding:3px 9px;border-radius:20px;font-weight:600;">⬜ Салынбаған: '+counts.none+'</span>';
+  }
+
   if(filter){var q=filter.toLowerCase();staff=staff.filter(function(s){return(s.name||'').toLowerCase().includes(q)||(s.iin||'').includes(q)||(s.dept||'').toLowerCase().includes(q);});}
-  if(!staff.length){tbody.innerHTML='<tr><td colspan=”7” style=”text-align:center;color:#94a3b8;padding:24px”>Қызметкерлер жоқ</td></tr>';return;}
+  if(statusFilter){staff=staff.filter(function(s){return mkbStatusOf(s,today,soon)===statusFilter;});}
+  if(!staff.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:24px">Сәйкес қызметкер жоқ</td></tr>';return;}
 
   tbody.innerHTML='';
-  var globalNum=0;var currentDept=null;var isFiltered=!!filter;
+  var globalNum=0;var currentDept=null;var isFiltered=!!filter||!!statusFilter;
 
   staff.forEach(function(s){
     var dept=s.dept||'Басқалар';
