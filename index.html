@@ -2298,6 +2298,11 @@ html.dark .kz-tile { opacity:0.22; }
   #panelaccred h3{font-size:14px !important;font-weight:700 !important;margin:0 0 8px !important}
   #kuraldarPanel{grid-column:1/-1}
 
+
+  /* ===== МЕДКНИЖКА — БӨЛІМ ТАҚЫРЫПТАРЫ ===== */
+  .mkb-dept-row td{background:#f1f5f9;font-size:11px;font-weight:800;color:#475569;letter-spacing:.6px;padding:6px 12px;text-transform:uppercase}
+  .mkb-dept-add-btn{float:right;padding:2px 10px;background:var(--green);color:#fff;border:none;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600;margin-top:-1px}
+  .mkb-num-cell{color:#94a3b8;font-size:11px;text-align:center;font-weight:600}
   /* ===== МЕДКНИЖКА ===== */
   .mkb-tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid #e5e7eb}
   .mkb-tab-btn{padding:9px 20px;border:none;background:none;font-weight:600;font-size:13px;cursor:pointer;color:#94a3b8;border-bottom:2px solid transparent;margin-bottom:-2px;transition:.15s}
@@ -5215,7 +5220,7 @@ html.dark .kz-tile { opacity:0.22; }
     <div id="mkbLoading" style="text-align:center;padding:20px;color:#94a3b8;">⏳ Деректер жүктелуде...</div>
     <div style="overflow-x:auto;">
       <table class="mkb-tbl" id="mkbTable" style="display:none;">
-        <thead><tr><th>ФИО</th><th>ИИН</th><th>Допуск до</th><th>Статус</th><th>Іс-әрекет</th></tr></thead>
+        <thead><tr><th style="width:36px">№</th><th>ФИО</th><th style="min-width:110px">Бөлім</th><th>ИИН</th><th>Допуск до</th><th>Статус</th><th>Іс-әрекет</th></tr></thead>
         <tbody id="mkbTbody"></tbody>
       </table>
     </div>
@@ -5226,7 +5231,20 @@ html.dark .kz-tile { opacity:0.22; }
       <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:4px;">ФИО *</label>
       <input id="mkbNewName" type="text" placeholder="ИВАНОВ ИВАН ИВАНОВИЧ" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;margin-bottom:10px;box-sizing:border-box;text-transform:uppercase;">
       <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:4px;">ИИН (12 сан) *</label>
-      <input id="mkbNewIIN" type="text" maxlength="12" placeholder="920123300487" inputmode="numeric" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;margin-bottom:14px;box-sizing:border-box;">
+      <input id="mkbNewIIN" type="text" maxlength="12" placeholder="920123300487" inputmode="numeric" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;margin-bottom:10px;box-sizing:border-box;">
+      <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:4px;">Лауазым (қызмет)</label>
+      <input id="mkbNewPos" type="text" placeholder="Врач-терапевт" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;margin-bottom:10px;box-sizing:border-box;">
+      <label style="font-size:12px;font-weight:600;color:#64748b;display:block;margin-bottom:4px;">Бөлім *</label>
+      <select id="mkbNewDept" style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;margin-bottom:14px;box-sizing:border-box;background:#fff;">
+        <option value="РУКОВОДИТЕЛИ">РУКОВОДИТЕЛИ</option>
+        <option value="УЗКИЕ СПЕЦИАЛИСТЫ">УЗКИЕ СПЕЦИАЛИСТЫ</option>
+        <option value="УЧАСКОВЫЕ ВРАЧИ">УЧАСКОВЫЕ ВРАЧИ</option>
+        <option value="ВРАЧИ-СОВМЕСТИТЕЛИ">ВРАЧИ-СОВМЕСТИТЕЛИ</option>
+        <option value="СРЕДНИЙ МЕД. ПЕРСОНАЛ" selected>СРЕДНИЙ МЕД. ПЕРСОНАЛ</option>
+        <option value="АУП">АУП</option>
+        <option value="Прочие специалисты">Прочие специалисты</option>
+        <option value="САНИТАРКИ">САНИТАРКИ</option>
+      </select>
       <button onclick="mkbAddStaff()" style="padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">✅ Тізімге қосу</button>
       <div id="mkbAddMsg" style="margin-top:10px;font-size:12px;min-height:18px;"></div>
     </div>
@@ -18495,15 +18513,19 @@ const AKK_REGISTRY={
 var MKB_FB='https://aziyamed-b0714-default-rtdb.asia-southeast1.firebasedatabase.app/';
 
 /* ===== МКБ БАСТАПҚЫ ТІЗІМ ===== */
-var MKB_INITIAL_STAFF = {"890628400669":{"name":"АМАНБАЕВА ПЕРИЗАТ ЕРСИНБАЕВНА","iin":"890628400669","pos":"Руководитель"},"920402301461":{"name":"ЕДИЛОВ НУРҒАЛИАБДИКАРИМҰЛЫ","iin":"920402301461","pos":"Заместитель руководителя по лечебной части"},"870813301444":{"name":"ТЕМІР БАҚЫТ МЫҢЖАСАРҰЛЫ","iin":"870813301444","pos":"Врач-кардиолог, заведующий стационара"},"920123300487":{"name":"АБДРАХМАНОВ ЖАДИГЕР ШАЛАБАЙҰЛЫ","iin":"920123300487","pos":"Врач-эпидемиолог"},"831023000277":{"name":"КАРИМСАКОВА КАМИЛА АЛГАЗИЕВНА","iin":"831023000277","pos":"Врач-терапевт,"},"890509401481":{"name":"ЖАНҚАЛ ЖАДЫРА АСҚАРБЕКҚЫЗЫ","iin":"890509401481","pos":"Врач-акушер гинеколог"},"720701302186":{"name":"АМЗЕЕВ ОРКЕН САУРБАЕВИЧ","iin":"720701302186","pos":"Врач-уролог, врач-УЗД"},"900129301573":{"name":"ШОАЛИЕВ ШОХРОН АБДУРАИМОВИЧ","iin":"900129301573","pos":"Врач-невропатолог (взрослый, детский)"},"890705301768":{"name":"МУСРЕПОВ КАЗБЕК АБДУХАШИМОВИЧ","iin":"890705301768","pos":"Врач профпатолог"},"670801402858":{"name":"ТОЛЫБАЕВА ГУЛИ КУЧКАРОВНА","iin":"670801402858","pos":"Врач-стоматолог"},"870510000698":{"name":"САЙБЕКОВ КАНАТ ЕРКИНБЕКОВИЧ","iin":"870510000698","pos":"Врач-лаборант"},"940807301398":{"name":"ҚАЗЫҒҰЛ ЕРАЛЫ ЕРГЕШБЕКҰЛЫ","iin":"940807301398","pos":"Учасковый педиатр, врач инфекционист"},"911206302297":{"name":"БАЙГУЛОВ БЕКСУЛТАН БАХТИЯРОВИЧ","iin":"911206302297","pos":"Врач-акушер-гинеколог"},"580727401978":{"name":"ДАЛИЕВА ГУЛЬЖАМИЛЯ БИЛЯЛОВНА","iin":"580727401978","pos":"Учасковый ВОП"},"601204401557":{"name":"БУРИБАЕВА САУЛЕШ САГИМАНОВНА","iin":"601204401557","pos":"Учасковый ВОП"},"841027402027":{"name":"ЖОЛДЫБАЕВА АЖАР ШУКИРОВНА","iin":"841027402027","pos":"Учасковый ВОП , заведующий учаскового отделения"},"000726500109":{"name":"ЮСУПОВ ХАМЗААЛИ АБДУЛВАХАБОВИЧ","iin":"000726500109","pos":"Учасковый ВОП"},"900301402215":{"name":"ИШИМОВА ШАХЛО БАХТИЯРОВНА","iin":"900301402215","pos":"Учасковый ВОП, хирург, эксперт"},"000713600739":{"name":"БЕКУЗАҚ АЙЫМ АҢСАБЕКҚЫЗЫ","iin":"000713600739","pos":"Учасковый ВОП"},"600611402674":{"name":"РАХИМОВА ГАЛИНА САУРБАЕВНА","iin":"600611402674","pos":"Учасковый ВОП"},"971104400580":{"name":"ЕСТӨРЕ ТҰЙҒЫН ЖӘНІБЕКҚЫЗЫ","iin":"971104400580","pos":"Врач-УЗД"},"930415300426":{"name":"ТАГАРОВ АСАН ХАМИТҰЛЫ","iin":"930415300426","pos":"Врач-хирург"},"890917300683":{"name":"САПАРБЕКОВ САПАРГАЛИ КАМИЛЖАНОВИЧ","iin":"890917300683","pos":"Врач-реабилитолог"},"950708300748":{"name":"ЕРКИНБАЕВ УМИДЖОН УРХИНБАЕВИЧ","iin":"950708300748","pos":"Врач-детский кардиолог"},"931217302141":{"name":"ОМАР ЕРКЕБУЛАН ОСПАНҰЛЫ","iin":"931217302141","pos":"Врач-травматолог-ортопед"},"871225401070":{"name":"УМАРОВА МЕРУЕРТ ЖАНИБЕКОВНА","iin":"871225401070","pos":"Врач-иммунолог"},"820711402613":{"name":"АЛМАНОВА МАДИНА УЛЫМБЕКОВНА","iin":"820711402613","pos":"врач-эндокринолог"},"880719401164":{"name":"НАВРУЗОВА МАКПАЛ КЕНЕСОВНА","iin":"880719401164","pos":"Врач-маммолог, врач-окулист"},"750131302341":{"name":"НАЗИМОВ АСКАР ИСАЕВИЧ","iin":"750131302341","pos":"Лор-врач"},"951104301350":{"name":"ДЖУРАБЕКОВ НУРИСЛАМ БУХАРБАЙҰЛЫ","iin":"951104301350","pos":"Врач-рентгенолог, врач-УЗД"},"780612400074":{"name":"АСАНОВА БОЛДЫГЫЗ ЖОЛДАСОВНА","iin":"780612400074","pos":"Врач фтизио педиатр"},"610203301712":{"name":"УСИПБЕКОВ КУАНДЫК САПАРБЕКОВИЧ","iin":"610203301712","pos":"Врач-фтизиатр"},"970623300365":{"name":"СЕРІКБАЙ НҰРСАПАР КЕНШІНБАЙҰЛЫ","iin":"970623300365","pos":"Заместиельь по орг.метод, медстатист"},"930801400857":{"name":"ЖАҚЫПБАЙ АЙДАНА ӘБДІНҰРҚЫЗЫ","iin":"930801400857","pos":"Главная медсестра"},"030131500060":{"name":"САЙФЕТДИНОВ ИЛНУР РИНАТОВИЧ","iin":"030131500060","pos":"Фельдшер до врачебного кабинета"},"960314400746":{"name":"МУСАЕВА ДИЯНА МУКТАРОВНА","iin":"960314400746","pos":"медсестра до врачебного кабинета"},"900212402261":{"name":"МЫРЗАШЕВА ГУЛАЙЫМ БАКТИЯРОВНА","iin":"900212402261","pos":"медсестра до врачебного кабинета"},"961117401141":{"name":"МҮСЛІМ ГУЛДЕРАЙЫМ ТЕМУРҚЫЗЫ","iin":"961117401141","pos":"медсестра до врачебного кабинета"},"670916402546":{"name":"БАЙМУРАТОВА КУЛАЙШАТ МУРАТОВНА","iin":"670916402546","pos":"Прививочная медсестра"},"751224402871":{"name":"ХАЛБАЕВА НИГОРА РАХМАТУЛЛАЕВНА","iin":"751224402871","pos":"медсестра по вакцинации"},"980611400556":{"name":"МАХАН БАТПА СҮНДЕТҚЫЗЫ","iin":"980611400556","pos":"Медседсестра Лор-кабинета"},"000226000070":{"name":"КАНИБЕКОВА ДИАНА АЛМАС КИЗИ","iin":"000226000070","pos":"Медсестра кабин.УЗД"},"021107600691":{"name":"КЕНЕС ГУЛНУР ЕРЖАНҚЫЗЫ","iin":"021107600691","pos":"Учасковая медсестра педиатра"},"930712402146":{"name":"УЙСИНБАЕВА ТАНШОЛПАН АБДУАЛИЕЕВНА","iin":"930712402146","pos":"Учасковая медсестра педиатра"},"931030401956":{"name":"АЙНАБЕКОВА ЖАНАР БАЙҒОЛҚЫЗЫ","iin":"931030401956","pos":"Учасковая медсестра педиатра"},"821110401343":{"name":"ЖҮРСІНБАЙ САЛТАНАТ ӘЛІШЕРҚЫЗЫ","iin":"821110401343","pos":"Учасковая медсестра"},"910109402382":{"name":"САМУРАТОВА ЮЛЫЗ ТАЛГАТОВНА","iin":"910109402382","pos":"Учасковая медсестра"},"951007401341":{"name":"АНАРОВА ДАНА МУРАТҚЫЗЫ","iin":"951007401341","pos":"Учасковая медсестра"},"960510000815":{"name":"МУРАТОВА ТАЗАГУЛ ДАУЫЛБАЕВНА","iin":"960510000815","pos":"Учасковая медсестра"},"980807300179":{"name":"РАХЫМОВ БЕКЗАТ ҒАНИҰЛЫ","iin":"980807300179","pos":"Учасковый медбрат"},"030715600656":{"name":"БАЛАГАЗОВА ДИНАРА ЖЕНИСҚЫЗЫ","iin":"030715600656","pos":"Учасковая медсестра"},"780212401226":{"name":"НАХИПБЕКОВА АЙГЕРИМ ОРАЗАЛИЕВНА","iin":"780212401226","pos":"Учасковая медсестра"},"951115401159":{"name":"БУДЕНОВА АКЕРКЕ АЛИМЖАНОВА","iin":"951115401159","pos":"Учасковая медсестра"},"890206403014":{"name":"МУХАТОВА АЙГЕРИМ РУСТЕМОВНА","iin":"890206403014","pos":"Учасковая медсестра"},"920511402617":{"name":"АЛИМТАЕВА ШАХНОЗА НУРМУХАММАДКИЗИ","iin":"920511402617","pos":"Учасковая медсестра"},"950726401237":{"name":"ҚҰРБАН АЙДАНА МҰХТАРҚЫЗЫ","iin":"950726401237","pos":"Учасковая медсестра"},"930828400527":{"name":"ШОРАЕВА МЕРУЕРТ ЖОСАЛЫҚЫЗЫ","iin":"930828400527","pos":"Учасковая медсестра"},"870615402105":{"name":"ОРУМБАЕВА ЗУЛЬФИЯ АМИРБЕКОВНА","iin":"870615402105","pos":"Учасковая медсестра"},"760120400551":{"name":"АХМЕТОВА ЖУЛДЫЗ ТОШБОЛАТОВНА","iin":"760120400551","pos":"Учасковая медсестра"},"870114401926":{"name":"ЖАМБАЕВА АКМАРЖАН СЕРИКОВНА","iin":"870114401926","pos":"Акушерка"},"631110401125":{"name":"ИСАЕВА РАУШАН АБДИХАДИРОВНА","iin":"631110401125","pos":"Акушерка"},"741014402687":{"name":"ДОСАНОВА ЖАНЫЛСЫН САЙЫНОВНА","iin":"741014402687","pos":"Постовая-медсестра"},"910201402590":{"name":"БИСЕНБАЕВА БАНУ АБДУЛЛАЕВНА","iin":"910201402590","pos":"Постовая-медсестра"},"790909401722":{"name":"НИЯЗОВА ЖИБЕК ТАСТЕМИРОВНА","iin":"790909401722","pos":"Постовая-медсестра"},"980514401438":{"name":"ЗИЯБЕК ЖАЗИРА СӘКЕНҚЫЗЫ","iin":"980514401438","pos":"Постовая-медсестра"},"910917401882":{"name":"ДАРЖАНОВА АЛТЫНАЙ ТОЙШЫБЕКОВНА","iin":"910917401882","pos":"Медседсестра кабинета стоматолога"},"800701402596":{"name":"МАХАНОВА РЫСКУЛ ТУРСЫНБАЕВНА","iin":"800701402596","pos":"Медсестра кабинета хирурга,травматолога"},"940301401135":{"name":"КАРАБАЕВА ҰЛДАНА СЕРЖАНҚЫЗЫ","iin":"940301401135","pos":"Медсестра физкабинета массажист"},"940824402226":{"name":"БАЙДУЛЛА ӘСЕЛҚАНЫМ САБИТҚЫЗЫ","iin":"940824402226","pos":"Медсесттра физкабинета массажист"},"020121601069":{"name":"ИЛЬЯСОВА УЛЖАНА КАНАТОВНА","iin":"020121601069","pos":"Медсестра кабинета УЗД"},"890526402462":{"name":"АБДИХАЙРОВА ЛАУРА ИСКЕНДЕРОВНА","iin":"890526402462","pos":"Лаборантка клин. лаборатории"},"960725401779":{"name":"ШЫНТАЙ БАЛНҰР ҚЫЙЛЫБЕКҚЫЗЫ","iin":"960725401779","pos":"Лаборантка клин. лаборатории"},"901102402513":{"name":"РИСКУЛОВА ОЙЖАМАЛ АСИЛБЕКОВНА","iin":"901102402513","pos":"Медсестра лаборатории"},"791113400690":{"name":"АМИРКУЛОВА ЖАДРА ЖАКСИБАЕВНА","iin":"791113400690","pos":"Медсестра лаборатории"},"580304402531":{"name":"КЕЛИМБЕТОВА ГУЛЬЗИНА АБАЖАЕВНА","iin":"580304402531","pos":"Помощник врача –эпидемиолога"},"020224500410":{"name":"КИМЕБАЙ ТИМУР ТУРЖАНҰЛЫ","iin":"020224500410","pos":"Рентгенолаборант"},"610505402075":{"name":"НАЗИЕВА ЖУМАГУЛЬ ТОЛХУНБАЕВНА","iin":"610505402075","pos":"Рентгенолаборант"},"931208400995":{"name":"ҚҰЛБАТЫР НАЗИРА САРСЕНБАЙҚЫЗЫ","iin":"931208400995","pos":"Медрегистратор"},"590923401231":{"name":"КАЛАЕВА МАНЗУРА САПАРОВНА","iin":"590923401231","pos":"Экономист,бухгалтер"},"511010402561":{"name":"МАМБЕТОВА МАДИНА БЕЛЯЛОВНА","iin":"511010402561","pos":"Специалист по кадрам"},"020603600704":{"name":"АСИЛМАМАТОВА АЙКУМИС БАХЫТЖАНҚЫЗЫ","iin":"020603600704","pos":"Психолог"},"910202301175":{"name":"ШАМЕТОВ КАЗБЕК ИСЛАМҰЛЫ","iin":"910202301175","pos":"Специалист Iй-Ти, мед.техник, бухгалтер"},"890127302656":{"name":"БАРАТОВ АКМАЛ ЖОРАБАЕВИЧ","iin":"890127302656","pos":"Провизор"},"000820500477":{"name":"МЫРЗАҚОЖА АҚЖОЛ БАҚЫТЖАНҰЛЫ","iin":"000820500477","pos":"Провизор"},"990922301312":{"name":"АМАНБАЙ НУРСАЙЫН ЕРСИНБАЙҰЛЫ","iin":"990922301312","pos":"Менеджер"},"000131501468":{"name":"ЕГЕМТАЙ ОРЫНБАСАР АББАСҰЛЫ","iin":"000131501468","pos":"Менеджер"},"981110300172":{"name":"АМАНГЕЛДІ ЫБЫРАЙ","iin":"981110300172","pos":"Менеджер"},"650218301008":{"name":"КУРБАНБАЕВ ЕРСИНБАЙ АМАНБАЕВИЧ","iin":"650218301008","pos":"Заместитель . по хозяйст. части"},"900724302784":{"name":"УТАПОВ БЕКЖАН ХАЛМУРЗАЕВИЧ","iin":"900724302784","pos":"Специалист Ай-Ти, программист"},"660126301159":{"name":"ЕЛИКБАЕВ ОМАР САЙЛАУОВИЧ","iin":"660126301159","pos":"водитель"},"810426302517":{"name":"МЕДЫТБЕКОВ МУХТАР НОРМАТОВИЧ","iin":"810426302517","pos":"Плотник"},"860420401968":{"name":"ТАЖИБАЕВА БАХЫТГУЛЬ КУРБАНБЕКОВНА","iin":"860420401968","pos":"Повар"},"750304050104":{"name":"ИРГАШЕВА ГУЛЖАМОЛ МЕКЕНБАЕВНА","iin":"750304050104","pos":"Сестрахозяйка, оператор маш. стирки белья"},"930308401331":{"name":"ДОСАНОВА БАГИЛА КИЛИЧБЕКОВНА","iin":"930308401331","pos":"Санитарка"},"690104402093":{"name":"ИМАМБЕРДИЕВА КҮЛІМХАН ДҮЙСЕНБІҚЫЗЫ","iin":"690104402093","pos":"Санитарка"},"870703403548":{"name":"АЛИЕВА ГУЛЬБАХАР ПЕРДЕБЕКОВНА","iin":"870703403548","pos":"Санитарка"}};
+var MKB_INITIAL_STAFF = {"890628400669":{"name":"АМАНБАЕВА ПЕРИЗАТ ЕРСИНБАЕВНА","iin":"890628400669","pos":"Руководитель","dept":"РУКОВОДИТЕЛИ","deptOrder":1,"order":1},"920402301461":{"name":"ЕДИЛОВ НУРҒАЛИ АБДИКАРИМҰЛЫ","iin":"920402301461","pos":"Заместитель руководителя по лечебной части","dept":"РУКОВОДИТЕЛИ","deptOrder":1,"order":2},"870813301444":{"name":"ТЕМІР БАҚЫТ МЫҢЖАСАРҰЛЫ","iin":"870813301444","pos":"Врач-кардиолог, зав. стационара","dept":"УЗКИЕ СПЕЦИАЛИСТЫ","deptOrder":2,"order":3},"920123300487":{"name":"АБДРАХМАНОВ ЖАДИГЕР ШАЛАБАЙҰЛЫ","iin":"920123300487","pos":"Врач-эпидемиолог","dept":"УЗКИЕ СПЕЦИАЛИСТЫ","deptOrder":2,"order":4},"831023000277":{"name":"КАРИМСАКОВА КАМИЛА АЛГАЗИЕВНА","iin":"831023000277","pos":"Врач-терапевт","dept":"УЗКИЕ СПЕЦИАЛИСТЫ","deptOrder":2,"order":5},"890509401481":{"name":"ЖАНҚАЛ ЖАДЫРА АСҚАРБЕКҚЫЗЫ","iin":"890509401481","pos":"Врач-акушер гинеколог","dept":"УЗКИЕ СПЕЦИАЛИСТЫ","deptOrder":2,"order":6},"720701302186":{"name":"АМЗЕЕВ ОРКЕН САУРБАЕВИЧ","iin":"720701302186","pos":"Врач-уролог, врач-УЗД","dept":"УЗКИЕ СПЕЦИАЛИСТЫ","deptOrder":2,"order":7},"900129301573":{"name":"ШОАЛИЕВ ШОХРОН АБДУРАИМОВИЧ","iin":"900129301573","pos":"Врач-невропатолог (взрослый, детский)","dept":"УЗКИЕ СПЕЦИАЛИСТЫ","deptOrder":2,"order":8},"890705301768":{"name":"МУСРЕПОВ КАЗБЕК АБДУХАШИМОВИЧ","iin":"890705301768","pos":"Врач профпатолог","dept":"УЗКИЕ СПЕЦИАЛИСТЫ","deptOrder":2,"order":9},"670801402858":{"name":"ТОЛЫБАЕВА ГУЛИ КУЧКАРОВНА","iin":"670801402858","pos":"Врач-стоматолог","dept":"УЗКИЕ СПЕЦИАЛИСТЫ","deptOrder":2,"order":10},"870510000698":{"name":"САЙБЕКОВ КАНАТ ЕРКИНБЕКОВИЧ","iin":"870510000698","pos":"Врач-лаборант","dept":"УЗКИЕ СПЕЦИАЛИСТЫ","deptOrder":2,"order":11},"940807301398":{"name":"ҚАЗЫҒҰЛ ЕРАЛЫ ЕРГЕШБЕКҰЛЫ","iin":"940807301398","pos":"Учасковый педиатр, врач инфекционист","dept":"УЗКИЕ СПЕЦИАЛИСТЫ","deptOrder":2,"order":12},"911206302297":{"name":"БАЙГУЛОВ БЕКСУЛТАН БАХТИЯРОВИЧ","iin":"911206302297","pos":"Врач-акушер-гинеколог","dept":"УЗКИЕ СПЕЦИАЛИСТЫ","deptOrder":2,"order":13},"580727401978":{"name":"ДАЛИЕВА ГУЛЬЖАМИЛЯ БИЛЯЛОВНА","iin":"580727401978","pos":"Учасковый ВОП","dept":"УЧАСКОВЫЕ ВРАЧИ","deptOrder":3,"order":14},"601204401557":{"name":"БУРИБАЕВА САУЛЕШ САГИМАНОВНА","iin":"601204401557","pos":"Учасковый ВОП","dept":"УЧАСКОВЫЕ ВРАЧИ","deptOrder":3,"order":15},"841027402027":{"name":"ЖОЛДЫБАЕВА АЖАР ШУКИРОВНА","iin":"841027402027","pos":"Учасковый ВОП, зав. учаскового отделения","dept":"УЧАСКОВЫЕ ВРАЧИ","deptOrder":3,"order":16},"000726500109":{"name":"ЮСУПОВ ХАМЗААЛИ АБДУЛВАХАБОВИЧ","iin":"000726500109","pos":"Учасковый ВОП","dept":"УЧАСКОВЫЕ ВРАЧИ","deptOrder":3,"order":17},"900301402215":{"name":"ИШИМОВА ШАХЛО БАХТИЯРОВНА","iin":"900301402215","pos":"Учасковый ВОП, хирург, эксперт","dept":"УЧАСКОВЫЕ ВРАЧИ","deptOrder":3,"order":18},"000713600739":{"name":"БЕКУЗАҚ АЙЫМ АҢСАБЕКҚЫЗЫ","iin":"000713600739","pos":"Учасковый ВОП","dept":"УЧАСКОВЫЕ ВРАЧИ","deptOrder":3,"order":19},"600611402674":{"name":"РАХИМОВА ГАЛИНА САУРБАЕВНА","iin":"600611402674","pos":"Учасковый ВОП","dept":"УЧАСКОВЫЕ ВРАЧИ","deptOrder":3,"order":20},"971104400580":{"name":"ЕСТӨРЕ ТҰЙҒЫН ЖӘНІБЕКҚЫЗЫ","iin":"971104400580","pos":"Врач-УЗД","dept":"ВРАЧИ-СОВМЕСТИТЕЛИ","deptOrder":4,"order":21},"930415300426":{"name":"ТАГАРОВ АСАН ХАМИТҰЛЫ","iin":"930415300426","pos":"Врач-хирург","dept":"ВРАЧИ-СОВМЕСТИТЕЛИ","deptOrder":4,"order":22},"890917300683":{"name":"САПАРБЕКОВ САПАРГАЛИ КАМИЛЖАНОВИЧ","iin":"890917300683","pos":"Врач-реабилитолог","dept":"ВРАЧИ-СОВМЕСТИТЕЛИ","deptOrder":4,"order":23},"950708300748":{"name":"ЕРКИНБАЕВ УМИДЖОН УРХИНБАЕВИЧ","iin":"950708300748","pos":"Врач-детский кардиолог","dept":"ВРАЧИ-СОВМЕСТИТЕЛИ","deptOrder":4,"order":24},"931217302141":{"name":"ОМАР ЕРКЕБУЛАН ОСПАНҰЛЫ","iin":"931217302141","pos":"Врач-травматолог-ортопед","dept":"ВРАЧИ-СОВМЕСТИТЕЛИ","deptOrder":4,"order":25},"871225401070":{"name":"УМАРОВА МЕРУЕРТ ЖАНИБЕКОВНА","iin":"871225401070","pos":"Врач-иммунолог","dept":"ВРАЧИ-СОВМЕСТИТЕЛИ","deptOrder":4,"order":26},"820711402613":{"name":"АЛМАНОВА МАДИНА УЛЫМБЕКОВНА","iin":"820711402613","pos":"Врач-эндокринолог","dept":"ВРАЧИ-СОВМЕСТИТЕЛИ","deptOrder":4,"order":27},"880719401164":{"name":"НАВРУЗОВА МАКПАЛ КЕНЕСОВНА","iin":"880719401164","pos":"Врач-маммолог, врач-окулист","dept":"ВРАЧИ-СОВМЕСТИТЕЛИ","deptOrder":4,"order":28},"750131302341":{"name":"НАЗИМОВ АСКАР ИСАЕВИЧ","iin":"750131302341","pos":"Лор-врач","dept":"ВРАЧИ-СОВМЕСТИТЕЛИ","deptOrder":4,"order":29},"951104301350":{"name":"ДЖУРАБЕКОВ НУРИСЛАМ БУХАРБАЙҰЛЫ","iin":"951104301350","pos":"Врач-рентгенолог, врач-УЗД","dept":"ВРАЧИ-СОВМЕСТИТЕЛИ","deptOrder":4,"order":30},"780612400074":{"name":"АСАНОВА БОЛДЫГЫЗ ЖОЛДАСОВНА","iin":"780612400074","pos":"Врач фтизио педиатр","dept":"ВРАЧИ-СОВМЕСТИТЕЛИ","deptOrder":4,"order":31},"610203301712":{"name":"УСИПБЕКОВ КУАНДЫК САПАРБЕКОВИЧ","iin":"610203301712","pos":"Врач-фтизиатр","dept":"ВРАЧИ-СОВМЕСТИТЕЛИ","deptOrder":4,"order":32},"970623300365":{"name":"СЕРІКБАЙ НҰРСАПАР КЕНШІНБАЙҰЛЫ","iin":"970623300365","pos":"Зам. по орг.метод, медстатист","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":33},"930801400857":{"name":"ЖАҚЫПБАЙ АЙДАНА ӘБДІНҰРҚЫЗЫ","iin":"930801400857","pos":"Главная медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":34},"030131500060":{"name":"САЙФЕТДИНОВ ИЛНУР РИНАТОВИЧ","iin":"030131500060","pos":"Фельдшер до врачебного кабинета","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":35},"960314400746":{"name":"МУСАЕВА ДИЯНА МУКТАРОВНА","iin":"960314400746","pos":"Медсестра до врачебного кабинета","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":36},"900212402261":{"name":"МЫРЗАШЕВА ГУЛАЙЫМ БАКТИЯРОВНА","iin":"900212402261","pos":"Медсестра до врачебного кабинета","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":37},"961117401141":{"name":"МҮСЛІМ ГУЛДЕРАЙЫМ ТЕМУРҚЫЗЫ","iin":"961117401141","pos":"Медсестра до врачебного кабинета","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":38},"670916402546":{"name":"БАЙМУРАТОВА КУЛАЙШАТ МУРАТОВНА","iin":"670916402546","pos":"Прививочная медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":39},"751224402871":{"name":"ХАЛБАЕВА НИГОРА РАХМАТУЛЛАЕВНА","iin":"751224402871","pos":"Медсестра по вакцинации","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":40},"980611400556":{"name":"МАХАН БАТПА СҮНДЕТҚЫЗЫ","iin":"980611400556","pos":"Медсестра Лор-кабинета","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":41},"000226000070":{"name":"КАНИБЕКОВА ДИАНА АЛМАС КИЗИ","iin":"000226000070","pos":"Медсестра кабин. УЗД","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":42},"021107600691":{"name":"КЕНЕС ГУЛНУР ЕРЖАНҚЫЗЫ","iin":"021107600691","pos":"Учасковая медсестра педиатра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":43},"930712402146":{"name":"УЙСИНБАЕВА ТАНШОЛПАН АБДУАЛИЕЕВНА","iin":"930712402146","pos":"Учасковая медсестра педиатра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":44},"931030401956":{"name":"АЙНАБЕКОВА ЖАНАР БАЙҒОЛҚЫЗЫ","iin":"931030401956","pos":"Учасковая медсестра педиатра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":45},"821110401343":{"name":"ЖҮРСІНБАЙ САЛТАНАТ ӘЛІШЕРҚЫЗЫ","iin":"821110401343","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":46},"910109402382":{"name":"САМУРАТОВА ЮЛЫЗ ТАЛГАТОВНА","iin":"910109402382","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":47},"951007401341":{"name":"АНАРОВА ДАНА МУРАТҚЫЗЫ","iin":"951007401341","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":48},"960510000815":{"name":"МУРАТОВА ТАЗАГУЛ ДАУЫЛБАЕВНА","iin":"960510000815","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":49},"980807300179":{"name":"РАХЫМОВ БЕКЗАТ ҒАНИҰЛЫ","iin":"980807300179","pos":"Учасковый медбрат","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":50},"030715600656":{"name":"БАЛАГАЗОВА ДИНАРА ЖЕНИСҚЫЗЫ","iin":"030715600656","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":51},"780212401226":{"name":"НАХИПБЕКОВА АЙГЕРИМ ОРАЗАЛИЕВНА","iin":"780212401226","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":52},"951115401159":{"name":"БУДЕНОВА АКЕРКЕ АЛИМЖАНОВА","iin":"951115401159","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":53},"890206403014":{"name":"МУХАТОВА АЙГЕРИМ РУСТЕМОВНА","iin":"890206403014","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":54},"011215601467":{"name":"ӘБДІМАЖИТ БАЛХИЯ САПАРҚЫЗЫ","iin":"011215601467","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":55},"920511402617":{"name":"АЛИМТАЕВА ШАХНОЗА НУРМУХАММАДКИЗИ","iin":"920511402617","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":56},"950726401237":{"name":"ҚҰРБАН АЙДАНА МҰХТАРҚЫЗЫ","iin":"950726401237","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":57},"930828400527":{"name":"ШОРАЕВА МЕРУЕРТ ЖОСАЛЫҚЫЗЫ","iin":"930828400527","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":58},"870615402105":{"name":"ОРУМБАЕВА ЗУЛЬФИЯ АМИРБЕКОВНА","iin":"870615402105","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":59},"760120400551":{"name":"АХМЕТОВА ЖУЛДЫЗ ТОШБОЛАТОВНА","iin":"760120400551","pos":"Учасковая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":60},"870114401926":{"name":"ЖАМБАЕВА АКМАРЖАН СЕРИКОВНА","iin":"870114401926","pos":"Акушерка","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":61},"631110401125":{"name":"ИСАЕВА РАУШАН АБДИХАДИРОВНА","iin":"631110401125","pos":"Акушерка","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":62},"741014402687":{"name":"ДОСАНОВА ЖАНЫЛСЫН САЙЫНОВНА","iin":"741014402687","pos":"Постовая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":63},"910201402590":{"name":"БИСЕНБАЕВА БАНУ АБДУЛЛАЕВНА","iin":"910201402590","pos":"Постовая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":64},"790909401722":{"name":"НИЯЗОВА ЖИБЕК ТАСТЕМИРОВНА","iin":"790909401722","pos":"Постовая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":65},"980514401438":{"name":"ЗИЯБЕК ЖАЗИРА СӘКЕНҚЫЗЫ","iin":"980514401438","pos":"Постовая медсестра","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":66},"910917401882":{"name":"ДАРЖАНОВА АЛТЫНАЙ ТОЙШЫБЕКОВНА","iin":"910917401882","pos":"Медсестра кабинета стоматолога","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":67},"800701402596":{"name":"МАХАНОВА РЫСКУЛ ТУРСЫНБАЕВНА","iin":"800701402596","pos":"Медсестра кабинета хирурга, травматолога","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":68},"940301401135":{"name":"КАРАБАЕВА ҰЛДАНА СЕРЖАНҚЫЗЫ","iin":"940301401135","pos":"Медсестра физкабинета, массажист","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":69},"940824402226":{"name":"БАЙДУЛЛА ӘСЕЛҚАНЫМ САБИТҚЫЗЫ","iin":"940824402226","pos":"Медсестра физкабинета, массажист","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":70},"020121601069":{"name":"ИЛЬЯСОВА УЛЖАНА КАНАТОВНА","iin":"020121601069","pos":"Медсестра кабинета УЗД","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":71},"890526402462":{"name":"АБДИХАЙРОВА ЛАУРА ИСКЕНДЕРОВНА","iin":"890526402462","pos":"Лаборантка клин. лаборатории","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":72},"960725401779":{"name":"ШЫНТАЙ БАЛНҰР ҚЫЙЛЫБЕКҚЫЗЫ","iin":"960725401779","pos":"Лаборантка клин. лаборатории","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":73},"901102402513":{"name":"РИСКУЛОВА ОЙЖАМАЛ АСИЛБЕКОВНА","iin":"901102402513","pos":"Медсестра лаборатории","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":74},"791113400690":{"name":"АМИРКУЛОВА ЖАДРА ЖАКСИБАЕВНА","iin":"791113400690","pos":"Медсестра лаборатории","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":75},"580304402531":{"name":"КЕЛИМБЕТОВА ГУЛЬЗИНА АБАЖАЕВНА","iin":"580304402531","pos":"Помощник врача-эпидемиолога","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":76},"020224500410":{"name":"КИМЕБАЙ ТИМУР ТУРЖАНҰЛЫ","iin":"020224500410","pos":"Рентгенолаборант","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":77},"980710300677":{"name":"ӘБІТАЙ ОРЫНБАСАР МҰРАТҰЛЫ","iin":"980710300677","pos":"Рентгенолаборант","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":78},"610505402075":{"name":"НАЗИЕВА ЖУМАГУЛЬ ТОЛХУНБАЕВНА","iin":"610505402075","pos":"Рентгенолаборант","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":79},"931208400995":{"name":"ҚҰЛБАТЫР НАЗИРА САРСЕНБАЙҚЫЗЫ","iin":"931208400995","pos":"Медрегистратор","dept":"СРЕДНИЙ МЕД. ПЕРСОНАЛ","deptOrder":5,"order":80},"590923401231":{"name":"КАЛАЕВА МАНЗУРА САПАРОВНА","iin":"590923401231","pos":"Экономист, бухгалтер","dept":"АУП","deptOrder":6,"order":81},"511010402561":{"name":"МАМБЕТОВА МАДИНА БЕЛЯЛОВНА","iin":"511010402561","pos":"Специалист по кадрам","dept":"АУП","deptOrder":6,"order":82},"020603600704":{"name":"АСИЛМАМАТОВА АЙКУМИС БАХЫТЖАНҚЫЗЫ","iin":"020603600704","pos":"Психолог","dept":"АУП","deptOrder":6,"order":83},"910202301175":{"name":"ШАМЕТОВ КАЗБЕК ИСЛАМҰЛЫ","iin":"910202301175","pos":"Специалист АЙ-ТИ, мед. техник, бухгалтер","dept":"АУП","deptOrder":6,"order":84},"890127302656":{"name":"БАРАТОВ АКМАЛ ЖОРАБАЕВИЧ","iin":"890127302656","pos":"Провизор","dept":"АУП","deptOrder":6,"order":85},"000820500477":{"name":"МЫРЗАҚОЖА АҚЖОЛ БАҚЫТЖАНҰЛЫ","iin":"000820500477","pos":"Провизор","dept":"АУП","deptOrder":6,"order":86},"990922301312":{"name":"АМАНБАЙ НУРСАЙЫН ЕРСИНБАЙҰЛЫ","iin":"990922301312","pos":"Менеджер","dept":"АУП","deptOrder":6,"order":87},"000131501468":{"name":"ЕГЕМТАЙ ОРЫНБАСАР АББАСҰЛЫ","iin":"000131501468","pos":"Менеджер","dept":"АУП","deptOrder":6,"order":88},"981110300172":{"name":"АМАНГЕЛДІ ЫБЫРАЙ","iin":"981110300172","pos":"Менеджер","dept":"АУП","deptOrder":6,"order":89},"650218301008":{"name":"КУРБАНБАЕВ ЕРСИНБАЙ АМАНБАЕВИЧ","iin":"650218301008","pos":"Заместитель по хоз. части","dept":"АУП","deptOrder":6,"order":90},"900724302784":{"name":"УТАПОВ БЕКЖАН ХАЛМУРЗАЕВИЧ","iin":"900724302784","pos":"Специалист АЙ-ТИ, программист","dept":"АУП","deptOrder":6,"order":91},"990612301258":{"name":"ӘЛІҚҰЛ АБЛАЙХАН НУРХАЛЫҚҰЛЫ","iin":"990612301258","pos":"Программист","dept":"АУП","deptOrder":6,"order":92},"660126301159":{"name":"ЕЛИКБАЕВ ОМАР САЙЛАУОВИЧ","iin":"660126301159","pos":"Водитель","dept":"Прочие специалисты","deptOrder":7,"order":93},"810426302517":{"name":"МЕДЫТБЕКОВ МУХТАР НОРМАТОВИЧ","iin":"810426302517","pos":"Плотник","dept":"Прочие специалисты","deptOrder":7,"order":94},"860420401968":{"name":"ТАЖИБАЕВА БАХЫТГУЛЬ КУРБАНБЕКОВНА","iin":"860420401968","pos":"Повар","dept":"Прочие специалисты","deptOrder":7,"order":95},"750304050104":{"name":"ИРГАШЕВА ГУЛЖАМОЛ МЕКЕНБАЕВНА","iin":"750304050104","pos":"Сестра-хозяйка, оператор маш. стирки","dept":"САНИТАРКИ","deptOrder":8,"order":96},"930308401331":{"name":"ДОСАНОВА БАГИЛА КИЛИЧБЕКОВНА","iin":"930308401331","pos":"Санитарка","dept":"САНИТАРКИ","deptOrder":8,"order":97},"690104402093":{"name":"ИМАМБЕРДИЕВА КҮЛІМХАН ДҮЙСЕНБІҚЫЗЫ","iin":"690104402093","pos":"Санитарка","dept":"САНИТАРКИ","deptOrder":8,"order":98},"870703403548":{"name":"АЛИЕВА ГУЛЬБАХАР ПЕРДЕБЕКОВНА","iin":"870703403548","pos":"Санитарка","dept":"САНИТАРКИ","deptOrder":8,"order":99}};
 
 async function mkbInitStaff() {
-  // If mk_staff is empty in Firebase, populate it with initial data
   try {
     var r = await fetch(MKB_FB + 'mk_staff.json').then(function(x){return x.json();});
-    if (!r || typeof r !== 'object' || Object.keys(r).length === 0) {
+    var needsUpdate = !r || typeof r !== 'object' || Object.keys(r).length === 0;
+    if (!needsUpdate) {
+      var first = Object.values(r)[0];
+      if (!first || !first.dept) needsUpdate = true; // Re-upload if dept field missing
+    }
+    if (needsUpdate) {
       await fetch(MKB_FB + 'mk_staff.json', {method:'PUT', body:JSON.stringify(MKB_INITIAL_STAFF)});
-      console.log('mk_staff Firebase-ке жүктелді: 96 қызметкер');
+      console.log('mk_staff Firebase-ке жүктелді: 99 қызметкер (бөлімдермен)');
     }
   } catch(e) { console.warn('mkbInitStaff:', e); }
 }
@@ -18529,36 +18551,69 @@ async function mkbLoadAll(){
 
 function mkbDateObj(s){if(!s)return null;var p=s.split('.');return p.length===3?new Date(+p[2],+p[1]-1,+p[0]):null;}
 
+var MKB_DEPTS=['РУКОВОДИТЕЛИ','УЗКИЕ СПЕЦИАЛИСТЫ','УЧАСКОВЫЕ ВРАЧИ','ВРАЧИ-СОВМЕСТИТЕЛИ','СРЕДНИЙ МЕД. ПЕРСОНАЛ','АУП','Прочие специалисты','САНИТАРКИ'];
+
 function mkbRenderList(filter){
   var tbody=document.getElementById('mkbTbody');if(!tbody)return;
   var today=new Date();today.setHours(0,0,0,0);
   var soon=new Date(today);soon.setDate(soon.getDate()+30);
-  var staff=Object.values(mkbStaffData).sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
-  if(filter){var q=filter.toLowerCase();staff=staff.filter(function(s){return(s.name||'').toLowerCase().includes(q)||(s.iin||'').includes(q);});}
-  if(!staff.length){tbody.innerHTML='<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:24px">Қызметкерлер жоқ — “Қызметкер қосу” арқылы қосыңыз</td></tr>';return;}
+
+  // Sort: deptOrder → order → name
+  var staff=Object.values(mkbStaffData).sort(function(a,b){
+    var da=(a.deptOrder||99),db=(b.deptOrder||99);
+    if(da!==db)return da-db;
+    var oa=(a.order||999),ob=(b.order||999);
+    if(oa!==ob)return oa-ob;
+    return(a.name||'').localeCompare(b.name||'','ru');
+  });
+
+  if(filter){var q=filter.toLowerCase();staff=staff.filter(function(s){return(s.name||'').toLowerCase().includes(q)||(s.iin||'').includes(q)||(s.dept||'').toLowerCase().includes(q);});}
+  if(!staff.length){tbody.innerHTML='<tr><td colspan=”7” style=”text-align:center;color:#94a3b8;padding:24px”>Қызметкерлер жоқ</td></tr>';return;}
+
   tbody.innerHTML='';
+  var globalNum=0;var currentDept=null;var isFiltered=!!filter;
+
   staff.forEach(function(s){
+    var dept=s.dept||'Басқалар';
+    // Dept header row (only when not filtering)
+    if(!isFiltered&&dept!==currentDept){
+      var htr=document.createElement('tr');htr.className='mkb-dept-row';
+      htr.innerHTML='<td colspan=”7”><span>'+dept+'</span>'
+        +'<button class=”mkb-dept-add-btn” onclick=”mkbOpenAddInDept(\''+dept.replace(/'/g,”\\'”)+'\')” title=”Осы бөлімге қызметкер қосу”>➕ Қосу</button></td>';
+      tbody.appendChild(htr);
+      currentDept=dept;
+    }
+    globalNum++;
     var book=mkbBooksData[s.iin];
-    var badge='<span class="mkb-badge mkb-badge-none">Жоқ</span>';
+    var badge='<span class=”mkb-badge mkb-badge-none”>Жоқ</span>';
     var dateStr='—';
-    var btns='<button onclick="mkbOpenUpload(\''+s.iin+'\')" style="padding:4px 10px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer">📎 Жүктеу</button>';
+    var btns='<button onclick=”mkbOpenUpload(\''+s.iin+'\')” style=”padding:4px 10px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer”>📎 Жүктеу</button>';
     if(book&&book.valid_until){
       var exp=mkbDateObj(book.valid_until);dateStr=book.valid_until;
       if(exp){
-        if(exp<today)badge='<span class="mkb-badge mkb-badge-old">⛔ Өтті</span>';
-        else if(exp<=soon)badge='<span class="mkb-badge mkb-badge-exp">⚠️ Бітеді</span>';
-        else badge='<span class="mkb-badge mkb-badge-valid">✅ Жарамды</span>';
+        if(exp<today)badge='<span class=”mkb-badge mkb-badge-old”>⛔ Өтті</span>';
+        else if(exp<=soon)badge='<span class=”mkb-badge mkb-badge-exp”>⚠️ Бітеді</span>';
+        else badge='<span class=”mkb-badge mkb-badge-valid”>✅ Жарамды</span>';
       }
-      btns='<button onclick="mkbViewBook(\''+s.iin+'\')" style="padding:4px 9px;background:#3b82f6;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-right:4px">👁 Қарау</button>'
-          +'<button onclick="mkbOpenUpload(\''+s.iin+'\')" style="padding:4px 9px;background:#f1f5f9;color:#374151;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-right:4px">🔄</button>';
+      btns='<button onclick=”mkbViewBook(\''+s.iin+'\')” style=”padding:4px 9px;background:#3b82f6;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-right:4px”>👁 Қарау</button>'
+          +'<button onclick=”mkbOpenUpload(\''+s.iin+'\')” style=”padding:4px 9px;background:#f1f5f9;color:#374151;border:none;border-radius:6px;font-size:12px;cursor:pointer;margin-right:4px”>🔄</button>';
     }
     var tr=document.createElement('tr');
-    tr.innerHTML='<td style="font-weight:600">'+(s.name||'—')+'</td>'
-      +'<td style="font-family:monospace;font-size:11px;color:#64748b">'+(s.iin||'—')+'</td>'
+    tr.innerHTML='<td class=”mkb-num-cell”>'+globalNum+'</td>'
+      +'<td style=”font-weight:600;font-size:12px”>'+(s.name||'—')+'</td>'
+      +'<td style=”font-size:11px;color:#64748b”>'+(isFiltered?(s.dept||'—'):'')+'</td>'
+      +'<td style=”font-family:monospace;font-size:11px;color:#64748b”>'+(s.iin||'—')+'</td>'
       +'<td>'+dateStr+'</td>'+'<td>'+badge+'</td>'
-      +'<td>'+btns+'<button onclick="mkbDeleteStaff(\''+s.iin+'\')" style="padding:4px 8px;background:none;border:1px solid #fca5a5;color:#ef4444;border-radius:6px;font-size:11px;cursor:pointer;margin-left:2px">🗑</button></td>';
+      +'<td>'+btns+'<button onclick=”mkbDeleteStaff(\''+s.iin+'\')” style=”padding:4px 8px;background:none;border:1px solid #fca5a5;color:#ef4444;border-radius:6px;font-size:11px;cursor:pointer;margin-left:2px”>🗑</button></td>';
     tbody.appendChild(tr);
   });
+}
+
+function mkbOpenAddInDept(dept){
+  var sel=document.getElementById('mkbNewDept');
+  if(sel){for(var i=0;i<sel.options.length;i++){if(sel.options[i].value===dept){sel.selectedIndex=i;break;}}}
+  mkbShowTab('add');
+  setTimeout(function(){var n=document.getElementById('mkbNewName');if(n)n.focus();},100);
 }
 
 function mkbShowTab(tab){
@@ -18571,19 +18626,27 @@ function mkbShowTab(tab){
 async function mkbAddStaff(){
   var name=(document.getElementById('mkbNewName').value||'').trim().toUpperCase();
   var iin=(document.getElementById('mkbNewIIN').value||'').replace(/\D/g,'');
+  var pos=(document.getElementById('mkbNewPos').value||'').trim();
+  var dept=(document.getElementById('mkbNewDept').value||'СРЕДНИЙ МЕД. ПЕРСОНАЛ');
   var msg=document.getElementById('mkbAddMsg');
   if(!name){msg.style.color='#dc2626';msg.textContent='⚠️ ФИО міндетті';return;}
   if(iin.length!==12){msg.style.color='#dc2626';msg.textContent='⚠️ ИИН 12 сан болуы керек';return;}
   if(mkbStaffData[iin]){msg.style.color='#dc2626';msg.textContent='⚠️ Бұл ИИН тізімде бар';return;}
   msg.style.color='#64748b';msg.textContent='⏳ Сақталуда...';
-  var entry={name:name,iin:iin};
+  // Calc deptOrder and next order
+  var deptOrder=(MKB_DEPTS.indexOf(dept)+1)||9;
+  var maxOrder=Object.values(mkbStaffData).filter(function(s){return s.dept===dept;})
+    .reduce(function(m,s){return Math.max(m,s.order||0);},0);
+  var entry={name:name,iin:iin,pos:pos,dept:dept,deptOrder:deptOrder,order:maxOrder+1};
   try{
     await fetch(MKB_FB+'mk_staff/'+iin+'.json',{method:'PUT',body:JSON.stringify(entry)});
     mkbStaffData[iin]=entry;STAFF_IINS.add(iin);
-    document.getElementById('mkbNewName').value='';document.getElementById('mkbNewIIN').value='';
-    msg.style.color='#16a34a';msg.textContent='✅ Қосылды!';
-    mkbRenderList('');
-    setTimeout(function(){msg.textContent='';},3000);
+    document.getElementById('mkbNewName').value='';
+    document.getElementById('mkbNewIIN').value='';
+    document.getElementById('mkbNewPos').value='';
+    msg.style.color='#16a34a';msg.textContent='✅ '+name+' қосылды!';
+    mkbShowTab('list');mkbRenderList('');
+    setTimeout(function(){msg.textContent='';},4000);
   }catch(e){msg.style.color='#dc2626';msg.textContent='❌ Қате: '+e.message;}
 }
 
@@ -18630,43 +18693,111 @@ function mkbHandleFile(file){
   reader.readAsDataURL(file);
 }
 
+async function mkbLoadPdfJs(){
+  if(typeof pdfjsLib!=='undefined')return;
+  await new Promise(function(res,rej){
+    var s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload=function(){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';res();};
+    s.onerror=rej; document.head.appendChild(s);
+  });
+}
+
+async function mkbPdfToBytes(dataUrl){
+  var b64=dataUrl.split(',')[1],bin=atob(b64),bytes=new Uint8Array(bin.length);
+  for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
+  return bytes;
+}
+
 async function mkbExtractPDF(dataUrl){
-  document.getElementById('mkbUploadStatus').textContent='📄 PDF мәтін анықталуда...';
+  document.getElementById('mkbUploadStatus').textContent='📄 PDF жүктелуде...';
   try{
-    if(typeof pdfjsLib==='undefined'){
-      await new Promise(function(res){
-        var s=document.createElement('script');
-        s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-        s.onload=function(){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';res();};
-        document.head.appendChild(s);
-      });
-    }
-    var b64=dataUrl.split(',')[1],bin=atob(b64),bytes=new Uint8Array(bin.length);
-    for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);
-    var pdf=await pdfjsLib.getDocument({data:bytes}).promise,text='';
+    await mkbLoadPdfJs();
+    var bytes=await mkbPdfToBytes(dataUrl);
+    var pdf=await pdfjsLib.getDocument({data:bytes}).promise;
+
+    // 1. Try digital text extraction
+    var text='';
     for(var p=1;p<=Math.min(pdf.numPages,3);p++){
       var pg=await pdf.getPage(p),tc=await pg.getTextContent();
       text+=tc.items.map(function(i){return i.str;}).join(' ')+'\n';
     }
+
+    // 2. If text is too short — scanned PDF, render to image + OCR
+    if(text.replace(/\s/g,'').length < 80){
+      document.getElementById('mkbUploadStatus').textContent='🖼 Сканерленген PDF — суретке айналдырылуда...';
+      var page=await pdf.getPage(1);
+      var vp=page.getViewport({scale:2.5});
+      var canvas=document.createElement('canvas');
+      canvas.width=vp.width; canvas.height=vp.height;
+      await page.render({canvasContext:canvas.getContext('2d'),viewport:vp}).promise;
+      var imgUrl=canvas.toDataURL('image/jpeg',0.92);
+      mkbExtractImage(imgUrl);
+      return;
+    }
     mkbParseText(text);
-  }catch(e){console.error('PDF:',e);document.getElementById('mkbUploadStatus').textContent='⚠️ PDF оқу қатесі. Қолмен енгізіңіз.';mkbShowOcr('','','');}
+  }catch(e){
+    console.error('PDF err:',e);
+    document.getElementById('mkbUploadStatus').textContent='⚠️ PDF оқу қатесі. Қолмен енгізіңіз.';
+    mkbShowOcr('','','');
+  }
 }
 
 function mkbExtractImage(dataUrl){
-  document.getElementById('mkbUploadStatus').textContent='🔍 OCR орындалуда...';
-  if(typeof Tesseract==='undefined'){document.getElementById('mkbUploadStatus').textContent='⚠️ OCR жүктелмеді. Қолмен енгізіңіз.';mkbShowOcr('','','');return;}
-  Tesseract.recognize(dataUrl,'rus',{logger:function(m){if(m.status==='recognizing text')document.getElementById('mkbUploadStatus').textContent='🔍 OCR: '+Math.round(m.progress*100)+'%';}})
+  document.getElementById('mkbUploadStatus').textContent='🔍 OCR дайындалуда...';
+  function doOcr(){
+    document.getElementById('mkbUploadStatus').textContent='🔍 Сурет өңделуде...';
+    Tesseract.recognize(dataUrl,'rus',{
+      logger:function(m){
+        if(m.status==='recognizing text')
+          document.getElementById('mkbUploadStatus').textContent='🔍 OCR: '+Math.round(m.progress*100)+'%';
+      }
+    })
     .then(function(r){mkbParseText(r.data.text);})
-    .catch(function(){mkbShowOcr('','','');});
+    .catch(function(e){
+      console.error('OCR error:',e);
+      document.getElementById('mkbUploadStatus').textContent='⚠️ OCR қатесі. Қолмен енгізіңіз.';
+      mkbShowOcr('','','');
+    });
+  }
+  if(typeof Tesseract!=='undefined'){doOcr();return;}
+  // CDN-нан Tesseract.js жүктеу
+  var s=document.createElement('script');
+  s.src='https://unpkg.com/tesseract.js@v2.1.0/dist/tesseract.min.js';
+  s.onload=doOcr;
+  s.onerror=function(){
+    document.getElementById('mkbUploadStatus').textContent='⚠️ OCR жүктелмеді. Интернет байланысын тексеріңіз.';
+    mkbShowOcr('','','');
+  };
+  document.head.appendChild(s);
 }
 
 function mkbParseText(text){
-  var iinM=text.match(/\b(\d{12})\b/);
-  var iin=iinM?iinM[1]:'';
-  var nameM=text.match(/ФИО[\s\S]{0,10}?([А-ЯA-ZҒҚҢӨҰҮІ][А-ЯA-ZҒҚҢӨҰҮІа-яa-zғқңөұүіё\s]{5,60})/);
-  var name=nameM?nameM[1].trim():'';
-  var dateM=text.match(/[Дд]опуск\s+к\s+работе\s+до[\s:]*(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})/i);
-  var date=dateM?dateM[1].replace(/[-\/]/g,'.'):'';
+  // 1. Name + IIN: find all-caps Cyrillic name immediately before 12-digit IIN
+  // Works for format: "...АБДРАХМАНОВ ЖАДИГЕР ШАЛАБАЙҰЛЫ 920123300487..."
+  var niM=text.match(/([А-ЯЁҒҚҢӨҰҮІA-Z][А-ЯЁҒҚҢӨҰҮІA-Z\-]{2,}(?:\s+[А-ЯЁҒҚҢӨҰҮІA-Z][А-ЯЁҒҚҢӨҰҮІA-Z\-]{2,}){1,4})\s+(\d{12})\b/);
+  var name=niM?niM[1].trim():'';
+  var iin=niM?niM[2]:'';
+
+  // Fallback IIN search if not found via name
+  if(!iin){var iinM=text.match(/\b(\d{12})\b/);iin=iinM?iinM[1]:'';}
+
+  // Fallback name: look for ФИО keyword then capital-letter word block
+  if(!name){
+    var nfb=text.match(/Ф\s*И\s*О[\s\S]{0,80}?([А-ЯЁҒҚҢӨҰҮІA-Z][А-ЯЁҒҚҢӨҰҮІA-Z\-]{2,}(?:\s+[А-ЯЁҒҚҢӨҰҮІA-Z][А-ЯЁҒҚҢӨҰҮІA-Z\-]{2,}){1,4})/i);
+    name=nfb?nfb[1].trim():'';
+  }
+
+  // 2. TO date ("Допуск к работе до")
+  // Format A: "до: ... FROM_DATE TO_DATE" — take SECOND date (the TO date)
+  var date='';
+  var dmA=text.match(/до:[\s\S]{0,150}?(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})[\s]+(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})/i);
+  if(dmA){date=dmA[2].replace(/[-\/]/g,'.');}
+  // Format B: "до: DATE" — direct
+  if(!date){var dmB=text.match(/до:\s*(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})/i);if(dmB)date=dmB[1].replace(/[-\/]/g,'.');}
+  // Format C: "Допуск к работе до DATE"
+  if(!date){var dmC=text.match(/[Дд]опуск\s+к\s+работе\s+до[\s:]*(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})/i);if(dmC)date=dmC[1].replace(/[-\/]/g,'.');}
+
   mkbShowOcr(name,iin,date);
 }
 
@@ -18739,40 +18870,10 @@ function mkbViewBook(iin){
       <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px;">ИИН</label>
       <input id="mkbOcrIIN" maxlength="12" style="width:100%;padding:8px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:13px;margin-bottom:8px;box-sizing:border-box;">
       <label style="font-size:12px;font-weight:600;display:block;margin-bottom:3px;">Допуск к работе до (ДД.ММ.ЖЖЖЖ)</label>
-      <input id="mkbOcrDate" placeholder="03.01.2027" style="width:100%;padding:8px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:13px;margin-bottom:6px;box-sizing:border-box;">
+      <input id="mkbOcrDate" placeholder="ДД.ММ.ЖЖЖЖ" style="width:100%;padding:8px;border:1.5px solid #e2e8f0;border-radius:7px;font-size:13px;margin-bottom:6px;box-sizing:border-box;">
       <div id="mkbMatchInfo" style="font-size:12px;color:#64748b;min-height:16px;"></div>
     </div>
     <div id="mkbUploadStatus" style="font-size:13px;color:#64748b;margin-top:10px;min-height:20px;"></div>
     <div style="display:flex;gap:10px;margin-top:12px;">
       <button id="mkbSaveBtn" onclick="mkbSaveBook()" style="display:none;padding:10px 24px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">💾 Firebase-ке сақтау</button>
-      <button onclick="mkbCloseUpload()" style="padding:10px 18px;background:#f1f5f9;color:#374151;border:none;border-radius:9px;font-size:13px;cursor:pointer;">Болдырмау</button>
-    </div>
-  </div>
-</div>
-
-<!-- MKB VIEW MODAL -->
-<div class="mkb-overlay" id="mkbViewOverlay">
-  <div class="mkb-modal" style="max-width:820px;">
-    <button onclick="document.getElementById('mkbViewOverlay').classList.remove('show')" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8">✕</button>
-    <div style="font-size:14px;font-weight:800;margin-bottom:14px;" id="mkbViewTitle">📄 Медкнижка</div>
-    <div id="mkbViewContent"></div>
-  </div>
-</div>
-
-<!-- АКК МОДАЛ -->
-<div class="akk-modal" id="akk-modal">
-  <div class="akk-modal-box">
-    <div class="akk-modal-bar">
-      <strong id="akk-modal-title">Құжат</strong>
-      <div>
-        <button class="akk-btn akk-btn-green" onclick="akkDownloadEdited()">⬇ Word жүктеу</button>
-        <button class="akk-btn" onclick="akkPrintEdited()">🖨 Басып шығару</button>
-        <button class="akk-btn akk-btn-gray" onclick="akkCloseModal()">✕ Жабу</button>
-      </div>
-    </div>
-    <p class="akk-hint" style="margin:6px 14px">✏️ Мәтінді тікелей осы жерде түзетуге болады — жүктелетін файлға өзгерістер енеді.</p>
-    <div class="akk-modal-doc" id="akk-modal-doc" contenteditable="true"></div>
-  </div>
-</div>
-</body>
-</html>
+      <button onclick="mkbCloseUpload()" style="padding:10px 18px;background:#f1f5f9;color:#374151;border:none;border-radius:9px;font-size:13px;cursor:pointer;">Болдырмау</b
