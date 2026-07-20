@@ -18776,18 +18776,36 @@ function mkbExtractImage(dataUrl){
   document.head.appendChild(s);
 }
 
+// Толық қазақ бас әріптер жиыны (Ә, Һ қоса)
+var MKB_KZ='А-ЯЁӘҒҚҢӨҰҮІҺA-Z';
+
 // Pure parser — no UI. Returns {name, iin, date}
 function mkbParseTextData(text){
-  // 1. Name + IIN: find all-caps Cyrillic name immediately before 12-digit IIN
-  var niM=text.match(/([А-ЯЁҒҚҢӨҰҮІA-Z][А-ЯЁҒҚҢӨҰҮІA-Z\-]{2,}(?:\s+[А-ЯЁҒҚҢӨҰҮІA-Z][А-ЯЁҒҚҢӨҰҮІA-Z\-]{2,}){1,4})\s+(\d{12})\b/);
-  var name=niM?niM[1].trim():'';
-  var iin=niM?niM[2]:'';
-  if(!iin){var iinM=text.match(/\b(\d{12})\b/);iin=iinM?iinM[1]:'';}
+  if(!text)return {name:'',iin:'',date:''};
+  // ИИН іздеу үшін: сандар арасындағы бос орындарды жию (pdf.js сандарды бөліп жіберуі мүмкін).
+  // Күндерде нүкте бар, сондықтан 12 таңбалы сан тек нақты ИИН-де кездеседі.
+  var forIin=text;
+  for(var k=0;k<4;k++){forIin=forIin.replace(/(\d)[ \t]+(\d)/g,'$1$2');}
+
+  var name='',iin='';
+  // 1. Аты (2-5 бас әріпті сөз) — 12 таңбалы ИИН-ге дейін тұр
+  var reNI=new RegExp('(['+MKB_KZ+']['+MKB_KZ+'\\-]{1,}(?:\\s+['+MKB_KZ+']['+MKB_KZ+'\\-]{1,}){1,4})\\s+(\\d{12})(?!\\d)');
+  var niM=forIin.match(reNI);
+  if(niM){name=niM[1].trim();iin=niM[2];}
+  // ИИН табылмаса — кез келген 12 таңбалы блок
+  if(!iin){var m=forIin.match(/(?:^|\D)(\d{12})(?!\d)/);if(m)iin=m[1];}
+
+  // Аты табылмаса — бірінші «тақырып сөз емес» бас әріпті блок
   if(!name){
-    var nfb=text.match(/Ф\s*И\s*О[\s\S]{0,80}?([А-ЯЁҒҚҢӨҰҮІA-Z][А-ЯЁҒҚҢӨҰҮІA-Z\-]{2,}(?:\s+[А-ЯЁҒҚҢӨҰҮІA-Z][А-ЯЁҒҚҢӨҰҮІA-Z\-]{2,}){1,4})/i);
-    name=nfb?nfb[1].trim():'';
+    var HEADER=/^(ИИН|ФИО|ФИ|СЕРИЯ|ДАТА|МЕСТО|ДОЛЖНОСТЬ|ПРОФЕССИЯ|СТАТУС|ГОДЕН|ДОСТУП|ЛИЧНАЯ|МЕДИЦИНСКАЯ|КНИЖКА|ПАСПОРТНЫЕ|ДАННЫЕ|КАЗАХСТАН)$/;
+    var re=new RegExp('(['+MKB_KZ+']['+MKB_KZ+'\\-]{1,}(?:\\s+['+MKB_KZ+']['+MKB_KZ+'\\-]{1,}){1,4})','g'),mm;
+    while((mm=re.exec(text))){
+      var first=mm[1].split(/\s+/)[0];
+      if(!HEADER.test(first)){name=mm[1].trim();break;}
+    }
   }
-  // 2. TO date ("Допуск к работе до")
+
+  // 2. «Допуск к работе до» мерзімі — ТҮПНҰСҚА мәтінмен (екі күнді бөлек ұстау)
   var date='';
   var dmA=text.match(/до:[\s\S]{0,150}?(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})[\s]+(\d{2}[.\-\/]\d{2}[.\-\/]\d{4})/i);
   if(dmA){date=dmA[2].replace(/[-\/]/g,'.');}
@@ -18900,7 +18918,7 @@ function mkbBulkDrop(e){
 }
 
 // Normalize name for fuzzy matching (uppercase, remove punctuation/spaces)
-function mkbNormName(s){return (s||'').toUpperCase().replace(/[^А-ЯЁҒҚҢӨҰҮІA-Z]/g,'');}
+function mkbNormName(s){return (s||'').toUpperCase().replace(/[^А-ЯЁӘҒҚҢӨҰҮІҺA-Z]/g,'');}
 
 // Try to match extracted data to a staff member. Returns iin or ''.
 function mkbMatchStaff(data){
@@ -18959,7 +18977,10 @@ async function mkbBulkStart(fileList){
       var iin=mkbMatchStaff(data);
 
       if(!iin){
-        stEl.textContent='❌ Қызметкер табылмады'+(data.iin?(' (ИИН: '+data.iin+')'):'');
+        if(!data.iin&&!data.name)
+          stEl.textContent='❌ Мәтін оқылмады (скан/сапасы төмен) — қолмен таңдаңыз';
+        else
+          stEl.textContent='❌ Тізімнен табылмады'+(data.iin?(' · ИИН: '+data.iin):'')+(data.name?(' · '+data.name):'');
         stEl.style.color='#ef4444';fail++;
         // add manual assign dropdown
         mkbBulkAddManual(row,dataUrl,file.type,data);
