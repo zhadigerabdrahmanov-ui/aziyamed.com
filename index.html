@@ -18772,11 +18772,12 @@ function mkbParseTextData(text){
 
   var name='',iin='';
   // 1. Аты (2-5 бас әріпті сөз) — 12 таңбалы ИИН-ге дейін тұр
-  var reNI=new RegExp('(['+MKB_KZ+']['+MKB_KZ+'\\-]{1,}(?:\\s+['+MKB_KZ+']['+MKB_KZ+'\\-]{1,}){1,4})\\s+(\\d{12})(?!\\d)');
+  //    (?!\d) ҚОЙМАЙМЫЗ: ИИН-нен кейін бірден туған күн тұруы мүмкін)
+  var reNI=new RegExp('(['+MKB_KZ+']['+MKB_KZ+'\\-]{1,}(?:\\s+['+MKB_KZ+']['+MKB_KZ+'\\-]{1,}){1,4})\\s+(\\d{12})');
   var niM=forIin.match(reNI);
   if(niM){name=niM[1].trim();iin=niM[2];}
-  // ИИН табылмаса — кез келген 12 таңбалы блок
-  if(!iin){var m=forIin.match(/(?:^|\D)(\d{12})(?!\d)/);if(m)iin=m[1];}
+  // ИИН табылмаса — бірінші 12 таңбалы блок (ИИН хедерде бірінші тұрады)
+  if(!iin){var m=forIin.match(/\d{12}/);if(m)iin=m[0];}
 
   // Аты табылмаса — бірінші «тақырып сөз емес» бас әріпті блок
   if(!name){
@@ -18890,37 +18891,75 @@ function mkbFooterDate(text){
   return '';
 }
 
-// Аймақтарды бөліп OCR: жоғарғы хедер → ФИО+ИИН, төменгі бар → мерзім
+// ── Tesseract worker (батч бойы бір рет жасалып, қайта қолданылады) ──
+var mkbWorker=null;
+async function mkbGetWorker(){
+  if(mkbWorker)return mkbWorker;
+  var w=Tesseract.createWorker();
+  await w.load();
+  await w.loadLanguage('rus');
+  await w.initialize('rus');
+  mkbWorker=w;
+  return w;
+}
+function mkbTerminateWorker(){
+  if(mkbWorker){try{mkbWorker.terminate();}catch(e){}mkbWorker=null;}
+}
+// Whitelist орнатып тану
+async function mkbRecWith(worker,img,whitelist){
+  await worker.setParameters({tessedit_char_whitelist:whitelist||''});
+  var r=await worker.recognize(img);
+  return (r.data&&r.data.text)||'';
+}
+
+// Аймақтарды бөліп OCR: аты — толық әріп, ИИН/мерзім — тек цифр режимі
 async function mkbOcrImage(dataUrl,prog){
   await mkbLoadTesseract();
+  var worker=await mkbGetWorker();
   var name='',iin='',date='';
 
-  // 1. ЖОҒАРҒЫ ХЕДЕР (Паспортные данные) — инверт
-  try{
-    if(prog)prog('🔍 хедер...');
-    var headImg=await mkbCropCanvas(dataUrl, 0.0, 0.34, true);
-    var headText=await mkbRecognize(headImg,prog,'хедер');
-    var hd=mkbParseTextData(headText);
-    name=hd.name; iin=hd.iin;
-  }catch(e){console.warn('head ocr:',e);}
+  // Хедер суретін бір рет кесіп аламыз (ФИО + ИИН осында)
+  var headImg=null;
+  try{ headImg=await mkbCropCanvas(dataUrl, 0.0, 0.34, true); }catch(e){}
 
-  // 2. ТӨМЕНГІ БАР (Доступ к работе до) — инверт
+  // 1. Аты — толық әріп режимі
+  if(headImg){
+    try{
+      if(prog)prog('🔍 аты...');
+      var ht=await mkbRecWith(worker,headImg,'');
+      var hd=mkbParseTextData(ht);
+      if(hd.name)name=hd.name;
+      if(hd.iin)iin=hd.iin;
+    }catch(e){console.warn('name ocr:',e);}
+  }
+
+  // 2. ИИН — ТЕК ЦИФР режимі (дәлдік әлдеқайда жоғары)
+  if(headImg && !iin){
+    try{
+      if(prog)prog('🔍 ИИН...');
+      var hdig=await mkbRecWith(worker,headImg,'0123456789 .');
+      var m=mkbParseTextData(hdig);
+      if(m.iin)iin=m.iin;
+    }catch(e){console.warn('iin ocr:',e);}
+  }
+
+  // 3. Мерзім — төменгі бар, ТЕК ЦИФР режимі
   try{
     if(prog)prog('🔍 мерзім...');
-    var footImg=await mkbCropCanvas(dataUrl, 0.80, 1.0, true);
-    var footText=await mkbRecognize(footImg,prog,'мерзім');
-    date=mkbFooterDate(footText);
-  }catch(e){console.warn('foot ocr:',e);}
+    var footImg=await mkbCropCanvas(dataUrl, 0.78, 1.0, true);
+    var ft=await mkbRecWith(worker,footImg,'0123456789 .');
+    date=mkbFooterDate(ft);
+  }catch(e){console.warn('date ocr:',e);}
 
-  // 3. ИИН табылмаса — толық суретті инверттеп қайта оқу (fallback)
-  if(!iin || !name){
+  // 4. Аты да, ИИН де болмаса — толық суреттен қайта оқу
+  if(!iin && !name){
     try{
       if(prog)prog('🔍 толық...');
       var fullImg=await mkbCropCanvas(dataUrl, 0.0, 1.0, true);
-      var fullText=await mkbRecognize(fullImg,prog,'толық');
-      var fd=mkbParseTextData(fullText);
-      if(!iin&&fd.iin)iin=fd.iin;
-      if(!name&&fd.name)name=fd.name;
+      var ftext=await mkbRecWith(worker,fullImg,'');
+      var fd=mkbParseTextData(ftext);
+      if(fd.name)name=fd.name;
+      if(fd.iin)iin=fd.iin;
       if(!date&&fd.date)date=fd.date;
     }catch(e){console.warn('full ocr:',e);}
   }
@@ -18977,6 +19016,7 @@ function mkbOpenBulk(){
 }
 function mkbCloseBulk(){
   document.getElementById('mkbBulkOverlay').classList.remove('show');
+  mkbTerminateWorker();
   mkbRenderList(document.getElementById('mkbSearch')?document.getElementById('mkbSearch').value:'');
 }
 function mkbBulkDrop(e){
