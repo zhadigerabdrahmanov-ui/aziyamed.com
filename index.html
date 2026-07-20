@@ -18664,15 +18664,21 @@ async function mkbDeleteStaff(iin){
 }
 
 function mkbOpenUpload(iin){
-  mkbCurrentIIN=iin;mkbCurrentFileB64=null;mkbCurrentFileType=null;
-  var s=mkbStaffData[iin]||{};
-  document.getElementById('mkbUploadTitle').textContent='📎 '+(s.name||iin);
-  document.getElementById('mkbUploadSubtitle').textContent='ИИН: '+iin;
-  document.getElementById('mkbOcrResult').style.display='none';
-  document.getElementById('mkbSaveBtn').style.display='none';
-  document.getElementById('mkbUploadStatus').textContent='';
-  document.getElementById('mkbFileInput').value='';
-  document.getElementById('mkbUploadOverlay').classList.add('show');
+  try{
+    mkbCurrentIIN=iin;mkbCurrentFileB64=null;mkbCurrentFileType=null;
+    var s=mkbStaffData[iin]||{};
+    var elems=['mkbUploadTitle','mkbUploadSubtitle','mkbOcrResult','mkbSaveBtn','mkbUploadStatus','mkbFileInput','mkbUploadOverlay'];
+    for(var i=0;i<elems.length;i++){if(!document.getElementById(elems[i])){alert('Элемент жоқ: '+elems[i]);return;}}
+    document.getElementById('mkbUploadTitle').textContent='📎 '+(s.name||iin);
+    document.getElementById('mkbUploadSubtitle').textContent='ИИН: '+iin;
+    document.getElementById('mkbOcrResult').style.display='none';
+    document.getElementById('mkbSaveBtn').style.display='none';
+    document.getElementById('mkbUploadStatus').textContent='';
+    document.getElementById('mkbFileInput').value='';
+    var ov=document.getElementById('mkbUploadOverlay');
+    ov.classList.add('show');
+    console.log('mkbOpenUpload: overlay show state=',ov.className,'display=',getComputedStyle(ov).display);
+  }catch(err){alert('mkbOpenUpload қатесі: '+err.message);}
 }
 function mkbCloseUpload(){document.getElementById('mkbUploadOverlay').classList.remove('show');mkbCurrentIIN=null;mkbCurrentFileB64=null;}
 
