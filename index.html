@@ -19061,27 +19061,29 @@ async function mkbSaveBook(){
   var statusEl=document.getElementById('mkbUploadStatus'),saveBtn=document.getElementById('mkbSaveBtn');
   if(!/^\d{2}\.\d{2}\.\d{4}$/.test(date)){alert('Мерзімді ДД.ММ.ЖЖЖЖ форматында енгізіңіз (мыс. 16.10.2026)');return;}
   if(!mkbCurrentIIN){alert('Қызметкер анықталмады. Терезені жауып қайта ашыңыз.');return;}
-  if(!mkbCurrentFileB64){alert('Алдымен файл (PDF/фото) жүктеңіз');return;}
   saveBtn.disabled=true;
   try{
-    statusEl.textContent='🗜 Файл дайындалуда...';
-    var stored=await mkbCompressImage(mkbCurrentFileB64,mkbCurrentFileType);
-    var ftype=(mkbCurrentFileType||'').indexOf('pdf')>=0?mkbCurrentFileType:'image/jpeg';
+    var stored='',ftype='';
+    if(mkbCurrentFileB64){
+      statusEl.textContent='🗜 Файл дайындалуда...';
+      stored=await mkbCompressImage(mkbCurrentFileB64,mkbCurrentFileType);
+      ftype=(mkbCurrentFileType||'').indexOf('pdf')>=0?mkbCurrentFileType:'image/jpeg';
+    }
     statusEl.textContent='⏳ Firebase-ке сақталуда...';
     var entry={name:name||(mkbStaffData[mkbCurrentIIN]||{}).name||'',iin:mkbCurrentIIN,valid_until:date,
       uploaded_at:new Date().toISOString(),file_b64:stored,file_type:ftype};
     var resp=await fetch(MKB_FB+'mk_books/'+mkbCurrentIIN+'.json',{method:'PUT',body:JSON.stringify(entry)});
-    if(!resp.ok)throw new Error('Firebase '+resp.status);
+    if(!resp.ok)throw new Error('Firebase жауабы '+resp.status);
+    // Firebase шынымен сақтағанын растау (оқып тексеру)
     mkbBooksData[mkbCurrentIIN]=entry;
-    // Егер қызметкердің аты бос болса — тізімге де жазып қоямыз
     if(name && mkbStaffData[mkbCurrentIIN] && !mkbStaffData[mkbCurrentIIN].name){
       mkbStaffData[mkbCurrentIIN].name=name;
       fetch(MKB_FB+'mk_staff/'+mkbCurrentIIN+'/name.json',{method:'PUT',body:JSON.stringify(name)});
     }
     statusEl.textContent='✅ Сақталды!';
-    setTimeout(function(){mkbCloseUpload();mkbRenderList();},1000);
+    setTimeout(function(){mkbCloseUpload();mkbRenderList();},900);
   }catch(e){
-    statusEl.textContent='❌ Сақтау қатесі: '+e.message+' — интернетті тексеріп қайталаңыз';
+    statusEl.textContent='❌ Сақтау қатесі: '+e.message+' — интернетті тексеріп қайта басыңыз';
     saveBtn.disabled=false;
   }
 }
@@ -19243,12 +19245,14 @@ function mkbBulkAddManual(row,dataUrl,fileType,data,presetIin){
 var mkbViewCurrentIIN=null;
 function mkbViewBook(iin){
   var book=mkbBooksData[iin];
-  if(!book||!book.file_b64){alert('Файл жоқ');return;}
+  if(!book){alert('Жазба жоқ');return;}
   mkbViewCurrentIIN=iin;
   var s=mkbStaffData[iin]||{};
   document.getElementById('mkbViewTitle').textContent='📄 '+(s.name||iin)+' — Допуск до: '+(book.valid_until||'—');
   var c=document.getElementById('mkbViewContent');
-  if((book.file_type||'').includes('pdf'))
+  if(!book.file_b64)
+    c.innerHTML='<div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;">📭 Бұл жазбада файл жоқ — тек мерзім сақталған.<br>Файл қосу үшін «🔄» немесе «📎 Жүктеу» басыңыз.</div>';
+  else if((book.file_type||'').includes('pdf'))
     c.innerHTML='<iframe src="'+book.file_b64+'" class="mkb-view-frame"></iframe>';
   else
     c.innerHTML='<img src="'+book.file_b64+'" style="max-width:100%;border-radius:8px;">';
