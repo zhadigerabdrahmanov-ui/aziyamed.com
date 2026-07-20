@@ -19023,33 +19023,67 @@ function mkbLoadTesseract(){
 }
 
 function mkbShowOcr(name,iin,date){
-  document.getElementById('mkbOcrName').value=name;
-  document.getElementById('mkbOcrIIN').value=iin;
+  document.getElementById('mkbOcrName').value=name||(mkbStaffData[mkbCurrentIIN]||{}).name||'';
+  // ИИН өрісінде ТІЗІМДЕГІ дұрыс ИИН тұрады (осы қатардың ИИН-і), OCR-дікі емес
+  document.getElementById('mkbOcrIIN').value=mkbCurrentIIN||iin;
   document.getElementById('mkbOcrDate').value=date;
   document.getElementById('mkbOcrResult').style.display='';
   document.getElementById('mkbSaveBtn').style.display='';
   var info='';
   if(iin&&mkbCurrentIIN&&iin===mkbCurrentIIN)info='✅ ИИН сәйкес келді';
-  else if(iin&&mkbCurrentIIN&&iin!==mkbCurrentIIN)info='⚠️ Кітапша ИИН: '+iin+' / Тізім: '+mkbCurrentIIN;
+  else if(iin&&mkbCurrentIIN&&iin!==mkbCurrentIIN)info='ℹ️ OCR оқыған ИИН: '+iin+' — тізімдегі '+mkbCurrentIIN+' бойынша сақталады';
   document.getElementById('mkbMatchInfo').textContent=info;
-  document.getElementById('mkbUploadStatus').textContent=(name||iin||date)?'✅ Деректер анықталды — тексеріп растаңыз':'⚠️ Авто-анықтау мүмкін болмады — қолмен толтырыңыз';
+  document.getElementById('mkbUploadStatus').textContent=(name||date)?'✅ Деректер анықталды — тексеріп растаңыз':'⚠️ Авто-анықтау мүмкін болмады — қолмен толтырыңыз';
+}
+
+// Суретті сақтау алдында сығу (Firebase-ке сенімді жазу үшін)
+function mkbCompressImage(dataUrl,fileType){
+  return new Promise(function(res){
+    if((fileType||'').indexOf('pdf')>=0){res(dataUrl);return;} // PDF-ті тимейміз
+    var img=new Image();
+    img.onload=function(){
+      try{
+        var maxW=1600, scale=Math.min(1, maxW/(img.width||1));
+        var w=Math.round((img.width||1)*scale), h=Math.round((img.height||1)*scale);
+        var c=document.createElement('canvas');c.width=w;c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        res(c.toDataURL('image/jpeg',0.7));
+      }catch(e){res(dataUrl);}
+    };
+    img.onerror=function(){res(dataUrl);};
+    img.src=dataUrl;
+  });
 }
 
 async function mkbSaveBook(){
   var name=(document.getElementById('mkbOcrName').value||'').trim();
   var date=(document.getElementById('mkbOcrDate').value||'').trim();
-  if(!date){alert('Допуск к работе до мерзімін енгізіңіз');return;}
-  if(!mkbCurrentFileB64){alert('Файл жүктелмеген');return;}
   var statusEl=document.getElementById('mkbUploadStatus'),saveBtn=document.getElementById('mkbSaveBtn');
-  statusEl.textContent='⏳ Firebase-ке сақталуда...';saveBtn.disabled=true;
-  var entry={name:name||(mkbStaffData[mkbCurrentIIN]||{}).name||'',iin:mkbCurrentIIN,valid_until:date,
-    uploaded_at:new Date().toISOString(),file_b64:mkbCurrentFileB64,file_type:mkbCurrentFileType||'application/octet-stream'};
+  if(!/^\d{2}\.\d{2}\.\d{4}$/.test(date)){alert('Мерзімді ДД.ММ.ЖЖЖЖ форматында енгізіңіз (мыс. 16.10.2026)');return;}
+  if(!mkbCurrentIIN){alert('Қызметкер анықталмады. Терезені жауып қайта ашыңыз.');return;}
+  if(!mkbCurrentFileB64){alert('Алдымен файл (PDF/фото) жүктеңіз');return;}
+  saveBtn.disabled=true;
   try{
-    await fetch(MKB_FB+'mk_books/'+mkbCurrentIIN+'.json',{method:'PUT',body:JSON.stringify(entry)});
+    statusEl.textContent='🗜 Файл дайындалуда...';
+    var stored=await mkbCompressImage(mkbCurrentFileB64,mkbCurrentFileType);
+    var ftype=(mkbCurrentFileType||'').indexOf('pdf')>=0?mkbCurrentFileType:'image/jpeg';
+    statusEl.textContent='⏳ Firebase-ке сақталуда...';
+    var entry={name:name||(mkbStaffData[mkbCurrentIIN]||{}).name||'',iin:mkbCurrentIIN,valid_until:date,
+      uploaded_at:new Date().toISOString(),file_b64:stored,file_type:ftype};
+    var resp=await fetch(MKB_FB+'mk_books/'+mkbCurrentIIN+'.json',{method:'PUT',body:JSON.stringify(entry)});
+    if(!resp.ok)throw new Error('Firebase '+resp.status);
     mkbBooksData[mkbCurrentIIN]=entry;
+    // Егер қызметкердің аты бос болса — тізімге де жазып қоямыз
+    if(name && mkbStaffData[mkbCurrentIIN] && !mkbStaffData[mkbCurrentIIN].name){
+      mkbStaffData[mkbCurrentIIN].name=name;
+      fetch(MKB_FB+'mk_staff/'+mkbCurrentIIN+'/name.json',{method:'PUT',body:JSON.stringify(name)});
+    }
     statusEl.textContent='✅ Сақталды!';
-    setTimeout(function(){mkbCloseUpload();mkbRenderList(document.getElementById('mkbSearch').value||'');},1200);
-  }catch(e){statusEl.textContent='❌ Қате: '+e.message;saveBtn.disabled=false;}
+    setTimeout(function(){mkbCloseUpload();mkbRenderList();},1000);
+  }catch(e){
+    statusEl.textContent='❌ Сақтау қатесі: '+e.message+' — интернетті тексеріп қайталаңыз';
+    saveBtn.disabled=false;
+  }
 }
 
 // ═══════════════ ТОПТАП ЖҮКТЕУ ═══════════════
@@ -19145,9 +19179,11 @@ async function mkbBulkStart(fileList){
         continue;
       }
 
-      // Save to Firebase
+      // Save to Firebase (суретті сығып)
+      var storedB=await mkbCompressImage(dataUrl,file.type);
+      var ftypeB=(file.type||'').indexOf('pdf')>=0?file.type:'image/jpeg';
       var entry={name:mkbStaffData[iin].name||data.name||'',iin:iin,valid_until:data.date,
-        uploaded_at:new Date().toISOString(),file_b64:dataUrl,file_type:file.type||'application/octet-stream'};
+        uploaded_at:new Date().toISOString(),file_b64:storedB,file_type:ftypeB};
       await fetch(MKB_FB+'mk_books/'+iin+'.json',{method:'PUT',body:JSON.stringify(entry)});
       mkbBooksData[iin]=entry;
       stEl.innerHTML='✅ '+(mkbStaffData[iin].name||iin)+' · до '+data.date;
@@ -19188,8 +19224,10 @@ function mkbBulkAddManual(row,dataUrl,fileType,data,presetIin){
     if(!/^\d{2}\.\d{2}\.\d{4}$/.test(date)){alert('Мерзімді ДД.ММ.ЖЖЖЖ форматында енгізіңіз');return;}
     btn.disabled=true;btn.textContent='⏳';
     try{
+      var storedM=await mkbCompressImage(dataUrl,fileType);
+      var ftypeM=(fileType||'').indexOf('pdf')>=0?fileType:'image/jpeg';
       var entry={name:mkbStaffData[iin].name||'',iin:iin,valid_until:date,
-        uploaded_at:new Date().toISOString(),file_b64:dataUrl,file_type:fileType||'application/octet-stream'};
+        uploaded_at:new Date().toISOString(),file_b64:storedM,file_type:ftypeM};
       await fetch(MKB_FB+'mk_books/'+iin+'.json',{method:'PUT',body:JSON.stringify(entry)});
       mkbBooksData[iin]=entry;
       var st=row.querySelector('.st');
