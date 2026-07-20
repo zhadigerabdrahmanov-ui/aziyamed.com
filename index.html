@@ -18539,8 +18539,14 @@ async function mkbInitStaff() {
   } catch(e) { console.warn('mkbInitStaff:', e); }
 }
 
-var mkbStaffData={};var mkbBooksData={};
+var mkbStaffData={};var mkbBooksData={};var mkbFileCache={};
 var mkbCurrentIIN=null;var mkbCurrentFileB64=null;var mkbCurrentFileType=null;
+
+// Тек метадеректерді бөліп алу (файлсыз) — жад пен трафик үнемдеу
+function mkbMetaOnly(b,iin){
+  return {name:b.name||'',iin:b.iin||iin,valid_until:b.valid_until||'',
+    uploaded_at:b.uploaded_at||'',file_type:b.file_type||'',has_file:!!(b.file_b64||b.has_file)};
+}
 
 async function mkbLoadAll(){
   var lo=document.getElementById('mkbLoading'),tb=document.getElementById('mkbTable');
@@ -18551,11 +18557,44 @@ async function mkbLoadAll(){
       fetch(MKB_FB+'mk_books.json').then(function(x){return x.json();})
     ]);
     mkbStaffData=(r[0]&&typeof r[0]==='object')?r[0]:{};
-    mkbBooksData=(r[1]&&typeof r[1]==='object')?r[1]:{};
+    var books=(r[1]&&typeof r[1]==='object')?r[1]:{};
+    mkbBooksData={};
+    var migrate=[];
+    Object.keys(books).forEach(function(iin){
+      var b=books[iin]||{};
+      if(b.file_b64){                 // ескі формат — файл ішінде
+        mkbFileCache[iin]=b.file_b64; // жедел қарау үшін кэшке
+        migrate.push(iin);
+      }
+      mkbBooksData[iin]=mkbMetaOnly(b,iin);  // жадта тек метадерек
+    });
     Object.keys(mkbStaffData).forEach(function(i){STAFF_IINS.add(i);});
+    if(migrate.length)mkbMigrateOld(migrate,books); // фонда бөлек сақтауға көшіру
   }catch(e){console.error('mkbLoadAll:',e);}
   if(lo)lo.style.display='none';if(tb)tb.style.display='';
-  mkbRenderList(document.getElementById('mkbSearch')?document.getElementById('mkbSearch').value:'');
+  mkbRenderList();
+}
+
+// Ескі кітапшаларды mk_files-ке көшіріп, mk_books-ты жеңілдету (бір реттік, фонда)
+async function mkbMigrateOld(iins,books){
+  for(var i=0;i<iins.length;i++){
+    var iin=iins[i],b=books[iin];
+    try{
+      await fetch(MKB_FB+'mk_files/'+iin+'.json',{method:'PUT',body:JSON.stringify(b.file_b64)});
+      await fetch(MKB_FB+'mk_books/'+iin+'.json',{method:'PUT',body:JSON.stringify(mkbMetaOnly(b,iin))});
+    }catch(e){console.warn('migrate '+iin+':',e);}
+  }
+  console.log('Миграция:',iins.length,'кітапша бөлек сақталды');
+}
+
+// Файлды алу: кэш → mk_files (тек қажет болғанда жүктейді)
+async function mkbGetFile(iin){
+  if(mkbFileCache[iin])return mkbFileCache[iin];
+  try{
+    var f=await fetch(MKB_FB+'mk_files/'+iin+'.json').then(function(x){return x.json();});
+    if(f){mkbFileCache[iin]=f;return f;}
+  }catch(e){console.warn('getFile:',e);}
+  return '';
 }
 
 function mkbDateObj(s){if(!s)return null;var p=s.split('.');return p.length===3?new Date(+p[2],+p[1]-1,+p[0]):null;}
@@ -19056,13 +19095,20 @@ async function mkbSaveBook(){
       stored=await mkbCompressImage(mkbCurrentFileB64,mkbCurrentFileType);
       ftype=(mkbCurrentFileType||'').indexOf('pdf')>=0?mkbCurrentFileType:'image/jpeg';
     }
+    // 1. Файлды бөлек mk_files-ке сақтау
+    if(stored){
+      statusEl.textContent='⏳ Файл сақталуда...';
+      var fr=await fetch(MKB_FB+'mk_files/'+mkbCurrentIIN+'.json',{method:'PUT',body:JSON.stringify(stored)});
+      if(!fr.ok)throw new Error('файл '+fr.status);
+      mkbFileCache[mkbCurrentIIN]=stored;
+    }
+    // 2. Метадеректі mk_books-қа сақтау (кішкентай, жылдам)
     statusEl.textContent='⏳ Firebase-ке сақталуда...';
-    var entry={name:name||(mkbStaffData[mkbCurrentIIN]||{}).name||'',iin:mkbCurrentIIN,valid_until:date,
-      uploaded_at:new Date().toISOString(),file_b64:stored,file_type:ftype};
-    var resp=await fetch(MKB_FB+'mk_books/'+mkbCurrentIIN+'.json',{method:'PUT',body:JSON.stringify(entry)});
+    var meta={name:name||(mkbStaffData[mkbCurrentIIN]||{}).name||'',iin:mkbCurrentIIN,valid_until:date,
+      uploaded_at:new Date().toISOString(),file_type:ftype,has_file:!!stored};
+    var resp=await fetch(MKB_FB+'mk_books/'+mkbCurrentIIN+'.json',{method:'PUT',body:JSON.stringify(meta)});
     if(!resp.ok)throw new Error('Firebase жауабы '+resp.status);
-    // Firebase шынымен сақтағанын растау (оқып тексеру)
-    mkbBooksData[mkbCurrentIIN]=entry;
+    mkbBooksData[mkbCurrentIIN]=meta;
     if(name && mkbStaffData[mkbCurrentIIN] && !mkbStaffData[mkbCurrentIIN].name){
       mkbStaffData[mkbCurrentIIN].name=name;
       fetch(MKB_FB+'mk_staff/'+mkbCurrentIIN+'/name.json',{method:'PUT',body:JSON.stringify(name)});
@@ -19095,24 +19141,52 @@ function mkbBulkDrop(e){
 // Normalize name for fuzzy matching (uppercase, remove punctuation/spaces)
 function mkbNormName(s){return (s||'').toUpperCase().replace(/[^А-ЯЁӘҒҚҢӨҰҮІҺA-Z]/g,'');}
 
+// Қазақ↔орыс шатасатын әріптерді бір қалыпқа келтіру (OCR 'rus' қазақшаны алмастырады)
+function mkbFoldName(s){
+  return (s||'').toUpperCase()
+    .replace(/[ҮҰ]/g,'У').replace(/І/g,'И').replace(/[ӘЭ]/g,'А')
+    .replace(/Қ/g,'К').replace(/Ң/g,'Н').replace(/Ғ/g,'Г').replace(/Ө/g,'О')
+    .replace(/[ҺХ]/g,'Х').replace(/Ё/g,'Е').replace(/Й/g,'И')
+    .replace(/[^А-Я]/g,'');
+}
+// Левенштейн қашықтығы
+function mkbLev(a,b){
+  var m=a.length,n=b.length;if(!m)return n;if(!n)return m;
+  var prev=[],cur=[],i,j;
+  for(j=0;j<=n;j++)prev[j]=j;
+  for(i=1;i<=m;i++){
+    cur[0]=i;
+    for(j=1;j<=n;j++)cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    var t=prev;prev=cur;cur=t;
+  }
+  return prev[n];
+}
+
 // Try to match extracted data to a staff member. Returns iin or ''.
 function mkbMatchStaff(data){
-  // 1. Direct IIN match
+  // 1. Дәл ИИН — ең сенімді
   if(data.iin && mkbStaffData[data.iin]) return data.iin;
-  // 2. Name match (extracted name contains staff name or vice versa)
-  if(data.name){
-    var nn=mkbNormName(data.name);
-    if(nn.length>=6){
-      var best='';
-      Object.keys(mkbStaffData).forEach(function(iin){
-        var sn=mkbNormName(mkbStaffData[iin].name);
-        if(!sn)return;
-        // match if one contains the other's first 12+ chars
-        if(sn===nn || (sn.length>=10 && nn.indexOf(sn)>=0) || (nn.length>=10 && sn.indexOf(nn)>=0)){best=iin;}
-      });
-      if(best)return best;
-    }
-  }
+  if(!data.name) return '';
+  var nn=mkbNormName(data.name);
+  if(nn.length<8) return '';
+  // 2. Дәл/ішінара ат сәйкестігі
+  var exact='';
+  Object.keys(mkbStaffData).forEach(function(iin){
+    var sn=mkbNormName(mkbStaffData[iin].name);
+    if(!sn)return;
+    if(sn===nn || (sn.length>=10 && nn.indexOf(sn)>=0) || (nn.length>=10 && sn.indexOf(nn)>=0))exact=iin;
+  });
+  if(exact)return exact;
+  // 3. Жуықтап ат (қазақ↔орыс әріп фолдингі + Левенштейн) — тек айқын жеңімпаз болса
+  var fo=mkbFoldName(data.name);
+  if(fo.length<8)return '';
+  var best='',bd=99,sd=99;
+  Object.keys(mkbStaffData).forEach(function(iin){
+    var d=mkbLev(fo,mkbFoldName(mkbStaffData[iin].name));
+    if(d<bd){sd=bd;bd=d;best=iin;}else if(d<sd)sd=d;
+  });
+  var thr=Math.max(2,Math.round(fo.length*0.22));
+  if(bd<=thr && sd-bd>=2)return best;  // жақын әрі екінші орыннан анық алда
   return '';
 }
 
@@ -19168,11 +19242,13 @@ async function mkbBulkStart(fileList){
         continue;
       }
 
-      // Save to Firebase (суретті сығып)
+      // Save to Firebase (суретті сығып, файл мен метадерек бөлек)
       var storedB=await mkbCompressImage(dataUrl,file.type);
       var ftypeB=(file.type||'').indexOf('pdf')>=0?file.type:'image/jpeg';
+      await fetch(MKB_FB+'mk_files/'+iin+'.json',{method:'PUT',body:JSON.stringify(storedB)});
+      mkbFileCache[iin]=storedB;
       var entry={name:mkbStaffData[iin].name||data.name||'',iin:iin,valid_until:data.date,
-        uploaded_at:new Date().toISOString(),file_b64:storedB,file_type:ftypeB};
+        uploaded_at:new Date().toISOString(),file_type:ftypeB,has_file:true};
       await fetch(MKB_FB+'mk_books/'+iin+'.json',{method:'PUT',body:JSON.stringify(entry)});
       mkbBooksData[iin]=entry;
       stEl.innerHTML='✅ '+(mkbStaffData[iin].name||iin)+' · до '+data.date;
@@ -19215,8 +19291,10 @@ function mkbBulkAddManual(row,dataUrl,fileType,data,presetIin){
     try{
       var storedM=await mkbCompressImage(dataUrl,fileType);
       var ftypeM=(fileType||'').indexOf('pdf')>=0?fileType:'image/jpeg';
+      await fetch(MKB_FB+'mk_files/'+iin+'.json',{method:'PUT',body:JSON.stringify(storedM)});
+      mkbFileCache[iin]=storedM;
       var entry={name:mkbStaffData[iin].name||'',iin:iin,valid_until:date,
-        uploaded_at:new Date().toISOString(),file_b64:storedM,file_type:ftypeM};
+        uploaded_at:new Date().toISOString(),file_type:ftypeM,has_file:true};
       await fetch(MKB_FB+'mk_books/'+iin+'.json',{method:'PUT',body:JSON.stringify(entry)});
       mkbBooksData[iin]=entry;
       var st=row.querySelector('.st');
@@ -19230,20 +19308,29 @@ function mkbBulkAddManual(row,dataUrl,fileType,data,presetIin){
 }
 
 var mkbViewCurrentIIN=null;
-function mkbViewBook(iin){
+async function mkbViewBook(iin){
   var book=mkbBooksData[iin];
   if(!book){alert('Жазба жоқ');return;}
   mkbViewCurrentIIN=iin;
   var s=mkbStaffData[iin]||{};
   document.getElementById('mkbViewTitle').textContent='📄 '+(s.name||iin)+' — Допуск до: '+(book.valid_until||'—');
   var c=document.getElementById('mkbViewContent');
-  if(!book.file_b64)
-    c.innerHTML='<div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;">📭 Бұл жазбада файл жоқ — тек мерзім сақталған.<br>Файл қосу үшін «🔄» немесе «📎 Жүктеу» басыңыз.</div>';
-  else if((book.file_type||'').includes('pdf'))
-    c.innerHTML='<iframe src="'+book.file_b64+'" class="mkb-view-frame"></iframe>';
-  else
-    c.innerHTML='<img src="'+book.file_b64+'" style="max-width:100%;border-radius:8px;">';
   document.getElementById('mkbViewOverlay').classList.add('show');
+  if(book.has_file===false){
+    c.innerHTML='<div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;">📭 Бұл жазбада файл жоқ — тек мерзім сақталған.<br>Файл қосу үшін «🔄» немесе «📎 Жүктеу» басыңыз.</div>';
+    return;
+  }
+  c.innerHTML='<div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;">⏳ Файл жүктелуде...</div>';
+  var f=await mkbGetFile(iin);
+  if(!f){
+    c.innerHTML='<div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;">📭 Файл табылмады.</div>';
+    return;
+  }
+  if((book.file_type||'').includes('pdf'))
+    c.innerHTML='<iframe src="'+f+'" class="mkb-view-frame"></iframe>';
+  else
+    c.innerHTML='<img src="'+f+'" style="max-width:100%;border-radius:8px;">';
+  return;
 }
 
 // Файл кеңейтімін типтен анықтау
@@ -19266,35 +19353,37 @@ function mkbDataUrlToBlob(dataUrl){
   return new Blob([arr],{type:mime});
 }
 
-function mkbDownloadBook(){
+async function mkbDownloadBook(){
   var iin=mkbViewCurrentIIN;if(!iin)return;
-  var book=mkbBooksData[iin];if(!book||!book.file_b64){alert('Файл жоқ');return;}
+  var book=mkbBooksData[iin];if(!book){alert('Жазба жоқ');return;}
+  var f=await mkbGetFile(iin);
+  if(!f){alert('Файл жоқ');return;}
   var s=mkbStaffData[iin]||{};
   var safeName=((s.name||iin)+'').replace(/[\\\/:*?"<>|]+/g,'_').trim();
   var fname='Медкнижка_'+safeName+'_'+(book.valid_until||'').replace(/\./g,'-')+'.'+mkbFileExt(book.file_type);
   try{
-    var blob=mkbDataUrlToBlob(book.file_b64);
+    var blob=mkbDataUrlToBlob(f);
     var url=URL.createObjectURL(blob);
     var a=document.createElement('a');
     a.href=url;a.download=fname;
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(function(){URL.revokeObjectURL(url);},4000);
   }catch(e){
-    // Fallback: тікелей dataURL-мен
-    var a2=document.createElement('a');a2.href=book.file_b64;a2.download=fname;
+    var a2=document.createElement('a');a2.href=f;a2.download=fname;
     document.body.appendChild(a2);a2.click();a2.remove();
   }
 }
 
-function mkbOpenViewNewTab(){
+async function mkbOpenViewNewTab(){
   var iin=mkbViewCurrentIIN;if(!iin)return;
-  var book=mkbBooksData[iin];if(!book||!book.file_b64){alert('Файл жоқ');return;}
+  var f=await mkbGetFile(iin);
+  if(!f){alert('Файл жоқ');return;}
   try{
-    var blob=mkbDataUrlToBlob(book.file_b64);
+    var blob=mkbDataUrlToBlob(f);
     var url=URL.createObjectURL(blob);
     window.open(url,'_blank');
     setTimeout(function(){URL.revokeObjectURL(url);},60000);
-  }catch(e){window.open(book.file_b64,'_blank');}
+  }catch(e){window.open(f,'_blank');}
 }
 
 </script>
