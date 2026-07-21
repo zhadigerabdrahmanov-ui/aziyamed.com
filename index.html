@@ -10720,6 +10720,7 @@ function openKuralPanel(panelId) {
   if (tile) tile.classList.add('active');
   if (panelId === 'mkbook') { setTimeout(function(){ mkbLoadAll().then(mkbShowExpiryToast); }, 50); }
   if (panelId === 'sop') { setTimeout(function(){ sopRenderList(''); }, 50); }
+  if (panelId === 'sanat') { setTimeout(function(){ if(typeof sanatSyncCounters==='function') sanatSyncCounters(); }, 50); }
 
   setTimeout(function(){
     wrapper.scrollIntoView({ behavior:'smooth', block:'nearest' });
@@ -10756,6 +10757,44 @@ function toggleStaffFolder(id) {
     var elOut = document.getElementById('mazokDateOut');
     if (elIn)  elIn.textContent  = mazokFormatDate(minus3);
     if (elOut) elOut.textContent = mazokFormatDate(today);
+  }
+
+  /* ===== САНАТОРИЙ ҚҰЖАТ НӨМІРЛЕРІН ОРТАҚ ЕТУ (Firebase) ===== */
+  var SANAT_FB='https://aziyamed-b0714-default-rtdb.asia-southeast1.firebasedatabase.app/';
+  var SANAT_PREFIXES=['mazok','glist','kal','kozh','brc','mic','dif','men','hep'];
+  var sanatSyncing=false;
+  // localStorage.setItem-ды орап, *_counter кілттерін Firebase-ке жіберу
+  (function(){
+    if(window._sanatPatched)return; window._sanatPatched=true;
+    var _set=localStorage.setItem.bind(localStorage);
+    localStorage.setItem=function(k,v){
+      _set(k,v);
+      if(!sanatSyncing && /_counter$/.test(k)){
+        try{ fetch(SANAT_FB+'sanat_counters/'+k+'.json',{method:'PUT',body:JSON.stringify(parseInt(v)||0)}); }catch(e){}
+      }
+    };
+  })();
+  // Firebase-тен барлық счётчикті тартып, localStorage-пен max() алу (кері кетпейді)
+  function sanatSyncCounters(){
+    return fetch(SANAT_FB+'sanat_counters.json').then(function(r){return r.json();}).then(function(data){
+      data=data||{};
+      sanatSyncing=true;
+      SANAT_PREFIXES.forEach(function(p){
+        var key=p+'_counter';
+        var local=parseInt(localStorage.getItem(key)||'0');
+        var remote=parseInt(data[key]!=null?data[key]:0);
+        var best=Math.max(local,remote);
+        localStorage.setItem(key,String(best)); // синхрон кезінде push жасалмайды
+        if(best>remote){ // жергілікті алда болса — Firebase-ке себеп ретінде жаз
+          try{ fetch(SANAT_FB+'sanat_counters/'+key+'.json',{method:'PUT',body:JSON.stringify(best)}); }catch(e){}
+        }
+      });
+      sanatSyncing=false;
+      SANAT_PREFIXES.forEach(function(p){
+        var fn=window[p+'UpdateCounter'];
+        if(typeof fn==='function'){try{fn();}catch(e){}}
+      });
+    }).catch(function(e){sanatSyncing=false;console.warn('sanatSync:',e);});
   }
 
   function mazokUpdateCounter() {
@@ -10839,7 +10878,7 @@ function toggleStaffFolder(id) {
     var pageBreak = '<div style="page-break-after:always;height:0;"></div>';
 
     var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
-      '<title>4 құжат — ' + fio + '</title>' +
+      '<title> </title>' +
       '<style>' +
         '@page{size:A4;margin:10mm;}' +
         'body{margin:0;padding:0;font-family:Times New Roman,serif;}' +
@@ -10908,7 +10947,7 @@ function toggleStaffFolder(id) {
 
     var form1 = mazokBuildForm(n1, fio, god, dateIn, dateOut, 'Мазок из зева и носа');
 
-    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Мазок — ' + fio + '</title>' +
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title> </title>' +
       '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} ' +
       '@media print{button{display:none;}.no-print{display:none;}}' +
       '</style></head><body>' +
@@ -11023,7 +11062,7 @@ function toggleStaffFolder(id) {
     glistUpdateCounter();
     var dateOut = mazokFormatDate(new Date());
     var doc = glistBuildDoc(n1, n2, n3, fio, dob, org, dateOut);
-    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Гельминт — ' + fio + '</title>' +
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title> </title>' +
       '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
       '</head><body>' +
       '<div class="no-print" style="padding:10px;background:#f0f9ff;text-align:center;font-family:Arial,sans-serif;">' +
@@ -11121,7 +11160,7 @@ function toggleStaffFolder(id) {
     localStorage.setItem('kal_counter', String(n1));
     kalUpdateCounter();
     var doc = kalBuildDoc(n1, fio, god, dateIn, dateOut);
-    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Кал — ' + fio + '</title>' +
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title> </title>' +
       '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
       '</head><body>' +
       '<div class="no-print" style="padding:10px;background:#f5f3ff;text-align:center;font-family:Arial,sans-serif;">' +
@@ -11242,7 +11281,7 @@ function toggleStaffFolder(id) {
     kozhUpdateCounter();
     var d = kozhBuildText(num, fio, dob, gender, dateStr);
     var docHtml = kozhBuildHTML(d);
-    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Справка кожвенеролога — ' + fio + '</title>' +
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title> </title>' +
       '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
       '</head><body>' +
       '<div class="no-print" style="padding:10px;background:#fef2f2;text-align:center;font-family:Arial,sans-serif;">' +
@@ -11354,7 +11393,7 @@ function toggleStaffFolder(id) {
     brcUpdateCounter();
     var dateOut = mazokFormatDate(new Date());
     var doc = brcBuildDoc(num, fio, dob, dateOut);
-    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Бруцеллез — ' + fio + '</title>' +
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title> </title>' +
       '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
       '</head><body>' +
       '<div class="no-print" style="padding:10px;background:#fff7ed;text-align:center;font-family:Arial,sans-serif;">' +
@@ -11446,7 +11485,7 @@ function toggleStaffFolder(id) {
     localStorage.setItem('mic_counter', String(num));
     micUpdateCounter();
     var doc = micBuildDoc(num, fio, god, dateIn, dateOut);
-    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Микрореакция — ' + fio + '</title>' +
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title> </title>' +
       '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
       '</head><body>' +
       '<div class="no-print" style="padding:10px;background:#eff6ff;text-align:center;font-family:Arial,sans-serif;">' +
@@ -11538,7 +11577,7 @@ function toggleStaffFolder(id) {
     localStorage.setItem('dif_counter', String(num));
     difUpdateCounter();
     var doc = difBuildDoc(num, fio, god, dateIn, dateOut);
-    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Дифтерия — ' + fio + '</title>' +
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title> </title>' +
       '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
       '</head><body>' +
       '<div class="no-print" style="padding:10px;background:#f5f3ff;text-align:center;font-family:Arial,sans-serif;">' +
@@ -11630,7 +11669,7 @@ function toggleStaffFolder(id) {
     localStorage.setItem('men_counter', String(num));
     menUpdateCounter();
     var doc = menBuildDoc(num, fio, god, dateIn, dateOut);
-    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Менингит — ' + fio + '</title>' +
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title> </title>' +
       '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
       '</head><body>' +
       '<div class="no-print" style="padding:10px;background:#f0fdfa;text-align:center;font-family:Arial,sans-serif;">' +
@@ -11732,7 +11771,7 @@ function toggleStaffFolder(id) {
     hepUpdateCounter();
     var dateOut = mazokFormatDate(new Date());
     var doc = hepBuildDoc(num, fio, dob, dateOut);
-    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Гепатит — ' + fio + '</title>' +
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title> </title>' +
       '<style>@page{size:A4;margin:15mm;} body{margin:0;padding:0;font-family:Times New Roman,serif;} @media print{.no-print{display:none;}}</style>' +
       '</head><body>' +
       '<div class="no-print" style="padding:10px;background:#f0fdf4;text-align:center;font-family:Arial,sans-serif;">' +
@@ -18632,10 +18671,27 @@ function sopBodyHtml(v,sop,lang){
   return html;
 }
 
+// Персоналдың танысу парағы + Өзгерістерді тіркеу парағы
+function sopSheetsHtml(lang){
+  var isRu=lang==='ru';
+  var rowsAck='';for(var i=1;i<=20;i++){rowsAck+='<tr><td style="text-align:center">'+i+'</td><td></td><td></td><td></td><td></td></tr>';}
+  var rowsChg='';for(var j=1;j<=15;j++){rowsChg+='<tr><td style="text-align:center">'+j+'</td><td></td><td></td><td></td><td></td><td></td></tr>';}
+  var ackHdr=isRu?['Лист ознакомления персонала','№','Ф.И.О. сотрудника','Должность','Дата','Подпись']
+                 :['Персоналдың танысу парағы','№','Қызметкердің Т.А.Ә.','Лауазымы','Күні','Қолы'];
+  var chgHdr=isRu?['Лист регистрации изменений','№ п/п','Номера заменённых листов','Основание для внесения изменений','Дата введения изменения','Подпись отв. лица','Примечание']
+                 :['Өзгерістерді тіркеу парағы','№','Ауыстырылған беттер','Өзгеріс енгізу негіздемесі','Енгізу күні','Жауаптының қолы','Ескертпе'];
+  var brk='<br clear="all" style="page-break-before:always">';
+  var ack=brk+'<h2>'+ackHdr[0]+'</h2><table style="width:100%;font-size:10pt"><tr>'+
+    '<th style="width:34px">'+ackHdr[1]+'</th><th>'+ackHdr[2]+'</th><th>'+ackHdr[3]+'</th><th style="width:80px">'+ackHdr[4]+'</th><th style="width:80px">'+ackHdr[5]+'</th></tr>'+rowsAck+'</table>';
+  var chg=brk+'<h2>'+chgHdr[0]+'</h2><table style="width:100%;font-size:10pt"><tr>'+
+    '<th style="width:34px">'+chgHdr[1]+'</th><th>'+chgHdr[2]+'</th><th>'+chgHdr[3]+'</th><th style="width:80px">'+chgHdr[4]+'</th><th style="width:90px">'+chgHdr[5]+'</th><th>'+chgHdr[6]+'</th></tr>'+rowsChg+'</table>';
+  return ack+chg;
+}
+
 function sopGen(idx,lang,preview){
   if(typeof akkSave==='function')akkSave();
   var v=akkVals();var sop=SOP_DATA[idx];
-  var body=sopHeaderHtml(v,sop,lang)+sopBodyHtml(v,sop,lang);
+  var body=sopHeaderHtml(v,sop,lang)+sopBodyHtml(v,sop,lang)+sopSheetsHtml(lang);
   var fname='СОП_'+sop.code+'_'+(lang==='ru'?'РУС':'ҚАЗ')+'.doc';
   if(preview)akkPreview((lang==='ru'?sop.name:sop.nameKz),fname,body);
   else akkDownload(fname,body);
