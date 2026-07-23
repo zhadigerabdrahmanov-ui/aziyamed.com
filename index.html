@@ -2251,6 +2251,33 @@ html.dark .kz-tile { opacity:0.22; }
     .kuraldar-tile-icon { font-size:28px; width:52px; height:52px; }
   }
 
+  /* ===== ҚҰРЫЛЫМДЫ ӨЗЕКТЕНДІРУ ===== */
+  .struct-toolbar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+  .struct-btn { padding:9px 16px; border-radius:9px; font-size:12.5px; font-weight:700; cursor:pointer; border:1.5px solid; white-space:nowrap; }
+  .struct-btn-primary { background:var(--green,#22a455); color:#fff; border-color:var(--green,#22a455); }
+  .struct-btn-outline { background:#fff; color:#475569; border-color:#e2e8f0; }
+  .struct-btn-danger-outline { background:#fff; color:#dc2626; border-color:#fecaca; }
+  .struct-tree { background:#f8fafc; border-radius:14px; padding:14px; max-height:560px; overflow-y:auto; }
+  .struct-node { margin-bottom:6px; }
+  .struct-row { display:flex; align-items:center; gap:8px; background:#fff; border:1.5px solid #e2e8f0; border-radius:10px; padding:7px 9px; }
+  .struct-row:hover { border-color:#94a3b8; }
+  .struct-toggle { width:20px; height:20px; flex:none; border:none; background:transparent; cursor:pointer; font-size:11px; color:#94a3b8; padding:0; }
+  .struct-code { flex:none; font-weight:800; font-size:11.5px; color:#0d9488; background:rgba(13,148,136,.1); padding:3px 8px; border-radius:7px; min-width:34px; text-align:center; }
+  .struct-name { flex:1; border:none; outline:none; font-size:13px; font-weight:600; color:var(--dark,#1e293b); background:transparent; padding:5px 4px; min-width:0; border-radius:6px; }
+  .struct-name:focus { background:#f0fdfa; }
+  .struct-actions { display:flex; gap:4px; flex:none; }
+  .struct-icon-btn { width:26px; height:26px; border:none; border-radius:7px; background:#f1f5f9; cursor:pointer; font-size:12.5px; display:flex; align-items:center; justify-content:center; padding:0; }
+  .struct-icon-btn.add { color:#16a34a; }
+  .struct-icon-btn.add:hover { background:#dcfce7; }
+  .struct-icon-btn.del { color:#dc2626; }
+  .struct-icon-btn.del:hover { background:#fee2e2; }
+  .struct-children { margin-left:24px; padding-left:14px; border-left:2px dashed #e2e8f0; margin-top:6px; }
+  html.dark .struct-tree { background:#141c28; }
+  html.dark .struct-row { background:#1e2837; border-color:#2d3b4f; }
+  html.dark .struct-name { color:#e2e8f0; }
+  html.dark .struct-icon-btn { background:#25324399; }
+  html.dark .struct-children { border-left-color:#2d3b4f; }
+  html.dark .struct-btn-outline { background:#1e2837; color:#cbd5e1; border-color:#2d3b4f; }
 
   /* ===== АККРЕДИТАЦИЯ СТИЛЬДЕРІ ===== */
   .akk-wrap{max-width:960px;margin:0 auto;padding:16px;font-family:inherit}
@@ -3979,6 +4006,11 @@ html.dark .kz-tile { opacity:0.22; }
     <div class="kuraldar-tile-title">Медкнижка</div>
     <div class="kuraldar-tile-desc">Мерзімін тексеру · OCR · Firebase</div>
   </div>
+  <div class="kuraldar-tile" id="tilestructure" onclick="openKuralPanel('structure')" style="--tile-color:124,58,237;">
+    <div class="kuraldar-tile-icon">🗂️</div>
+    <div class="kuraldar-tile-title">Құрылымды өзектендіру</div>
+    <div class="kuraldar-tile-desc">Бөлімдерді қосу/өшіру · слайд (PPTX) жүктеу</div>
+  </div>
 <div id="kuraldarPanel" style="display:none;margin-top:20px;">
   <div id="paneliin" class="kuraldar-panel-content" style="display:none;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid rgba(37,99,235,0.15);">
@@ -5288,6 +5320,27 @@ html.dark .kz-tile { opacity:0.22; }
       <div id="mkbAddMsg" style="margin-top:10px;font-size:12px;min-height:18px;"></div>
     </div>
   </div>
+</div>
+
+<div id="panelstructure" class="kuraldar-panel-content" style="display:none;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid rgba(124,58,237,0.2);">
+    <span style="font-size:28px;">🗂️</span>
+    <div>
+      <div style="font-size:16px;font-weight:800;color:var(--dark);">Ұйымдық құрылымды өзектендіру</div>
+      <div style="font-size:12px;color:var(--gray);">Бөлімдер мен лауазымдарды қосу/өшіру · кодтар автоматты нөмірленеді</div>
+    </div>
+    <button onclick="openKuralPanel('structure')" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);">✕</button>
+  </div>
+  <p style="font-size:12px;color:#64748b;background:#faf5ff;border-radius:9px;padding:10px 12px;margin-bottom:14px;">ℹ️ Әр буынның коды өз орнына қарай автоматты есептеледі (1, 1.1, 1.2...). Атауды өзгерту үшін өріске басып жазыңыз да, тыс басыңыз. Өзгерістер барлық құрылғыда (телефон, компьютер) автоматты синхрондалады.</p>
+  <div class="struct-toolbar">
+    <button class="struct-btn struct-btn-primary" onclick="structAddRoot()">➕ Жаңа бөлім қосу</button>
+    <button class="struct-btn struct-btn-outline" onclick="structExpandAll()">⬍ Барлығын ашу/жию</button>
+    <button class="struct-btn struct-btn-outline" onclick="structRefresh()">🔄 Жаңарту</button>
+    <button class="struct-btn struct-btn-outline" onclick="structDownloadPPTX()">🖼️ Слайд (PPTX) жүктеу</button>
+    <button class="struct-btn struct-btn-danger-outline" onclick="structResetDefault()">↺ Бастапқы құрылымға қайтару</button>
+  </div>
+  <div id="structStatus" style="font-size:12px;color:#16a34a;min-height:16px;margin-bottom:8px;"></div>
+  <div class="struct-tree" id="structTree"></div>
 </div>
 
 <div id="panelaccred" class="kuraldar-panel-content" style="display:none;">
@@ -10742,6 +10795,7 @@ function openKuralPanel(panelId) {
   if (panelId === 'mkbook') { setTimeout(function(){ mkbLoadAll().then(mkbShowExpiryToast); }, 50); }
   if (panelId === 'sop') { setTimeout(function(){ sopRenderList(''); }, 50); }
   if (panelId === 'sanat') { setTimeout(function(){ if(typeof sanatSyncCounters==='function') sanatSyncCounters(); }, 50); }
+  if (panelId === 'structure') { setTimeout(function(){ if(typeof structInit==='function') structInit(); }, 50); }
 
   setTimeout(function(){
     wrapper.scrollIntoView({ behavior:'smooth', block:'nearest' });
@@ -19663,6 +19717,439 @@ async function mkbOpenViewNewTab(){
     window.open(url,'_blank');
     setTimeout(function(){URL.revokeObjectURL(url);},60000);
   }catch(e){window.open(f,'_blank');}
+}
+
+// ─── ҚҰРЫЛЫМДЫ ӨЗЕКТЕНДІРУ (ұйымдық құрылым редакторы) ─────────────────────
+var STRUCT_STORAGE_KEY = 'aziya_org_structure_v1';
+var STRUCT_DEFAULT = {
+  id: 'root', name: 'ЖШС «Азия мед-МО» медициналық орталығы', children: [
+    { id:'n1', name:'Басшы', children:[] },
+    { id:'n2', name:'Бас дәрігер', children:[] },
+    { id:'n3', name:'Басшы орынбасары', children:[
+      { id:'n3-1', name:'Емдеу ісі орынбасары', children:[] },
+      { id:'n3-2', name:'Шаруашылық орынбасары', children:[] }
+    ]},
+    { id:'n4', name:'Әкімшілік-басқару персоналы', children:[
+      { id:'n4-1', name:'Кадрлар инспекторы', children:[] },
+      { id:'n4-2', name:'Бухгалтер', children:[] },
+      { id:'n4-3', name:'Экономист', children:[] },
+      { id:'n4-4', name:'Менеджер', children:[] },
+      { id:'n4-5', name:'Заңгер-кеңесші', children:[] },
+      { id:'n4-6', name:'IT маманы', children:[] },
+      { id:'n4-7', name:'Медициналық тіркеуші', children:[] }
+    ]},
+    { id:'n5', name:'Стационар меңгеруші', children:[
+      { id:'n5-1', name:'Тәуліктік стационар', children:[] },
+      { id:'n5-2', name:'Күндізгі стационар', children:[] }
+    ]},
+    { id:'n6', name:'Емхана меңгеруші', children:[
+      { id:'n6-1', name:'Амбулаторлық-емханалық бөлімше', children:[
+        { id:'n6-1-1', name:'Участок №1', children:[] },
+        { id:'n6-1-2', name:'Участок №2', children:[] },
+        { id:'n6-1-3', name:'Участок №3', children:[] },
+        { id:'n6-1-4', name:'Участок №4', children:[] },
+        { id:'n6-1-5', name:'Участок №5', children:[] },
+        { id:'n6-1-6', name:'Участок №6 (педиатрия)', children:[] },
+        { id:'n6-1-7', name:'Участок №7', children:[] },
+        { id:'n6-1-8', name:'Участок №8', children:[] },
+        { id:'n6-1-9', name:'Участок №9', children:[] },
+        { id:'n6-1-10', name:'Участок №10 (педиатрия)', children:[] },
+        { id:'n6-1-11', name:'Участок №11 (педиатрия)', children:[] },
+        { id:'n6-1-12', name:'Участок №12', children:[] },
+        { id:'n6-1-13', name:'Акушер-Гинекология', children:[] },
+        { id:'n6-1-14', name:'Вакцинатор', children:[] },
+        { id:'n6-1-15', name:'Дәрігерге дейінгі қарап тексеру', children:[] }
+      ]},
+      { id:'n6-2', name:'Тар бейінді мамандар', children:[
+        { id:'n6-2-1', name:'Кардиолог', children:[] },
+        { id:'n6-2-2', name:'Невропатолог', children:[] },
+        { id:'n6-2-3', name:'Травматолог', children:[] },
+        { id:'n6-2-4', name:'Эпидемиолог', children:[] },
+        { id:'n6-2-5', name:'Уролог', children:[] },
+        { id:'n6-2-6', name:'Оториноларинголог', children:[] },
+        { id:'n6-2-7', name:'Нарколог-психиатр', children:[] },
+        { id:'n6-2-8', name:'Инфекционист', children:[] },
+        { id:'n6-2-9', name:'Дерматовенеролог', children:[] },
+        { id:'n6-2-10', name:'Реабилитолог', children:[] },
+        { id:'n6-2-11', name:'Эндокринолог', children:[] },
+        { id:'n6-2-12', name:'Онколог', children:[] },
+        { id:'n6-2-13', name:'Офтальмолог', children:[] },
+        { id:'n6-2-14', name:'Иммунолог', children:[] },
+        { id:'n6-2-15', name:'Фтизиатр', children:[] },
+        { id:'n6-2-16', name:'Хирург', children:[] }
+      ]},
+      { id:'n6-3', name:'Реабилитациялық бөлімше', children:[
+        { id:'n6-3-1', name:'Лечебная физкультура', children:[] },
+        { id:'n6-3-2', name:'Физиотерапия', children:[] },
+        { id:'n6-3-3', name:'Массаж', children:[] }
+      ]},
+      { id:'n6-4', name:'Диагностикалық бөлімше', children:[
+        { id:'n6-4-1', name:'УЗИ', children:[] },
+        { id:'n6-4-2', name:'Рентген-Флюоро', children:[] },
+        { id:'n6-4-3', name:'Зертхана', children:[
+          { id:'n6-4-3-1', name:'Клинико-Диагностикалық', children:[] },
+          { id:'n6-4-3-2', name:'Бактериологиялық', children:[] }
+        ]},
+        { id:'n6-4-4', name:'ФГДС (фиброгастродуоденоскопия)', children:[] },
+        { id:'n6-4-5', name:'Маммография', children:[] }
+      ]},
+      { id:'n6-5', name:'Жедел және шұғыл көмек', children:[] },
+      { id:'n6-6', name:'Стоматология', children:[] },
+      { id:'n6-7', name:'Психоәлеуметтік қызмет', children:[] },
+      { id:'n6-8', name:'Дәріхана бөлімі', children:[] },
+      { id:'n6-9', name:'ПҚжІСҚ', children:[] },
+      { id:'n6-10', name:'Дәрігер-сарапшы', children:[] },
+      { id:'n6-11', name:'Статистик', children:[] },
+      { id:'n6-12', name:'Жүргізуші', children:[] },
+      { id:'n6-13', name:'Мед.техник', children:[] },
+      { id:'n6-14', name:'Кіші қызметкер', children:[] },
+      { id:'n6-15', name:'Жүргізуші', children:[] },
+      { id:'n6-16', name:'Асхана қызметкері', children:[] },
+      { id:'n6-17', name:'Ағаш ұстасы', children:[] }
+    ]},
+    { id:'n7', name:'Бас медбике', children:[] }
+  ]
+};
+
+var structData = null;
+var structCollapsed = {};
+var structIdSeq = 1;
+
+function structGenId(parentId){
+  structIdSeq++;
+  return parentId + '-x' + structIdSeq + Math.random().toString(36).slice(2,6);
+}
+
+var STRUCT_FB = 'https://aziyamed-b0714-default-rtdb.asia-southeast1.firebasedatabase.app/';
+var STRUCT_FB_KEY = 'org_structure.json';
+var structSaveTimer = null;
+var structSyncing = false;
+
+function structSetStatus(text, isError){
+  var st = document.getElementById('structStatus');
+  if (!st) return;
+  st.textContent = text;
+  st.style.color = isError ? '#dc2626' : '#16a34a';
+}
+
+async function structLoad(){
+  structSetStatus('⏳ Барлық құрылғылардан жүктелуде...', false);
+  try{
+    var resp = await fetch(STRUCT_FB + STRUCT_FB_KEY);
+    var remote = await resp.json();
+    if (remote && remote.children){
+      structData = remote;
+      try{ localStorage.setItem(STRUCT_STORAGE_KEY, JSON.stringify(structData)); }catch(e){}
+      structSetStatus('', false);
+      return;
+    }
+  }catch(e){
+    console.warn('Firebase-тен жүктеу мүмкін болмады, жергілікті көшірмеге көшу', e);
+  }
+  // Firebase-те дерек жоқ/қолжетімсіз — жергілікті офлайн көшірмеден оқимыз
+  try{
+    var raw = localStorage.getItem(STRUCT_STORAGE_KEY);
+    if (raw){
+      structData = JSON.parse(raw);
+      structSetStatus('⚠️ Офлайн көшірме көрсетілуде — интернетті тексеріңіз', true);
+      return;
+    }
+  }catch(e){}
+  // тіпті офлайн көшірме де жоқ — бастапқы құрылымнан бастаймыз және Firebase-ке жазамыз
+  structData = JSON.parse(JSON.stringify(STRUCT_DEFAULT));
+  structSaveRemote();
+  structSetStatus('', false);
+}
+
+function structSave(){
+  try{ localStorage.setItem(STRUCT_STORAGE_KEY, JSON.stringify(structData)); }catch(e){}
+  structSaveRemote();
+}
+
+function structSaveRemote(){
+  clearTimeout(structSaveTimer);
+  structSyncing = true;
+  structSetStatus('⏳ Сақталуда...', false);
+  structSaveTimer = setTimeout(function(){
+    fetch(STRUCT_FB + STRUCT_FB_KEY, { method:'PUT', body: JSON.stringify(structData) })
+      .then(function(){
+        structSyncing = false;
+        structSetStatus('✓ Барлық құрылғыға сақталды', false);
+        setTimeout(function(){ var st=document.getElementById('structStatus'); if (st && st.textContent.indexOf('сақталды')>=0) st.textContent=''; }, 2000);
+      })
+      .catch(function(e){
+        structSyncing = false;
+        structSetStatus('⚠️ Синхрондау қатесі — интернетті тексеріңіз (жергілікті сақталды)', true);
+        console.warn('Firebase сақтау қатесі', e);
+      });
+  }, 500);
+}
+
+function structFindNode(node, id){
+  if (node.id === id) return node;
+  var kids = node.children || [];
+  for (var i=0;i<kids.length;i++){
+    var f = structFindNode(kids[i], id);
+    if (f) return f;
+  }
+  return null;
+}
+
+function structFindParent(node, id, parent){
+  if (node.id === id) return parent;
+  var kids = node.children || [];
+  for (var i=0;i<kids.length;i++){
+    var f = structFindParent(kids[i], id, node);
+    if (f) return f;
+  }
+  return null;
+}
+
+function structAddRoot(){
+  var name = prompt('Жаңа бөлімнің атауын жазыңыз:', 'Жаңа бөлім');
+  if (!name || !name.trim()) return;
+  structData.children.push({ id: structGenId('root'), name: name.trim(), children: [] });
+  structSave(); structRenderTree();
+}
+
+function structAddChild(parentId){
+  var name = prompt('Жаңа буынның (лауазым/бөлімше) атауын жазыңыз:', '');
+  if (!name || !name.trim()) return;
+  var parent = structFindNode(structData, parentId);
+  if (!parent) return;
+  if (!parent.children) parent.children = [];
+  parent.children.push({ id: structGenId(parentId), name: name.trim(), children: [] });
+  structCollapsed[parentId] = false;
+  structSave(); structRenderTree();
+}
+
+function structRemoveNode(id){
+  var node = structFindNode(structData, id);
+  if (!node) return;
+  var label = node.name + ((node.children && node.children.length) ? (' (және оның ' + node.children.length + ' бағыныштысы)') : '');
+  if (!confirm('«' + label + '» жоюды растайсыз ба? Бұл әрекетті қайтару мүмкін емес.')) return;
+  var parent = structFindParent(structData, id, null);
+  if (!parent) return;
+  parent.children = parent.children.filter(function(c){ return c.id !== id; });
+  structSave(); structRenderTree();
+}
+
+function structRenameNode(id, value){
+  var node = structFindNode(structData, id);
+  if (!node) return;
+  node.name = value;
+  structSave();
+  var st = document.getElementById('structStatus');
+  if (st){ st.textContent = '✓ Сақталды'; setTimeout(function(){ if(st.textContent==='✓ Сақталды') st.textContent=''; }, 1500); }
+}
+
+function structToggle(id){
+  structCollapsed[id] = !structCollapsed[id];
+  structRenderTree();
+}
+
+function structExpandAll(){
+  var anyCollapsed = Object.keys(structCollapsed).some(function(k){ return structCollapsed[k]; });
+  if (anyCollapsed){ structCollapsed = {}; structRenderTree(); return; }
+  structCollapsed = {};
+  (function walk(node){
+    if (node.children && node.children.length){
+      if (node.id !== 'root') structCollapsed[node.id] = true;
+      node.children.forEach(walk);
+    }
+  })(structData);
+  structRenderTree();
+}
+
+function structResetDefault(){
+  if (!confirm('Барлық өзгерістер өшіп, бастапқы (2026 жылғы) құрылымға қайтарылады. Жалғастыру керек пе?')) return;
+  structData = JSON.parse(JSON.stringify(STRUCT_DEFAULT));
+  structCollapsed = {};
+  structSave(); structRenderTree();
+}
+
+function structEscapeHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+function structComputeCodes(node, prefix, out){
+  (node.children||[]).forEach(function(child, idx){
+    var code = prefix ? (prefix + '.' + (idx+1)) : String(idx+1);
+    out[child.id] = code;
+    structComputeCodes(child, code, out);
+  });
+}
+
+function structRenderNode(node, codes){
+  var code = codes[node.id] || '';
+  var hasChildren = node.children && node.children.length > 0;
+  var isCollapsed = !!structCollapsed[node.id];
+  var html = '<div class="struct-node" data-id="'+node.id+'">';
+  html += '<div class="struct-row">';
+  html += hasChildren
+    ? '<button class="struct-toggle" onclick="structToggle(\''+node.id+'\')">'+(isCollapsed?'▶':'▼')+'</button>'
+    : '<span class="struct-toggle"></span>';
+  html += '<span class="struct-code">'+structEscapeHtml(code)+'</span>';
+  html += '<input class="struct-name" value="'+structEscapeHtml(node.name)+'" onchange="structRenameNode(\''+node.id+'\', this.value)">';
+  html += '<span class="struct-actions">';
+  html += '<button class="struct-icon-btn add" title="Бағыныштысын қосу" onclick="structAddChild(\''+node.id+'\')">➕</button>';
+  html += '<button class="struct-icon-btn del" title="Жою" onclick="structRemoveNode(\''+node.id+'\')">🗑</button>';
+  html += '</span>';
+  html += '</div>';
+  if (hasChildren && !isCollapsed){
+    html += '<div class="struct-children">';
+    node.children.forEach(function(child){ html += structRenderNode(child, codes); });
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
+function structRenderTree(){
+  var el = document.getElementById('structTree');
+  if (!el) return;
+  var codes = {};
+  structComputeCodes(structData, '', codes);
+  var html = '';
+  structData.children.forEach(function(node){ html += structRenderNode(node, codes); });
+  el.innerHTML = html || '<div style="text-align:center;padding:20px;color:#94a3b8;font-size:13px;">Құрылым бос. «➕ Жаңа бөлім қосу» батырмасын басыңыз.</div>';
+}
+
+async function structInit(){
+  var el = document.getElementById('structTree');
+  if (el) el.innerHTML = '<div style="text-align:center;padding:26px;color:#94a3b8;font-size:13px;">⏳ Жүктелуде...</div>';
+  await structLoad();
+  structRenderTree();
+}
+
+function structRefresh(){
+  structCollapsed = {};
+  structInit();
+}
+
+// ─── PPTX (слайд) экспорты ───────────────────────────────────────────────
+function structDownloadPPTX(){
+  if (window.PptxGenJS){ structBuildPPTX(); return; }
+  var st0 = document.getElementById('structStatus');
+  if (st0) st0.textContent = '⏳ PPTX кітапханасы жүктелуде...';
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/gh/gitbrent/pptxgenjs@3.12.0/dist/pptxgen.bundle.js';
+  s.onload = function(){ structBuildPPTX(); };
+  s.onerror = function(){ if (st0) st0.textContent = '❌ Кітапхана жүктелмеді. Интернет байланысын тексеріңіз.'; };
+  document.head.appendChild(s);
+}
+
+function structBuildPPTX(){
+  var st = document.getElementById('structStatus');
+  if (st) st.textContent = '⏳ Слайд дайындалуда...';
+  try{
+    var codes = {};
+    structComputeCodes(structData, '', codes);
+
+    var pptx = new PptxGenJS();
+    pptx.layout = 'LAYOUT_WIDE';
+
+    var BLUE = '4472C4', DARK = '1F2937', WHITE = 'FFFFFF';
+    var MARGIN_TOP = 1.0, MARGIN_BOTTOM = 0.5, ROW_H = 0.44, ROW_GAP = 0.12;
+    var SLIDE_W = 13.3, SLIDE_H = 7.5;
+    var usableH = SLIDE_H - MARGIN_TOP - MARGIN_BOTTOM;
+
+    function addTitle(slide, text){
+      slide.addText(text, { x:0.4, y:0.25, w:SLIDE_W-0.8, h:0.55, fontSize:17, bold:true, color:DARK, fontFace:'Calibri' });
+    }
+
+    function addBox(slide, x, y, w, text, opts){
+      opts = opts || {};
+      var h = opts.h || ROW_H;
+      slide.addShape('roundRect', {
+        x:x, y:y, w:w, h:h, rectRadius:0.06,
+        fill:{ color: opts.fill || WHITE },
+        line:{ color: opts.line || BLUE, width: opts.bold ? 1.75 : 1.25 }
+      });
+      slide.addText((opts.code ? (opts.code+'.  ') : '') + text, {
+        x:x+0.06, y:y, w:w-0.12, h:h, fontSize: opts.fontSize || 11,
+        bold: !!opts.bold, color:DARK, fontFace:'Calibri',
+        valign:'middle', align: opts.align || 'left', wrap:true
+      });
+    }
+
+    // ---- Слайд 1: жалпы шолу (деңгей-1) ----
+    var s1 = pptx.addSlide();
+    addTitle(s1, 'ЖШС «Азия мед-МО» медициналық орталығының ұйымдық құрылымы');
+    var lvl1 = structData.children || [];
+    var n = Math.max(lvl1.length, 1);
+
+    var topW = 2.6, topH = 0.5, topX = (SLIDE_W-topW)/2, topY = 0.95;
+    addBox(s1, topX, topY, topW, 'Ұйым басшылығы', { bold:true, fill:'EAF0FB', align:'center', h:topH });
+
+    var rowY = topY + topH + 0.5;
+    var childH = 0.62;
+    var colW = Math.min(2.0, (SLIDE_W - 0.6) / n - 0.15);
+    var totalW = colW*n + 0.15*(n-1);
+    var startX = (SLIDE_W - totalW) / 2;
+
+    s1.addShape('line', { x: SLIDE_W/2, y: topY+topH, w:0, h:0.28, line:{ color:BLUE, width:1.25 } });
+    if (n > 1){
+      s1.addShape('line', { x: startX + colW/2, y: topY+topH+0.28, w: Math.max(totalW-colW,0.01), h:0, line:{ color:BLUE, width:1.25 } });
+    }
+
+    lvl1.forEach(function(node, i){
+      var x = startX + i*(colW+0.15);
+      s1.addShape('line', { x: x + colW/2, y: topY+topH+0.28, w:0, h:0.22, line:{ color:BLUE, width:1.25 } });
+      addBox(s1, x, rowY, colW, node.name, {
+        code: codes[node.id], fontSize:8.5, align:'center', h:childH,
+        fill: (node.children && node.children.length) ? 'FFF7ED' : WHITE
+      });
+    });
+
+    s1.addText('Толық құрылымды кейінгі слайдтардан қараңыз →', { x:0.4, y:SLIDE_H-0.45, w:SLIDE_W-0.8, h:0.3, fontSize:9, italic:true, color:'94A3B8' });
+
+    // ---- Деңгей-1 түйіндердің толық тізім слайдтары ----
+    lvl1.forEach(function(node){
+      if (!node.children || !node.children.length) return;
+      var flat = [];
+      (function walk(n, depth){
+        (n.children||[]).forEach(function(c){
+          flat.push({ node:c, depth:depth, code:codes[c.id] });
+          walk(c, depth+1);
+        });
+      })(node, 0);
+
+      var idx = 0;
+      var maxRows = Math.max(Math.floor(usableH / (ROW_H+ROW_GAP)), 1);
+      var part = 0;
+      while (idx < flat.length){
+        part++;
+        var slide = pptx.addSlide();
+        addTitle(slide, (codes[node.id]||'') + '.  ' + node.name + (part>1 ? ' (жалғасы)' : ''));
+        var y = MARGIN_TOP;
+        var rowsThisSlide = 0;
+        while (idx < flat.length && rowsThisSlide < maxRows){
+          var item = flat[idx];
+          var x = 0.5 + item.depth * 0.55;
+          var w = (SLIDE_W-0.9) - item.depth * 0.55;
+          addBox(slide, x, y, w, item.node.name, {
+            code:item.code, fontSize:10.5,
+            fill: item.depth===0 ? 'F5F8FF' : WHITE, bold: item.depth===0
+          });
+          y += ROW_H + ROW_GAP;
+          rowsThisSlide++; idx++;
+        }
+      }
+    });
+
+    var fname = 'Azia_med_MO_qurylym_' + new Date().toISOString().slice(0,10) + '.pptx';
+    pptx.writeFile({ fileName: fname }).then(function(){
+      if (st) st.textContent = '✅ Жүктелді: ' + fname;
+      setTimeout(function(){ if (st && st.textContent.indexOf('Жүктелді')>=0) st.textContent=''; }, 3000);
+    });
+  }catch(e){
+    console.error(e);
+    var st2 = document.getElementById('structStatus');
+    if (st2) st2.textContent = '❌ Қате шықты: ' + (e && e.message ? e.message : e);
+  }
 }
 
 </script>
