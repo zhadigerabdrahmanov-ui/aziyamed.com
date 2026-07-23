@@ -19720,93 +19720,78 @@ async function mkbOpenViewNewTab(){
 
 // ─── ҚҰРЫЛЫМДЫ ӨЗЕКТЕНДІРУ (ұйымдық құрылым редакторы) ─────────────────────
 var STRUCT_STORAGE_KEY = 'aziya_org_structure_v1';
+var STRUCT_DEFAULT_VERSION = 4;
 var STRUCT_DEFAULT = {
-  id: 'root', name: 'ЖШС «Азия мед-МО» медициналық орталығы', children: [
+  id: 'root', name: 'ЖШС «Азия мед-МО» медициналық орталығы', _v: 4, children: [
     { id:'n1', name:'Басшы', children:[] },
-    { id:'n2', name:'Бас дәрігер', children:[] },
-    { id:'n3', name:'Басшы орынбасары', children:[
-      { id:'n3-1', name:'Емдеу ісі орынбасары', children:[] },
-      { id:'n3-2', name:'Шаруашылық орынбасары', children:[] }
+    { id:'n2', name:'Басшы орынбасары', children:[] },
+    { id:'n3', name:'Стационар меңгеруші', children:[
+      { id:'n3-1', name:'Тәуліктік стационар', children:[] },
+      { id:'n3-2', name:'Күндізгі стационар', children:[] }
     ]},
-    { id:'n4', name:'Әкімшілік-басқару персоналы', children:[
-      { id:'n4-1', name:'Кадрлар инспекторы', children:[] },
-      { id:'n4-2', name:'Бухгалтер', children:[] },
-      { id:'n4-3', name:'Экономист', children:[] },
-      { id:'n4-4', name:'Менеджер', children:[] },
-      { id:'n4-5', name:'Заңгер-кеңесші', children:[] },
-      { id:'n4-6', name:'IT маманы', children:[] },
-      { id:'n4-7', name:'Медициналық тіркеуші', children:[] }
-    ]},
-    { id:'n5', name:'Стационар меңгеруші', children:[
-      { id:'n5-1', name:'Тәуліктік стационар', children:[] },
-      { id:'n5-2', name:'Күндізгі стационар', children:[] }
-    ]},
-    { id:'n6', name:'Емхана меңгеруші', children:[
-      { id:'n6-1', name:'Амбулаторлық-емханалық бөлімше', children:[
-        { id:'n6-1-1', name:'Участок №1', children:[] },
-        { id:'n6-1-2', name:'Участок №2', children:[] },
-        { id:'n6-1-3', name:'Участок №3', children:[] },
-        { id:'n6-1-4', name:'Участок №4', children:[] },
-        { id:'n6-1-5', name:'Участок №5', children:[] },
-        { id:'n6-1-6', name:'Участок №6 (педиатрия)', children:[] },
-        { id:'n6-1-7', name:'Участок №7', children:[] },
-        { id:'n6-1-8', name:'Участок №8', children:[] },
-        { id:'n6-1-9', name:'Участок №9', children:[] },
-        { id:'n6-1-10', name:'Участок №10 (педиатрия)', children:[] },
-        { id:'n6-1-11', name:'Участок №11 (педиатрия)', children:[] },
-        { id:'n6-1-12', name:'Участок №12', children:[] },
-        { id:'n6-1-13', name:'Акушер-Гинекология', children:[] },
-        { id:'n6-1-14', name:'Вакцинатор', children:[] },
-        { id:'n6-1-15', name:'Дәрігерге дейінгі қарап тексеру', children:[] }
+    { id:'n4', name:'Дәрігер эксперт', children:[] },
+    { id:'n5', name:'Бас медбике', children:[
+      { id:'n5-1', name:'ПҚжІСҚ', children:[] },
+      { id:'n5-2', name:'Статистик', children:[] },
+      { id:'n5-3', name:'Дәріхана', children:[] },
+      { id:'n5-4', name:'Медициналық техник', children:[] },
+      { id:'n5-5', name:'Кіші қызметкерлер', children:[] },
+      { id:'n5-6', name:'Жүргізуші', children:[] },
+      { id:'n5-7', name:'Амбулаторлық-емханалық бөлімше', children:[
+        { id:'n5-7-1', name:'Участок №1', children:[] },
+        { id:'n5-7-2', name:'Участок №2', children:[] },
+        { id:'n5-7-3', name:'Участок №3', children:[] },
+        { id:'n5-7-4', name:'Участок №4', children:[] },
+        { id:'n5-7-5', name:'Участок №5', children:[] },
+        { id:'n5-7-6', name:'Участок №6 (педиатрия)', children:[] },
+        { id:'n5-7-7', name:'Участок №7', children:[] },
+        { id:'n5-7-8', name:'Участок №8', children:[] },
+        { id:'n5-7-9', name:'Участок №9', children:[] },
+        { id:'n5-7-10', name:'Участок №10 (педиатрия)', children:[] },
+        { id:'n5-7-11', name:'Участок №11 (педиатрия)', children:[] },
+        { id:'n5-7-12', name:'Участок №12', children:[] },
+        { id:'n5-7-13', name:'Акушер-Гинекология', children:[] },
+        { id:'n5-7-14', name:'Вакцинатор', children:[] },
+        { id:'n5-7-15', name:'Дәрігерге дейінгі қарап тексеру', children:[] }
       ]},
-      { id:'n6-2', name:'Тар бейінді мамандар', children:[
-        { id:'n6-2-1', name:'Кардиолог', children:[] },
-        { id:'n6-2-2', name:'Невропатолог', children:[] },
-        { id:'n6-2-3', name:'Травматолог', children:[] },
-        { id:'n6-2-4', name:'Эпидемиолог', children:[] },
-        { id:'n6-2-5', name:'Уролог', children:[] },
-        { id:'n6-2-6', name:'Оториноларинголог', children:[] },
-        { id:'n6-2-7', name:'Нарколог-психиатр', children:[] },
-        { id:'n6-2-8', name:'Инфекционист', children:[] },
-        { id:'n6-2-9', name:'Дерматовенеролог', children:[] },
-        { id:'n6-2-10', name:'Реабилитолог', children:[] },
-        { id:'n6-2-11', name:'Эндокринолог', children:[] },
-        { id:'n6-2-12', name:'Онколог', children:[] },
-        { id:'n6-2-13', name:'Офтальмолог', children:[] },
-        { id:'n6-2-14', name:'Иммунолог', children:[] },
-        { id:'n6-2-15', name:'Фтизиатр', children:[] },
-        { id:'n6-2-16', name:'Хирург', children:[] }
+      { id:'n5-8', name:'Тар бейінді мамандар', children:[
+        { id:'n5-8-1', name:'Кардиолог', children:[] },
+        { id:'n5-8-2', name:'Невропатолог', children:[] },
+        { id:'n5-8-3', name:'Хирург', children:[] },
+        { id:'n5-8-4', name:'Эпидемиолог', children:[] },
+        { id:'n5-8-5', name:'Уролог', children:[] },
+        { id:'n5-8-6', name:'Реабилитолог', children:[] },
+        { id:'n5-8-7', name:'Эндокринолог', children:[] },
+        { id:'n5-8-8', name:'Иммунолог', children:[] }
       ]},
-      { id:'n6-3', name:'Реабилитациялық бөлімше', children:[
-        { id:'n6-3-1', name:'Лечебная физкультура', children:[] },
-        { id:'n6-3-2', name:'Физиотерапия', children:[] },
-        { id:'n6-3-3', name:'Массаж', children:[] }
+      { id:'n5-9', name:'Реабилитациялық бөлімше', children:[
+        { id:'n5-9-1', name:'Лечебная физкультура', children:[] },
+        { id:'n5-9-2', name:'Физиотерапия', children:[] },
+        { id:'n5-9-3', name:'Массаж', children:[] }
       ]},
-      { id:'n6-4', name:'Диагностикалық бөлімше', children:[
-        { id:'n6-4-1', name:'УЗИ', children:[] },
-        { id:'n6-4-2', name:'Рентген-Флюоро', children:[] },
-        { id:'n6-4-3', name:'Зертхана', children:[
-          { id:'n6-4-3-1', name:'Клинико-Диагностикалық', children:[] },
-          { id:'n6-4-3-2', name:'Бактериологиялық', children:[] }
+      { id:'n5-10', name:'Диагностикалық бөлімше', children:[
+        { id:'n5-10-1', name:'УЗИ', children:[] },
+        { id:'n5-10-2', name:'Рентген-Флюоро', children:[] },
+        { id:'n5-10-3', name:'Зертхана', children:[
+          { id:'n5-10-3-1', name:'Клинико-Диагностикалық', children:[] },
+          { id:'n5-10-3-2', name:'Бактериологиялық', children:[] }
         ]},
-        { id:'n6-4-4', name:'ФГДС (фиброгастродуоденоскопия)', children:[] },
-        { id:'n6-4-5', name:'Маммография', children:[] }
+        { id:'n5-10-4', name:'ФГДС (фиброгастродуоденоскопия)', children:[] },
+        { id:'n5-10-5', name:'Маммография', children:[] }
       ]},
-      { id:'n6-5', name:'Жедел және шұғыл көмек', children:[] },
-      { id:'n6-6', name:'Стоматология', children:[] },
-      { id:'n6-7', name:'Психоәлеуметтік қызмет', children:[] },
-      { id:'n6-8', name:'Дәріхана бөлімі', children:[] },
-      { id:'n6-9', name:'ПҚжІСҚ', children:[] },
-      { id:'n6-10', name:'Дәрігер-сарапшы', children:[] },
-      { id:'n6-11', name:'Статистик', children:[] },
-      { id:'n6-12', name:'Жүргізуші', children:[] },
-      { id:'n6-13', name:'Мед.техник', children:[] },
-      { id:'n6-14', name:'Кіші қызметкер', children:[] },
-      { id:'n6-15', name:'Жүргізуші', children:[] },
-      { id:'n6-16', name:'Асхана қызметкері', children:[] },
-      { id:'n6-17', name:'Ағаш ұстасы', children:[] }
+      { id:'n5-11', name:'Жедел жәрдем бөлмесі', children:[] },
+      { id:'n5-12', name:'Стоматология', children:[] },
+      { id:'n5-13', name:'Психоәлеуметтік қызмет', children:[] }
     ]},
-    { id:'n7', name:'Бас медбике', children:[] }
+    { id:'n6', name:'Әкімшілік-басқару персоналы', children:[
+      { id:'n6-1', name:'Кадр инспекторы', children:[] },
+      { id:'n6-2', name:'Бухгалтер', children:[] },
+      { id:'n6-3', name:'Экономист', children:[] },
+      { id:'n6-4', name:'Менеджер', children:[] },
+      { id:'n6-5', name:'Заңгер-кеңесші', children:[] },
+      { id:'n6-6', name:'IT маманы', children:[] },
+      { id:'n6-7', name:'Медициналық тіркеуші', children:[] }
+    ]}
   ]
 };
 
@@ -19837,6 +19822,14 @@ async function structLoad(){
     var resp = await fetch(STRUCT_FB + STRUCT_FB_KEY);
     var remote = await resp.json();
     if (remote && remote.children){
+      if (remote._v !== STRUCT_DEFAULT_VERSION){
+        // Ескі нұсқа деректер табылды — жаңа бастапқы құрылымға бір реттік автоматты жаңарту
+        structData = JSON.parse(JSON.stringify(STRUCT_DEFAULT));
+        try{ localStorage.setItem(STRUCT_STORAGE_KEY, JSON.stringify(structData)); }catch(e){}
+        structSaveRemote();
+        structSetStatus('', false);
+        return;
+      }
       structData = remote;
       try{ localStorage.setItem(STRUCT_STORAGE_KEY, JSON.stringify(structData)); }catch(e){}
       structSetStatus('', false);
@@ -19849,9 +19842,12 @@ async function structLoad(){
   try{
     var raw = localStorage.getItem(STRUCT_STORAGE_KEY);
     if (raw){
-      structData = JSON.parse(raw);
-      structSetStatus('⚠️ Офлайн көшірме көрсетілуде — интернетті тексеріңіз', true);
-      return;
+      var cached = JSON.parse(raw);
+      if (cached && cached._v === STRUCT_DEFAULT_VERSION){
+        structData = cached;
+        structSetStatus('⚠️ Офлайн көшірме көрсетілуде — интернетті тексеріңіз', true);
+        return;
+      }
     }
   }catch(e){}
   // тіпті офлайн көшірме де жоқ — бастапқы құрылымнан бастаймыз және Firebase-ке жазамыз
