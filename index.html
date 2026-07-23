@@ -9515,8 +9515,27 @@ function _expandTable(btn) {
 
 // ═══════════════════════ БЕЛЫЙ КОД ═══════════════════════
 const WC_KEY = 'whiteCode';
+const WC_FB = 'https://aziyamed-b0714-default-rtdb.asia-southeast1.firebasedatabase.app/';
 function wcLoad() { return JSON.parse(localStorage.getItem(WC_KEY)||'[]'); }
-function wcSave(arr) { localStorage.setItem(WC_KEY, JSON.stringify(arr)); }
+function wcSave(arr) {
+  localStorage.setItem(WC_KEY, JSON.stringify(arr));
+  try { fetch(WC_FB+'whitecode.json',{method:'PUT',body:JSON.stringify(arr)}); } catch(e){}
+}
+// Firebase-тен тартып (ортақ тізім), localStorage-ты жаңарту әрі кестені жаңғырту
+function wcSyncFromFirebase() {
+  return fetch(WC_FB+'whitecode.json').then(function(r){return r.json();}).then(function(data){
+    var remote = Array.isArray(data) ? data : (data && typeof data==='object' ? Object.keys(data).map(function(k){return data[k];}) : null);
+    if (remote === null) {
+      // Firebase бос — жергілікті тізімді себеп ретінде жаз (деректі ЖОЙМАЙМЫЗ)
+      var local = wcLoad();
+      if (local.length) { try { fetch(WC_FB+'whitecode.json',{method:'PUT',body:JSON.stringify(local)}); } catch(e){} }
+      wcRender();
+      return;
+    }
+    localStorage.setItem(WC_KEY, JSON.stringify(remote));
+    wcRender();
+  }).catch(function(e){ console.warn('wc sync:', e); wcRender(); });
+}
 
 function wcSearchFilter() {
   const q = (document.getElementById('wc-search').value || '').trim();
@@ -9636,11 +9655,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const body = document.getElementById('taskWhiteCodeBody');
   if (body) {
     const obs = new MutationObserver(function(muts) {
-      muts.forEach(m => { if (body.style.display !== 'none') { wcRender(); } });
+      muts.forEach(m => { if (body.style.display !== 'none') { wcSyncFromFirebase(); } });
     });
     obs.observe(body, { attributes:true, attributeFilter:['style'] });
-    if (body.style.display !== 'none') wcRender();
+    if (body.style.display !== 'none') wcSyncFromFirebase();
   }
+  // Бетбелгі санауышы дұрыс болу үшін — бастапқыда бір рет Firebase-тен тарту
+  if (typeof wcSyncFromFirebase === 'function') { try { wcSyncFromFirebase(); } catch(e){} }
 });
 // ═════════════════════════════════════════════════════════
 
