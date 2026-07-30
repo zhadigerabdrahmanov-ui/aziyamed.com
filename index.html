@@ -18918,7 +18918,7 @@ async function duRunAnalysis(){
     var pts={}, order=[];
     for(var i=hd+1;i<rows.length;i++){ var r=rows[i]||[]; var iin=duNormIin(cIin>=0?r[cIin]:''); if(iin.length!==12)continue; if(pts[iin])continue;
       pts[iin]={iin:iin,fio:(cFio>=0?(r[cFio]||''):''),uch:(cUch>=0?(r[cUch]||''):''),mkb:(cMkb>=0?(r[cMkb]||''):''),
-        dgrp:(cGrp>=0?(r[cGrp]||''):''),osm:0,inv:0,prof:0,lastOsm:null,osmDates:[],invMap:{},profMap:{}}; order.push(iin); }
+        dgrp:(cGrp>=0?(r[cGrp]||''):''),osm:0,inv:0,prof:0,lastOsm:null,osmDates:[],osmMap:{},invMap:{},profMap:{}}; order.push(iin); }
     // 4. Көрсетілген қызметтер (көп файл) — тек Д-есеп пациенттеріне, соңғы 12 ай
     var cut=new Date(aloRef.getFullYear()-1,aloRef.getMonth(),aloRef.getDate());
     for(var f=0;f<duServiceFiles.length;f++){
@@ -18930,7 +18930,7 @@ async function duRunAnalysis(){
         var d=duParseDate(scd>=0?r[scd]:null); if(!d||d<cut)continue;
         var nm=(scn>=0&&r[scn]!=null)?(''+r[scn]).trim():'';
         var kind=duSvcKind(nm);
-        if(kind==='D'){ p.osm++; p.osmDates.push(d); if(!p.lastOsm||d>p.lastOsm)p.lastOsm=d; }
+        if(kind==='D'){ p.osm++; p.osmDates.push(d); if(nm)p.osmMap[nm]=(p.osmMap[nm]||0)+1; if(!p.lastOsm||d>p.lastOsm)p.lastOsm=d; }
         else if(kind==='I'){ p.inv++; if(nm)p.invMap[nm]=(p.invMap[nm]||0)+1; }
         else if(kind==='P'){ p.prof++; if(nm)p.profMap[nm]=(p.profMap[nm]||0)+1; } }
       srows=null;
@@ -18953,11 +18953,12 @@ async function duRunAnalysis(){
       var mdays=last?Math.round((aloRef-last)/86400000):null;
       var invItems=Object.keys(p.invMap).map(function(k){return [k,p.invMap[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,40);
       var profItems=Object.keys(p.profMap).map(function(k){return [k,p.profMap[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,20);
+      var osmItems=Object.keys(p.osmMap).map(function(k){return [k,p.osmMap[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,20);
       var osmDs=p.osmDates.sort(function(a,b){return b-a;}).slice(0,20).map(duFmtDate);
       out.push({iin:p.iin,fio:p.fio,uch:p.uch,mkb:duNormMkb(p.mkb),dgrp:p.dgrp,grp:grp,
         last:duFmtDate(last),mdays:mdays,medcnt:aloCnt[p.iin]||0,reg:inReg,
         osm:p.osm,reqOsm:reqf,osmOk:osmOk,inv:p.inv,invOk:invOk,prof:p.prof,lastOsm:duFmtDate(p.lastOsm),r149:r149,
-        osmDates:osmDs,invItems:invItems,profItems:profItems,
+        osmDates:osmDs,osmItems:osmItems,invItems:invItems,profItems:profItems,
         reqName:req?req.g:'', reqProf:req?req.op:'', reqInv:req?req.iv:'', reqSr:req?req.sr:''});
     }
     duResult={updatedAt:new Date().toISOString(),updatedBy:(typeof getLoggedInName==='function'?getLoggedInName():'')||'',
@@ -19054,6 +19055,11 @@ function duRenderTable(){ if(!duResult)return;
 
 // ── Толық справка модалі ──
 function duCloseDetail(){ var o=document.getElementById('duDetailOverlay'); if(o)o.classList.remove('show'); }
+var DU_SPECS=['фтизиатр','инфекционист','гастроэнтеролог','гематолог','кардиолог','невропатолог','невролог','эндокринолог','офтальмолог','окулист','хирург','уролог','гинеколог','акушер','дерматолог','пульмонолог','ревматолог','нефролог','психиатр','нарколог','онколог','отоларинголог','оториноларинголог','аллерголог','иммунолог','травматолог','ортопед','проктолог','маммолог','стоматолог','реабилитолог','физиотерапевт','генетик','терапевт','педиатр','флеболог','ангиохирург','нейрохирург','гепатолог'];
+var DU_SPEC_SYN={'невропатолог':'невролог','окулист':'офтальмолог','оториноларинголог':'отоларинголог'};
+function duSpecKey(text){ var t=(''+text).toLowerCase(); for(var i=0;i<DU_SPECS.length;i++){ var w=DU_SPECS[i]; if(t.indexOf(w.slice(0,6))>=0) return DU_SPEC_SYN[w]||w; } return ''; }
+function duReqSpecs(reqProf){ var t=(''+reqProf).toLowerCase(); var out=[]; for(var i=0;i<DU_SPECS.length;i++){ var w=DU_SPECS[i]; if(t.indexOf(w.slice(0,6))>=0){ var c=DU_SPEC_SYN[w]||w; if(out.indexOf(c)<0)out.push(c); } } return out; }
+
 function duShowDetail(iin){
   if(!duResult)return; var r=null;
   for(var i=0;i<duResult.rows.length;i++){ if(duResult.rows[i].iin===iin){r=duResult.rows[i];break;} }
@@ -19064,10 +19070,22 @@ function duShowDetail(iin){
   else if(r.grp==='B')gwhy='Соңғы дәрі '+r.last+' ('+r.mdays+' күн бұрын). 91–365 күн аралығында болғандықтан — <b>В (тұрақты емес)</b>: дәрісін уақтылы алмай жүр.';
   else gwhy=(r.last==='—'?'АЛО базасында дәрі алу жазбасы <b>мүлдем жоқ</b>':('Соңғы дәрі '+r.last+' ('+r.mdays+' күн бұрын), 365 күннен асқан'))+' — <b>С (қаралмаған)</b>: 1 жылдан астам дәрі алмаған.';
   var osmWhy=(r.reqOsm?('149 бойынша жылына <b>'+r.reqOsm+' рет</b> дәрігер қабылдауы қажет. Нақты — <b>'+r.osm+' рет</b> (соңғы 12 айда). ')+(r.osm>=r.reqOsm?'✅ Талап <b>орындалған</b>.':'❌ Талап <b>орындалмаған</b> ('+r.osm+' < '+r.reqOsm+').'):('Талап нақты белгіленбеген. Нақты осмотр саны — <b>'+r.osm+'</b>.'));
-  var osmList=r.osmDates&&r.osmDates.length?('<div style="font-size:11px;color:#64748b;margin-top:4px">Осмотр күндері: '+r.osmDates.join(', ')+'</div>'):'';
-  var invWhy='Соңғы 12 айда <b>'+r.inv+'</b> зертханалық/диагностикалық зерттеу жасалған'+(r.inv>0?':':' — ❌ мүлдем жасалмаған.');
+  var osmList=(r.osmItems&&r.osmItems.length)?('<ul style="margin:4px 0 0 16px;padding:0;font-size:12px;color:#334155">'+r.osmItems.map(function(x){return '<li>'+x[0]+' — <b>'+x[1]+'</b> рет</li>';}).join('')+'</ul>'):'';
+  if(r.osmDates&&r.osmDates.length)osmList+='<div style="font-size:11px;color:#94a3b8;margin-top:3px">Қабылдау күндері: '+r.osmDates.join(', ')+'</div>';
+  var invWhy='Соңғы 12 айда <b>'+r.inv+'</b> зертханалық/диагностикалық зерттеу жасалған'+(r.inv>0?' — түрлері:':' — ❌ мүлдем жасалмаған.');
   var invList=(r.invItems&&r.invItems.length)?('<ul style="margin:4px 0 0 16px;padding:0;font-size:12px;color:#334155">'+r.invItems.map(function(x){return '<li>'+x[0]+' — <b>'+x[1]+'</b> рет</li>';}).join('')+'</ul>'):'';
-  var profList=(r.profItems&&r.profItems.length)?('<ul style="margin:4px 0 0 16px;padding:0;font-size:12px;color:#334155">'+r.profItems.map(function(x){return '<li>'+x[0]+' — <b>'+x[1]+'</b> рет</li>';}).join('')+'</ul>'):'<span style="font-size:12px;color:#94a3b8">— консультация жоқ</span>';
+  // Профиль маман — 149 талап еткен маманмен салыстыру (жасыл/қызыл)
+  var reqSpecs=duReqSpecs(r.reqProf);
+  var profList;
+  if(r.profItems&&r.profItems.length){
+    profList='<ul style="margin:4px 0 0 14px;padding:0;font-size:12px;list-style:none">'+r.profItems.map(function(x){
+      var key=duSpecKey(x[0]); var matched=reqSpecs.length?(!!key&&reqSpecs.indexOf(key)>=0):null;
+      var col=matched===true?'#16a34a':(matched===false?'#dc2626':'#334155');
+      var ic=matched===true?'🟢':(matched===false?'🔴':'•');
+      return '<li style="color:'+col+';margin:2px 0;font-weight:'+(matched===true?'700':'400')+'">'+ic+' '+x[0]+' — <b>'+x[1]+'</b> рет'+(matched===true?' ✅ (149 талабы)':(matched===false?' ❌ (149 талап емес)':''))+'</li>';
+    }).join('')+'</ul>';
+    if(reqSpecs.length)profList+='<div style="font-size:11px;color:#64748b;margin-top:5px">📌 149 талап еткен маман: <b>'+reqSpecs.join(', ')+'</b> — 🟢 сәйкес, 🔴 талап емес</div>';
+  } else profList='<span style="font-size:12px;color:#dc2626">— консультация мүлдем жоқ '+(reqSpecs.length?('(149 талабы: '+reqSpecs.join(', ')+')'):'')+'</span>';
   var r149c={OK:['#0f766e','#ccfbf1','✅ САҚТАЛҒАН (жасыл)'],PART:['#ca8a04','#fef9c3','⚠️ ЖАРТЫЛАЙ (сары)'],NO:['#dc2626','#fee2e2','❌ САҚТАЛМАҒАН (қызыл)']}[r.r149];
   var r149why;
   if(r.r149==='OK')r149why='Осмотр талабы орындалған <b>ЖӘНЕ</b> зерттеу жасалған. Сондықтан — <b>жасыл ✅</b>.';
