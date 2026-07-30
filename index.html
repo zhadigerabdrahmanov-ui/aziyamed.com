@@ -19147,15 +19147,17 @@ function duLoadSaved(){
   fetch(DU_FB+'duchet_history.json').then(function(r){return r.json();}).then(function(h){ duRenderDynamics(Array.isArray(h)?h:[]); }).catch(function(e){});
 }
 
+// Жергілікті (Қазақстан) күн — YYYY-MM-DD (түн 00:00 жаңа күн болып есептеледі)
+function duLocalDay(iso){ var d=iso?new Date(iso):new Date(); function z(n){return(n<10?'0':'')+n;} return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate()); }
 // Талдау тарихын Firebase-ке қосу (әр талдаудан кейін)
 function duSaveHistory(){
   if(!duResult)return; var c=duResult.counts;
   var snap={date:duResult.updatedAt,A:c.A,B:c.B,C:c.C,total:c.total,NR:c.NR,ok:c.r149ok,part:c.r149part,no:c.r149no,nomatch:c.nomatch};
   fetch(DU_FB+'duchet_history.json').then(function(r){return r.json();}).then(function(h){
     h=Array.isArray(h)?h:[];
-    // сол күнгі соңғы талдауды алмастыру (бір күнде бірнеше рет талдаса — соңғысы қалады)
-    var day=(snap.date||'').slice(0,10);
-    if(h.length && (h[h.length-1].date||'').slice(0,10)===day) h[h.length-1]=snap; else h.push(snap);
+    // сол күнгі (жергілікті) соңғы талдауды алмастыру — бір күнде бірнеше рет талдаса, соңғысы қалады
+    var day=duLocalDay(snap.date);
+    if(h.length && duLocalDay(h[h.length-1].date)===day) h[h.length-1]=snap; else h.push(snap);
     if(h.length>60)h=h.slice(h.length-60);
     fetch(DU_FB+'duchet_history.json',{method:'PUT',body:JSON.stringify(h)});
     duRenderDynamics(h);
