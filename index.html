@@ -18938,7 +18938,7 @@ async function duRunAnalysis(){
     }
     // 5. Классификация + 149 сәйкестік
     st.textContent='⏳ Қорытынды есептелуде...';
-    var out=[],cA=0,cB=0,cC=0,cNR=0,r149ok=0,r149part=0,r149no=0,rNomatch=0;
+    var out=[],cA=0,cB=0,cC=0,cNR=0,r149ok=0,r149part=0,r149no=0,rNomatch=0,byUch={};
     var today=new Date();
     for(var k=0;k<order.length;k++){ var p=pts[order[k]];
       var last=aloLast[p.iin]||null; var grp;
@@ -18951,6 +18951,10 @@ async function duRunAnalysis(){
       var osmOk=(reqf>0&&p.osm>=reqf)||(reqf===0&&p.osm>=1);
       var invOk=p.inv>=1;
       var r149; if(osmOk&&invOk){r149='OK';r149ok++;} else if(osmOk||invOk){r149='PART';r149part++;} else {r149='NO';r149no++;}
+      // участок бойынша жинақтау
+      var uk=(''+(p.uch||'—')).trim()||'—';
+      var uu=byUch[uk]||(byUch[uk]={A:0,B:0,C:0,total:0,ok:0,part:0,no:0});
+      uu.total++; uu[grp]++; if(r149==='OK')uu.ok++; else if(r149==='PART')uu.part++; else uu.no++;
       var mdays=last?Math.round((aloRef-last)/86400000):null;
       var invItems=Object.keys(p.invMap).map(function(k){return [k,p.invMap[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,40);
       var profItems=Object.keys(p.profMap).map(function(k){return [k,p.profMap[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,20);
@@ -18964,7 +18968,7 @@ async function duRunAnalysis(){
     }
     duResult={updatedAt:new Date().toISOString(),updatedBy:(typeof getLoggedInName==='function'?getLoggedInName():'')||'',
       refDate:duFmtDate(aloRef), svcFiles:duServiceFiles.length,
-      counts:{A:cA,B:cB,C:cC,NR:cNR,total:out.length,r149ok:r149ok,r149part:r149part,r149no:r149no,nomatch:rNomatch}, rows:out};
+      counts:{A:cA,B:cB,C:cC,NR:cNR,total:out.length,r149ok:r149ok,r149part:r149part,r149no:r149no,nomatch:rNomatch}, byUch:byUch, rows:out};
     st.textContent='💾 Firebase-ке сақталуда...';
     fetch(DU_FB+'duchet.json',{method:'PUT',body:JSON.stringify(duResult)})
       .then(function(rp){ st.textContent=rp.ok?'✅ Талдау сақталды — барлық аккаунтқа қолжетімді':'⚠️ Сақтау қатесі '+rp.status; if(rp.ok)duSaveHistory(); })
@@ -19152,7 +19156,7 @@ function duLocalDay(iso){ var d=iso?new Date(iso):new Date(); function z(n){retu
 // Талдау тарихын Firebase-ке қосу (әр талдаудан кейін)
 function duSaveHistory(){
   if(!duResult)return; var c=duResult.counts;
-  var snap={date:duResult.updatedAt,A:c.A,B:c.B,C:c.C,total:c.total,NR:c.NR,ok:c.r149ok,part:c.r149part,no:c.r149no,nomatch:c.nomatch};
+  var snap={date:duResult.updatedAt,A:c.A,B:c.B,C:c.C,total:c.total,NR:c.NR,ok:c.r149ok,part:c.r149part,no:c.r149no,nomatch:c.nomatch,byUch:duResult.byUch||{}};
   fetch(DU_FB+'duchet_history.json').then(function(r){return r.json();}).then(function(h){
     h=Array.isArray(h)?h:[];
     // сол күнгі (жергілікті) соңғы талдауды алмастыру — бір күнде бірнеше рет талдаса, соңғысы қалады
@@ -19188,7 +19192,40 @@ function duRenderDynamics(h){
     '<div class="du-sec-t" style="font-size:14px;margin-bottom:8px">📈 Динамика мониторингі <span style="font-weight:600;color:#94a3b8;font-size:12px">('+h.length+' талдау · соңғысы '+duFmtIso(cur.date)+')</span></div>'+
     '<div style="font-size:11px;color:#94a3b8;margin-bottom:10px">Стрелка алдыңғы талдаумен салыстырғанда: ⬆️ өсті · ⬇️ азайды · 🟡 өзгеріссіз</div>'+
     '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">'+cards+'</div>'+
-    duChartSVG(h);
+    duChartSVG(h)+
+    duUchTable(h);
+}
+
+// Участоктар бойынша динамика кестесі
+function duUchTable(h){
+  if(!h||!h.length)return '';
+  var cur=h[h.length-1], prev=h.length>=2?h[h.length-2]:null;
+  var uch=cur.byUch||{}; var keys=Object.keys(uch);
+  if(!keys.length)return '';
+  keys.sort(function(a,b){ var na=parseInt(a); var nb=parseInt(b); na=isNaN(na)?999:na; nb=isNaN(nb)?999:nb; if(na!==nb)return na-nb; return a.localeCompare(b,'ru'); });
+  var rowsHtml=keys.map(function(k){ var u=uch[k];
+    var pct=u.total?Math.round(u.ok/u.total*100):0;
+    var pu=prev&&prev.byUch?prev.byUch[k]:null; var ppct=(pu&&pu.total)?Math.round(pu.ok/pu.total*100):null;
+    var arrow='<span style="color:#94a3b8">—</span>';
+    if(ppct!=null){ if(pct>ppct)arrow='<span style="color:#16a34a;font-weight:700">⬆️ +'+(pct-ppct)+'%</span>'; else if(pct<ppct)arrow='<span style="color:#dc2626;font-weight:700">⬇️ '+(pct-ppct)+'%</span>'; else arrow='<span style="color:#f59e0b;font-weight:700">🟡 0</span>'; }
+    var pcol=pct>=70?'#16a34a':(pct>=40?'#f59e0b':'#dc2626');
+    return '<tr>'+
+      '<td style="font-weight:600;font-size:11px">'+k+'</td>'+
+      '<td style="text-align:center;font-size:11px">'+u.total+'</td>'+
+      '<td style="text-align:center;font-size:11px;color:#16a34a">'+u.A+'</td>'+
+      '<td style="text-align:center;font-size:11px;color:#ca8a04">'+u.B+'</td>'+
+      '<td style="text-align:center;font-size:11px;color:#dc2626">'+u.C+'</td>'+
+      '<td style="text-align:center;font-size:11px;color:#0f766e;font-weight:700">'+u.ok+'</td>'+
+      '<td style="text-align:center;font-size:11px;color:#dc2626;font-weight:700">'+u.no+'</td>'+
+      '<td style="text-align:center"><span style="display:inline-block;min-width:40px;padding:2px 6px;border-radius:10px;background:'+pcol+';color:#fff;font-size:11px;font-weight:700">'+pct+'%</span></td>'+
+      '<td style="text-align:center;font-size:11px">'+arrow+'</td>'+
+    '</tr>';
+  }).join('');
+  return '<div class="du-sec-t" style="font-size:14px;margin:18px 0 8px">🏥 Участоктар бойынша 149 сәйкестік</div>'+
+    '<div style="font-size:11px;color:#94a3b8;margin-bottom:8px">149 % = сол участоктағы 149 талабы сақталған науқастар үлесі. Динамика — алдыңғы талдаумен салыстырғанда.</div>'+
+    '<div style="overflow-x:auto"><table class="mkb-tbl" style="width:100%">'+
+    '<thead><tr><th>Участок</th><th title="Барлығы">Бар.</th><th title="А белсенді">🟢А</th><th title="В тұрақсыз">🟡В</th><th title="С қаралмаған">🔴С</th><th title="149 сақталған">✅</th><th title="149 бұзылған">❌</th><th title="149 сақталу пайызы">149%</th><th>Динамика</th></tr></thead>'+
+    '<tbody>'+rowsHtml+'</tbody></table></div>';
 }
 
 function duChartSVG(h){
