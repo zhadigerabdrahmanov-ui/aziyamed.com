@@ -1877,7 +1877,8 @@
 @media(max-width:500px) { .gallery-grid { grid-template-columns:1fr 1fr; gap:8px; } }
 
 /* ═══ KAZAKH ANIMATED BACKGROUNDS ═══ */
-.page-section { position:relative; overflow:hidden; }
+/* Бекітілген header (2 жолды мәзір ~120px) тақырыпты жаппауы үшін жоғарғы padding */
+.page-section { position:relative; overflow:hidden; padding-top:130px; }
 .page-section .section-inner { position:relative; z-index:2; }
 
 .kz-bg { position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
@@ -2740,7 +2741,7 @@ html.dark .kz-tile { opacity:0.22; }
 <button class="page-back-btn" id="pageBackBtn" onclick="showSection('hero')">← Басты бетке оралу</button>
 
 <!-- ABOUT -->
-<section id="about" class="page-section" style="background:var(--light);">
+<section id="about" class="page-section" style="background:var(--light);padding-top:150px;">
   <div class="section-inner">
     <div class="section-head center reveal">
       <div class="section-label" data-i18n="sec_about_label">Біз туралы</div>
