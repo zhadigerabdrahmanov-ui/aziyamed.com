@@ -2340,6 +2340,11 @@ html.dark .kz-tile { opacity:0.22; }
   .du-lbl{font-size:12px;font-weight:700;margin-top:4px;opacity:.95}
   .du-fbtn{padding:7px 14px;border-radius:20px;border:1.5px solid #e2e8f0;background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:#475569}
   .du-fbtn.on{color:#fff;border-color:transparent}
+  .du-sec{background:#fff;border-radius:10px;padding:11px 13px;margin-bottom:9px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+  .du-sec-t{font-size:13px;font-weight:800;color:#1e293b;margin-bottom:4px}
+  #duDetailOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:10002;align-items:center;justify-content:center;padding:16px}
+  #duDetailOverlay.show{display:flex}
+  .du-detail-box{background:#f1f5f9;border-radius:16px;max-width:600px;width:100%;max-height:90vh;overflow-y:auto;padding:20px;position:relative}
 </style>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
@@ -5278,6 +5283,16 @@ html.dark .kz-tile { opacity:0.22; }
   <input id="duSearch" type="text" oninput="duRenderTable()" placeholder="🔍 ФИО немесе ИИН бойынша іздеу..." style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;margin-bottom:10px;box-sizing:border-box;display:none;">
   <div style="overflow-x:auto;"><table class="mkb-tbl" id="duTable" style="display:none;width:100%;"><thead id="duThead"></thead><tbody id="duTbody"></tbody></table></div>
   <button id="duExportBtn" onclick="duExport()" style="display:none;margin-top:12px;padding:10px 18px;background:#16a34a;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">📥 Көрсетілген тізімді Excel-ге жүктеу (ағымдағы сүзгі)</button>
+  <div style="font-size:11px;color:#94a3b8;margin-top:8px;">💡 Кез келген науқастың жолын басып, толық справканы (неге А/В/С, осмотр не үшін, қандай зерттеулер, 149 неге жасыл/сары/қызыл) көре аласыз.</div>
+</div>
+
+<!-- Д-ЕСЕП ТОЛЫҚ СПРАВКА МОДАЛІ -->
+<div id="duDetailOverlay" onclick="if(event.target===this)duCloseDetail()">
+  <div class="du-detail-box">
+    <button onclick="duCloseDetail()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8">✕</button>
+    <div id="duDetailBody"></div>
+    <button onclick="duCloseDetail()" style="width:100%;margin-top:10px;padding:10px;background:#e2e8f0;color:#334155;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">Жабу</button>
+  </div>
 </div>
 
 <div id="panelmkbook" class="kuraldar-panel-content" style="display:none;">
@@ -18902,7 +18917,7 @@ async function duRunAnalysis(){
     var pts={}, order=[];
     for(var i=hd+1;i<rows.length;i++){ var r=rows[i]||[]; var iin=duNormIin(cIin>=0?r[cIin]:''); if(iin.length!==12)continue; if(pts[iin])continue;
       pts[iin]={iin:iin,fio:(cFio>=0?(r[cFio]||''):''),uch:(cUch>=0?(r[cUch]||''):''),mkb:(cMkb>=0?(r[cMkb]||''):''),
-        dgrp:(cGrp>=0?(r[cGrp]||''):''),osm:0,inv:0,prof:0,lastOsm:null}; order.push(iin); }
+        dgrp:(cGrp>=0?(r[cGrp]||''):''),osm:0,inv:0,prof:0,lastOsm:null,osmDates:[],invMap:{},profMap:{}}; order.push(iin); }
     // 4. Көрсетілген қызметтер (көп файл) — тек Д-есеп пациенттеріне, соңғы 12 ай
     var cut=new Date(aloRef.getFullYear()-1,aloRef.getMonth(),aloRef.getDate());
     for(var f=0;f<duServiceFiles.length;f++){
@@ -18912,9 +18927,11 @@ async function duRunAnalysis(){
       var sci=duCol(SH,['ИИН']),scn=duCol(SH,['Наименование услуги']),scd=duCol(SH,['Дата выполнения']);
       for(var i=shi+1;i<srows.length;i++){ var r=srows[i]||[]; var iin=duNormIin(sci>=0?r[sci]:''); var p=pts[iin]; if(!p)continue;
         var d=duParseDate(scd>=0?r[scd]:null); if(!d||d<cut)continue;
-        var kind=duSvcKind(scn>=0?r[scn]:'');
-        if(kind==='D'){ p.osm++; if(!p.lastOsm||d>p.lastOsm)p.lastOsm=d; }
-        else if(kind==='I'){ p.inv++; } else if(kind==='P'){ p.prof++; } }
+        var nm=(scn>=0&&r[scn]!=null)?(''+r[scn]).trim():'';
+        var kind=duSvcKind(nm);
+        if(kind==='D'){ p.osm++; p.osmDates.push(d); if(!p.lastOsm||d>p.lastOsm)p.lastOsm=d; }
+        else if(kind==='I'){ p.inv++; if(nm)p.invMap[nm]=(p.invMap[nm]||0)+1; }
+        else if(kind==='P'){ p.prof++; if(nm)p.profMap[nm]=(p.profMap[nm]||0)+1; } }
       srows=null;
     }
     // 5. Классификация + 149 сәйкестік
@@ -18932,9 +18949,14 @@ async function duRunAnalysis(){
       var osmOk=(reqf>0&&p.osm>=reqf)||(reqf===0&&p.osm>=1);
       var invOk=p.inv>=1;
       var r149; if(osmOk&&invOk){r149='OK';r149ok++;} else if(osmOk||invOk){r149='PART';r149part++;} else {r149='NO';r149no++;}
+      var mdays=last?Math.round((aloRef-last)/86400000):null;
+      var invItems=Object.keys(p.invMap).map(function(k){return [k,p.invMap[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,40);
+      var profItems=Object.keys(p.profMap).map(function(k){return [k,p.profMap[k]];}).sort(function(a,b){return b[1]-a[1];}).slice(0,20);
+      var osmDs=p.osmDates.sort(function(a,b){return b-a;}).slice(0,20).map(duFmtDate);
       out.push({iin:p.iin,fio:p.fio,uch:p.uch,mkb:duNormMkb(p.mkb),dgrp:p.dgrp,grp:grp,
-        last:duFmtDate(last),medcnt:aloCnt[p.iin]||0,reg:inReg,
-        osm:p.osm,reqOsm:reqf,inv:p.inv,prof:p.prof,lastOsm:duFmtDate(p.lastOsm),r149:r149,
+        last:duFmtDate(last),mdays:mdays,medcnt:aloCnt[p.iin]||0,reg:inReg,
+        osm:p.osm,reqOsm:reqf,osmOk:osmOk,inv:p.inv,invOk:invOk,prof:p.prof,lastOsm:duFmtDate(p.lastOsm),r149:r149,
+        osmDates:osmDs,invItems:invItems,profItems:profItems,
         reqName:req?req.g:'', reqProf:req?req.op:'', reqInv:req?req.iv:'', reqSr:req?req.sr:''});
     }
     duResult={updatedAt:new Date().toISOString(),updatedBy:(typeof getLoggedInName==='function'?getLoggedInName():'')||'',
@@ -18995,24 +19017,61 @@ function duRenderTable(){ if(!duResult)return;
   var b149={OK:'<span style="background:#ccfbf1;color:#0f766e;padding:2px 7px;border-radius:10px;font-weight:700;font-size:11px">✅</span>',
             PART:'<span style="background:#fef9c3;color:#ca8a04;padding:2px 7px;border-radius:10px;font-weight:700;font-size:11px">⚠️</span>',
             NO:'<span style="background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:10px;font-weight:700;font-size:11px">❌</span>'};
-  document.getElementById('duThead').innerHTML='<tr><th style="width:30px">№</th><th>ФИО</th><th>ИИН</th><th>МКБ</th><th title="Дәрі тобы">Топ</th><th title="Осмотр факт/талап">Осмотр</th><th title="Зерттеу саны">Зерт.</th><th title="149 сәйкестік">149</th></tr>';
+  document.getElementById('duThead').innerHTML='<tr><th style="width:30px">№</th><th>ФИО</th><th>ИИН</th><th>МКБ</th><th title="Дәрі тобы">Топ</th><th title="Участок">Уч-к</th><th title="Соңғы рет дәрі алған күні">Соңғы дәрі</th><th title="Рецепт саны">Рец.</th><th title="Осмотр факт/талап">Осмотр</th><th title="Зерттеу саны">Зерт.</th><th title="149 сәйкестік">149</th></tr>';
   var tb=document.getElementById('duTbody');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:18px">Сәйкес жазба жоқ</td></tr>';document.getElementById('duTable').style.display='';return;}
+  if(!rows.length){tb.innerHTML='<tr><td colspan="11" style="text-align:center;color:#94a3b8;padding:18px">Сәйкес жазба жоқ</td></tr>';document.getElementById('duTable').style.display='';return;}
   var html='';
   for(var i=0;i<rows.length;i++){ var r=rows[i];
     var osmTxt=r.osm+(r.reqOsm?('/'+r.reqOsm):''); var osmCol=(r.reqOsm && r.osm<r.reqOsm)?'#dc2626':((r.osm>0)?'#16a34a':'#94a3b8');
-    var tip=(r.reqName?('Топ: '+r.reqName+' | Проф.маман: '+(r.reqProf||'—')+' | Зерттеу: '+(r.reqInv||'—')+' | Сроки: '+(r.reqSr||'—')):'149 талабы табылмады');
-    html+='<tr'+(r.reg===false?' style="background:#f5f3ff"':'')+' title="'+(''+tip).replace(/"/g,'&quot;')+'">'+
+    var uch=(''+(r.uch||'')).replace(/\D.*$/,'')||(r.uch||'—');
+    html+='<tr onclick="duShowDetail(\''+r.iin+'\')" style="cursor:pointer;'+(r.reg===false?'background:#f5f3ff':'')+'" onmouseover="this.style.background=\'#fff7ed\'" onmouseout="this.style.background=\''+(r.reg===false?'#f5f3ff':'')+'\'">'+
       '<td style="color:#94a3b8;font-size:11px">'+(i+1)+'</td>'+
-      '<td style="font-weight:600;font-size:12px">'+(r.fio||'—')+(r.reg===false?' ⚠️':'')+'</td>'+
+      '<td style="font-weight:600;font-size:12px">'+(r.fio||'—')+(r.reg===false?' ⚠️':'')+' <span style="color:#cbd5e1;font-size:10px">🔎</span></td>'+
       '<td style="font-family:monospace;font-size:11px;color:#64748b">'+r.iin+'</td>'+
       '<td style="font-size:11px;color:#64748b">'+(r.mkb||'—')+'</td>'+
       '<td><span style="background:'+gb[r.grp]+';color:#fff;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700">'+r.grp+'</span></td>'+
+      '<td style="text-align:center;font-size:11px;color:#64748b">'+uch+'</td>'+
+      '<td style="font-size:11px;color:#64748b">'+(r.last||'—')+'</td>'+
+      '<td style="text-align:center;font-size:11px;color:#64748b">'+(r.medcnt||0)+'</td>'+
       '<td style="font-size:11px;font-weight:700;color:'+osmCol+'">'+osmTxt+'</td>'+
       '<td style="text-align:center;font-size:11px;color:'+(r.inv>0?'#16a34a':'#dc2626')+'">'+r.inv+'</td>'+
       '<td>'+(b149[r.r149]||'')+'</td></tr>';
   }
   tb.innerHTML=html; document.getElementById('duTable').style.display='';
+}
+
+// ── Толық справка модалі ──
+function duCloseDetail(){ var o=document.getElementById('duDetailOverlay'); if(o)o.classList.remove('show'); }
+function duShowDetail(iin){
+  if(!duResult)return; var r=null;
+  for(var i=0;i<duResult.rows.length;i++){ if(duResult.rows[i].iin===iin){r=duResult.rows[i];break;} }
+  if(!r)return;
+  var gname={A:'🟢 А — белсенді',B:'🟡 В — тұрақты емес',C:'🔴 С — ұзақ қаралмаған'};
+  var gwhy;
+  if(r.grp==='A')gwhy='Соңғы дәрі '+r.last+' ('+r.mdays+' күн бұрын). 90 күннен аз болғандықтан — <b>А (белсенді)</b>: тұрақты дәрі алып жүр.';
+  else if(r.grp==='B')gwhy='Соңғы дәрі '+r.last+' ('+r.mdays+' күн бұрын). 91–365 күн аралығында болғандықтан — <b>В (тұрақты емес)</b>: дәрісін уақтылы алмай жүр.';
+  else gwhy=(r.last==='—'?'АЛО базасында дәрі алу жазбасы <b>мүлдем жоқ</b>':('Соңғы дәрі '+r.last+' ('+r.mdays+' күн бұрын), 365 күннен асқан'))+' — <b>С (қаралмаған)</b>: 1 жылдан астам дәрі алмаған.';
+  var osmWhy=(r.reqOsm?('149 бойынша жылына <b>'+r.reqOsm+' рет</b> дәрігер қабылдауы қажет. Нақты — <b>'+r.osm+' рет</b> (соңғы 12 айда). ')+(r.osm>=r.reqOsm?'✅ Талап <b>орындалған</b>.':'❌ Талап <b>орындалмаған</b> ('+r.osm+' < '+r.reqOsm+').'):('Талап нақты белгіленбеген. Нақты осмотр саны — <b>'+r.osm+'</b>.'));
+  var osmList=r.osmDates&&r.osmDates.length?('<div style="font-size:11px;color:#64748b;margin-top:4px">Осмотр күндері: '+r.osmDates.join(', ')+'</div>'):'';
+  var invWhy='Соңғы 12 айда <b>'+r.inv+'</b> зертханалық/диагностикалық зерттеу жасалған'+(r.inv>0?':':' — ❌ мүлдем жасалмаған.');
+  var invList=(r.invItems&&r.invItems.length)?('<ul style="margin:4px 0 0 16px;padding:0;font-size:12px;color:#334155">'+r.invItems.map(function(x){return '<li>'+x[0]+' — <b>'+x[1]+'</b> рет</li>';}).join('')+'</ul>'):'';
+  var profList=(r.profItems&&r.profItems.length)?('<ul style="margin:4px 0 0 16px;padding:0;font-size:12px;color:#334155">'+r.profItems.map(function(x){return '<li>'+x[0]+' — <b>'+x[1]+'</b> рет</li>';}).join('')+'</ul>'):'<span style="font-size:12px;color:#94a3b8">— консультация жоқ</span>';
+  var r149c={OK:['#0f766e','#ccfbf1','✅ САҚТАЛҒАН (жасыл)'],PART:['#ca8a04','#fef9c3','⚠️ ЖАРТЫЛАЙ (сары)'],NO:['#dc2626','#fee2e2','❌ САҚТАЛМАҒАН (қызыл)']}[r.r149];
+  var r149why;
+  if(r.r149==='OK')r149why='Осмотр талабы орындалған <b>ЖӘНЕ</b> зерттеу жасалған. Сондықтан — <b>жасыл ✅</b>.';
+  else if(r.r149==='PART')r149why='Тек біреуі орындалған: '+(r.osmOk?'осмотр ✅ бар, бірақ зерттеу ❌ жоқ':'зерттеу ✅ бар, бірақ осмотр талабы ❌ орындалмаған')+'. Сондықтан — <b>сары ⚠️</b>.';
+  else r149why='Осмотр талабы <b>да</b> орындалмаған, зерттеу <b>де</b> жасалмаған. Сондықтан — <b>қызыл ❌</b>.';
+  var req=r.reqName?('<div style="background:#f8fafc;border-radius:8px;padding:10px;margin-top:6px;font-size:12px;color:#475569"><b>📋 149 бұйрық талабы (осы диагноз бойынша):</b><br>Топ: '+r.reqName+'<br>Проф. маман осмотры: '+(r.reqProf||'—')+'<br>Зерттеу минимумы: '+(r.reqInv||'—')+'<br>Бақылау мерзімі (сроки): '+(r.reqSr||'—')+'</div>'):'<div style="font-size:12px;color:#94a3b8;margin-top:6px">⚠️ Бұл МКБ коды 149 бұйрық тізімінен табылмады.</div>';
+  var body=
+    '<div style="font-size:16px;font-weight:800;color:#1e293b">'+(r.fio||'—')+'</div>'+
+    '<div style="font-size:12px;color:#64748b;margin-bottom:12px">ИИН: '+r.iin+' · МКБ: <b>'+(r.mkb||'—')+'</b> · Участок: '+(r.uch||'—')+(r.reg===false?' · <span style="color:#7c3aed">⚠️ РПН-де жоқ</span>':'')+'</div>'+
+    '<div class="du-sec" style="border-left:4px solid '+({A:'#16a34a',B:'#f59e0b',C:'#dc2626'})[r.grp]+'"><div class="du-sec-t">💊 Дәрі тобы: '+(gname[r.grp])+'</div><div style="font-size:12.5px;color:#334155">'+gwhy+'</div><div style="font-size:11px;color:#94a3b8;margin-top:3px">АЛО рецепт саны: '+(r.medcnt||0)+'</div></div>'+
+    '<div class="du-sec" style="border-left:4px solid #2563eb"><div class="du-sec-t">🩺 Осмотр (дәрігер қабылдауы): '+r.osm+(r.reqOsm?('/'+r.reqOsm):'')+'</div><div style="font-size:12.5px;color:#334155">'+osmWhy+'</div>'+osmList+'</div>'+
+    '<div class="du-sec" style="border-left:4px solid #16a34a"><div class="du-sec-t">🔬 Зерттеулер: '+r.inv+'</div><div style="font-size:12.5px;color:#334155">'+invWhy+'</div>'+invList+'</div>'+
+    '<div class="du-sec" style="border-left:4px solid #8b5cf6"><div class="du-sec-t">👨‍⚕️ Профиль маман консультациясы: '+r.prof+'</div>'+profList+'</div>'+
+    '<div class="du-sec" style="border-left:4px solid '+r149c[0]+';background:'+r149c[1]+'"><div class="du-sec-t" style="color:'+r149c[0]+'">📋 149 қорытынды: '+r149c[2]+'</div><div style="font-size:12.5px;color:#334155">'+r149why+'</div>'+req+'</div>';
+  document.getElementById('duDetailBody').innerHTML=body;
+  document.getElementById('duDetailOverlay').classList.add('show');
 }
 
 function duExport(){ if(!duResult)return; loadSheetJS(function(){
