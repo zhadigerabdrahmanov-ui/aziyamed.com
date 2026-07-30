@@ -5277,7 +5277,7 @@ html.dark .kz-tile { opacity:0.22; }
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;" id="duFilters"></div>
   <input id="duSearch" type="text" oninput="duRenderTable()" placeholder="🔍 ФИО немесе ИИН бойынша іздеу..." style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;margin-bottom:10px;box-sizing:border-box;display:none;">
   <div style="overflow-x:auto;"><table class="mkb-tbl" id="duTable" style="display:none;width:100%;"><thead id="duThead"></thead><tbody id="duTbody"></tbody></table></div>
-  <button id="duExportBtn" onclick="duExport()" style="display:none;margin-top:12px;padding:10px 18px;background:#16a34a;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">📥 Excel-ге жүктеу</button>
+  <button id="duExportBtn" onclick="duExport()" style="display:none;margin-top:12px;padding:10px 18px;background:#16a34a;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">📥 Көрсетілген тізімді Excel-ге жүктеу (ағымдағы сүзгі)</button>
 </div>
 
 <div id="panelmkbook" class="kuraldar-panel-content" style="display:none;">
@@ -18969,22 +18969,28 @@ function duRenderDash(){
   document.getElementById('duMeta').textContent='📅 Есеп күні: '+duResult.refDate+' · Қызмет файлы: '+(duResult.svcFiles||0)+' · Жаңартылған: '+(duResult.updatedAt?new Date(duResult.updatedAt).toLocaleString('ru-RU'):'—')+(duResult.updatedBy?(' · '+duResult.updatedBy):'');
   var fl=document.getElementById('duFilters');
   var btns=[['','Барлығы','#475569'],['A','🟢 А','#16a34a'],['B','🟡 В','#f59e0b'],['C','🔴 С','#dc2626'],
-            ['149OK','✅ 149 сақталған','#0d9488'],['149NO','❌ 149 бұзылған','#dc2626'],['NR','⚠️ РПН жоқ','#7c3aed']];
+            ['149OK','✅ 149 сақталған','#0d9488'],['149NO','❌ 149 бұзылған','#dc2626'],['NOMATCH','🔘 МКБ сәйкессіз','#64748b'],['NR','⚠️ РПН жоқ','#7c3aed']];
   fl.innerHTML=btns.map(function(b){var on=duCurGroup===b[0];return '<button class="du-fbtn'+(on?' on':'')+'" style="'+(on?('background:'+b[2]):'')+'" onclick="duSetGroup(\''+b[0]+'\')">'+b[1]+'</button>';}).join('');
   document.getElementById('duSearch').style.display=''; document.getElementById('duExportBtn').style.display='';
   duRenderTable();
 }
 function duSetGroup(g){ duCurGroup=g; duRenderDash(); }
 
-function duRenderTable(){ if(!duResult)return;
-  var q=(document.getElementById('duSearch').value||'').toLowerCase();
-  var rows=duResult.rows.filter(function(r){
+function duFilteredRows(){
+  if(!duResult)return [];
+  var se=document.getElementById('duSearch');
+  var q=(se?se.value:'').toLowerCase();
+  return duResult.rows.filter(function(r){
     if(duCurGroup==='NR'){if(r.reg!==false)return false;}
     else if(duCurGroup==='149OK'){if(r.r149!=='OK')return false;}
     else if(duCurGroup==='149NO'){if(r.r149!=='NO')return false;}
+    else if(duCurGroup==='NOMATCH'){if(r.reqName!=='')return false;}
     else if(duCurGroup && r.grp!==duCurGroup) return false;
     if(q && (''+r.fio).toLowerCase().indexOf(q)<0 && r.iin.indexOf(q)<0) return false;
     return true; });
+}
+function duRenderTable(){ if(!duResult)return;
+  var rows=duFilteredRows();
   var gb={A:'#16a34a',B:'#ca8a04',C:'#dc2626'};
   var b149={OK:'<span style="background:#ccfbf1;color:#0f766e;padding:2px 7px;border-radius:10px;font-weight:700;font-size:11px">✅</span>',
             PART:'<span style="background:#fef9c3;color:#ca8a04;padding:2px 7px;border-radius:10px;font-weight:700;font-size:11px">⚠️</span>',
@@ -19011,12 +19017,14 @@ function duRenderTable(){ if(!duResult)return;
 
 function duExport(){ if(!duResult)return; loadSheetJS(function(){
   var gname={A:'А белсенді',B:'В тұрақсыз',C:'С қаралмаған'}; var r149n={OK:'Сақталған',PART:'Жартылай',NO:'Сақталмаған'};
+  var flt=duFilteredRows();  // ағымдағы сүзгі бойынша ғана
+  var suffix={'':'барлығы',A:'А',B:'В',C:'С','149OK':'149-сақталған','149NO':'149-бұзылған','NOMATCH':'МКБ-сәйкессіз','NR':'РПН-жоқ'}[duCurGroup]||'сүзгі';
   var aoa=[['№','ФИО','ИИН','Участок','МКБ','Д-топ (дәрі)','Соңғы дәрі','Осмотр факт','Осмотр талап','Зерттеу саны','149 сәйкестік','149 талап тобы','Проф.маман','Зерттеу минимумы','Сроки','РПН']];
-  duResult.rows.forEach(function(r,i){ aoa.push([i+1,r.fio,r.iin,r.uch,r.mkb,gname[r.grp]||r.grp,r.last,r.osm,r.reqOsm||'',r.inv,r149n[r.r149]||r.r149,r.reqName||'',r.reqProf||'',r.reqInv||'',r.reqSr||'',(r.reg===false?'ЖОҚ':(r.reg===true?'бар':'—'))]); });
+  flt.forEach(function(r,i){ aoa.push([i+1,r.fio,r.iin,r.uch,r.mkb,gname[r.grp]||r.grp,r.last,r.osm,r.reqOsm||'',r.inv,r149n[r.r149]||r.r149,r.reqName||'',r.reqProf||'',r.reqInv||'',r.reqSr||'',(r.reg===false?'ЖОҚ':(r.reg===true?'бар':'—'))]); });
   var wb=XLSX.utils.book_new(); var ws=XLSX.utils.aoa_to_sheet(aoa);
   ws['!cols']=[5,26,13,18,10,14,12,9,9,9,14,28,26,30,16,7].map(function(w){return{wch:w};});
-  XLSX.utils.book_append_sheet(wb,ws,'Д-есеп 149 мониторинг');
-  XLSX.writeFile(wb,'Д-есеп_149_мониторинг_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  XLSX.utils.book_append_sheet(wb,ws,'Д-есеп 149');
+  XLSX.writeFile(wb,'Д-есеп_'+suffix+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }); }
 
 function duLoadSaved(){ fetch(DU_FB+'duchet.json').then(function(r){return r.json();}).then(function(data){
