@@ -5282,6 +5282,7 @@ html.dark .kz-tile { opacity:0.22; }
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;" id="duFilters"></div>
   <input id="duSearch" type="text" oninput="duRenderTable()" placeholder="🔍 ФИО немесе ИИН бойынша іздеу..." style="width:100%;padding:9px 12px;border:1.5px solid #e2e8f0;border-radius:9px;font-size:13px;margin-bottom:10px;box-sizing:border-box;display:none;">
   <div style="overflow-x:auto;"><table class="mkb-tbl" id="duTable" style="display:none;width:100%;"><thead id="duThead"></thead><tbody id="duTbody"></tbody></table></div>
+  <div id="duMore" style="text-align:center;margin-top:10px;"></div>
   <button id="duExportBtn" onclick="duExport()" style="display:none;margin-top:12px;padding:10px 18px;background:#16a34a;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;">📥 Көрсетілген тізімді Excel-ге жүктеу (ағымдағы сүзгі)</button>
   <div style="font-size:11px;color:#94a3b8;margin-top:8px;">💡 Кез келген науқастың жолын басып, толық справканы (неге А/В/С, осмотр не үшін, қандай зерттеулер, 149 неге жасыл/сары/қызыл) көре аласыз.</div>
 </div>
@@ -18996,7 +18997,7 @@ function duRenderDash(){
   document.getElementById('duSearch').style.display=''; document.getElementById('duExportBtn').style.display='';
   duRenderTable();
 }
-function duSetGroup(g){ duCurGroup=g; duRenderDash(); }
+function duSetGroup(g){ duCurGroup=g; duExpanded=false; duRenderDash(); }
 
 function duFilteredRows(){
   if(!duResult)return [];
@@ -19011,8 +19012,19 @@ function duFilteredRows(){
     if(q && (''+r.fio).toLowerCase().indexOf(q)<0 && r.iin.indexOf(q)<0) return false;
     return true; });
 }
+var duExpanded=false;
+function duToggleExpand(){ duExpanded=!duExpanded; duRenderTable(); }
 function duRenderTable(){ if(!duResult)return;
-  var rows=duFilteredRows();
+  var allRows=duFilteredRows();
+  var rows = (duExpanded||allRows.length<=10) ? allRows : allRows.slice(0,10);
+  var moreEl=document.getElementById('duMore');
+  if(moreEl){
+    if(allRows.length>10){
+      moreEl.innerHTML = duExpanded
+        ? '<button onclick="duToggleExpand()" class="du-fbtn">🔼 Жасыру (алғашқы 10)</button>'
+        : '<button onclick="duToggleExpand()" class="du-fbtn" style="background:#dc2626;color:#fff;border-color:transparent">🔽 Толық көру — барлығы '+allRows.length+' адам</button>';
+    } else moreEl.innerHTML='';
+  }
   var gb={A:'#16a34a',B:'#ca8a04',C:'#dc2626'};
   var b149={OK:'<span style="background:#ccfbf1;color:#0f766e;padding:2px 7px;border-radius:10px;font-weight:700;font-size:11px">✅</span>',
             PART:'<span style="background:#fef9c3;color:#ca8a04;padding:2px 7px;border-radius:10px;font-weight:700;font-size:11px">⚠️</span>',
