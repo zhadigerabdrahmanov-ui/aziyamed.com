@@ -19060,21 +19060,26 @@ var DU_SPECS=['фтизиатр','инфекционист','гастроэнт�
 var DU_SPEC_SYN={'невропатолог':'невролог','окулист':'офтальмолог','оториноларинголог':'отоларинголог'};
 function duSpecKey(text){ var t=(''+text).toLowerCase(); for(var i=0;i<DU_SPECS.length;i++){ var w=DU_SPECS[i]; if(t.indexOf(w.slice(0,6))>=0) return DU_SPEC_SYN[w]||w; } return ''; }
 function duReqSpecs(reqProf){ var t=(''+reqProf).toLowerCase(); var out=[]; for(var i=0;i<DU_SPECS.length;i++){ var w=DU_SPECS[i]; if(t.indexOf(w.slice(0,6))>=0){ var c=DU_SPEC_SYN[w]||w; if(out.indexOf(c)<0)out.push(c); } } return out; }
-// Зерттеу 149 талабына сәйкес пе? (жасаған анализ талап тізімінде бар ма)
-var DU_INV_STOP={'определение':1,'крови':1,'сыворотке':1,'анализ':1,'исследование':1,'исследования':1,'методом':1,'анализаторе':1,'параметров':1,'плазме':1,'моче':1,'мочи':1,'реакция':1,'общего':1,'обзорная':1,'органов':1};
-function duInvMatch(doneName, reqInv){
-  if(!reqInv) return null;
-  var d=(''+doneName).toLowerCase(); var req=(''+reqInv).toLowerCase();
-  // ерекше фразалар
-  if(d.indexOf('общий анализ крови')>=0 && req.indexOf('общий анализ крови')>=0) return true;
-  if(d.indexOf('общий анализ мочи')>=0 && req.indexOf('мочи')>=0 && req.indexOf('общ')>=0) return true;
-  if(d.indexOf('флюорограф')>=0 && (req.indexOf('флюорограф')>=0||req.indexOf('рентген')>=0)) return true;
-  if(d.indexOf('электрокард')>=0 && (req.indexOf('электрокард')>=0||req.indexOf('экг')>=0)) return true;
-  // маңызды сөздер бойынша
-  var toks=d.replace(/[^а-яё ]/g,' ').split(/\s+/).filter(function(w){return w.length>=6 && !DU_INV_STOP[w];});
-  for(var i=0;i<toks.length;i++){ if(req.indexOf(toks[i].slice(0,6))>=0) return true; }
-  return false;
+// Зерттеу 149 талабына сәйкес пе? (әр анализдің КАНОНДЫҚ қолтаңбасын салыстыру — дәл әдіс)
+var DU_INV_STOP={'определение':1,'определении':1,'определения':1,'исследование':1,'иследование':1,'исследования':1,'иследования':1,'исследовании':1,'анализ':1,'анализа':1,'анализе':1,'крови':1,'кровь':1,'сыворотке':1,'сыворотки':1,'плазме':1,'плазмы':1,'методом':1,'метод':1,'анализаторе':1,'анализатор':1,'параметров':1,'параметра':1,'реакция':1,'реакции':1,'общего':1,'общий':1,'общая':1,'обзорная':1,'органов':1,'ручным':1,'ручной':1,'физико':1,'химические':1,'свойства':1,'подсчетом':1,'подсчёта':1,'количества':1,'клеточных':1,'элементов':1,'осадка':1,'грудной':1,'клетки':1,'выявление':1,'взятие':1,'забор':1,'уровня':1,'содержания':1};
+function duInvSig(name){
+  var d=(''+name).toLowerCase();
+  if(/общ.{0,4}анализ.{0,4}кров/.test(d)) return 'оак';
+  if(/анализ.{0,4}моч/.test(d)||/мочев/.test(d)) return 'оам';
+  if(/флюорограф/.test(d)) return 'флюор';
+  if(/рентген/.test(d)) return 'рентген';
+  if(/маммограф/.test(d)) return 'маммо';
+  if(/электрокард|\bэкг\b/.test(d)) return 'экг';
+  if(/ультразвук|\bузи\b|эхограф/.test(d)) return 'узи';
+  if(/эхокард/.test(d)) return 'эхокг';
+  if(/коагулограм|протромбин|\bмно\b|фибриноген|\bачтв\b/.test(d)) return 'коаг';
+  if(/гликозилирован|гликированн|hba1c/.test(d)) return 'hba1c';
+  if(/флюдерограф|спирограф|спирометр/.test(d)) return 'спиро';
+  var toks=d.replace(/[^а-яё ]/g,' ').split(/\s+/).filter(function(w){return w.length>=5 && !DU_INV_STOP[w];});
+  return toks.length? ('в:'+toks.map(function(t){return t.slice(0,7);}).sort().join('|')) : '';
 }
+function duReqSigs(reqInv){ var out={}; (''+reqInv).split(/•|;|\n/).forEach(function(p){ var s=duInvSig(p); if(s)out[s]=1; }); return out; }
+function duInvMatch(doneName, reqInv){ if(!reqInv) return null; var sig=duInvSig(doneName); if(!sig) return false; return !!duReqSigs(reqInv)[sig]; }
 
 function duShowDetail(iin){
   if(!duResult)return; var r=null;
