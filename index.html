@@ -19236,19 +19236,7 @@ function duRenderDynamics(hRaw){
       '<button onclick="duSetStartDate()" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:8px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer">📅 Осы күннен бастау</button>'+
     '</span></div>';
   if(!h.length){ el.innerHTML=header+'<div style="font-size:12px;color:#94a3b8;padding:8px 2px;line-height:1.5">'+(duStartDay?('Мониторинг <b>'+duStartDay+'</b> күнінен басталады. Осы күннен бастап талдау жасалғанда динамика (⬆️/⬇️) көріне бастайды.'):'Әзірге деректер жоқ — талдау жасаңыз.')+'</div>'; return; }
-  var cur=h[h.length-1], prev=h.length>=2?h[h.length-2]:null;
-  var inds=[['A','🟢 А белсенді','#16a34a'],['B','🟡 В тұрақсыз','#f59e0b'],['C','🔴 С қаралмаған','#dc2626'],['total','👥 Барлығы','#475569'],
-            ['ok','✅ 149 сақталған','#0d9488'],['no','❌ 149 бұзылған','#dc2626'],['nomatch','🔘 МКБ сәйкессіз','#64748b'],['NR','⚠️ РПН жоқ','#7c3aed']];
-  var cards=inds.map(function(x){ var v=cur[x[0]]||0; var pv=prev?(prev[x[0]]==null?0:prev[x[0]]):null;
-    return '<div style="background:#fff;border-radius:10px;padding:11px 8px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.05);border-top:3px solid '+x[2]+'">'+
-      '<div style="font-size:11px;font-weight:700;color:#475569;line-height:1.2;min-height:26px">'+x[1]+'</div>'+
-      '<div style="font-size:22px;font-weight:900;color:'+x[2]+'">'+v+'</div>'+
-      '<div>'+duArrow(v,pv)+'</div></div>';
-  }).join('');
-  el.innerHTML=header+
-    '<div style="font-size:11px;color:#94a3b8;margin-bottom:10px">Стрелка алдыңғы талдаумен салыстырғанда: ⬆️ өсті · ⬇️ азайды · 🟡 өзгеріссіз</div>'+
-    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">'+cards+'</div>'+
-    duUchTable(h);
+  el.innerHTML=header+duUchTable(h);
 }
 
 // Участоктар бойынша динамика кестесі
@@ -19258,6 +19246,7 @@ function duUchTable(h){
   var uch=cur.byUch||{}; var keys=Object.keys(uch);
   if(!keys.length)return '';
   keys.sort(function(a,b){ var na=parseInt(a); var nb=parseInt(b); na=isNaN(na)?999:na; nb=isNaN(nb)?999:nb; if(na!==nb)return na-nb; return a.localeCompare(b,'ru'); });
+  function miniD(v,pv){ if(pv==null||pv===undefined)return '<div style="font-size:9px;color:#cbd5e1">—</div>'; var d=(v||0)-(pv||0); if(d>0)return '<div style="font-size:9px;color:#16a34a;font-weight:700;line-height:1.1">⬆️+'+d+'</div>'; if(d<0)return '<div style="font-size:9px;color:#dc2626;font-weight:700;line-height:1.1">⬇️'+d+'</div>'; return '<div style="font-size:9px;color:#f59e0b;font-weight:700;line-height:1.1">🟡0</div>'; }
   var rowsHtml=keys.map(function(k){ var u=uch[k];
     var evalN=(u.ok||0)+(u.no||0);
     var pct=evalN?Math.round(u.ok/evalN*100):0;
@@ -19268,11 +19257,11 @@ function duUchTable(h){
     return '<tr>'+
       '<td style="font-weight:600;font-size:11px">'+k+'</td>'+
       '<td style="text-align:center;font-size:11px">'+u.total+'</td>'+
-      '<td style="text-align:center;font-size:11px;color:#16a34a">'+u.A+'</td>'+
-      '<td style="text-align:center;font-size:11px;color:#ca8a04">'+u.B+'</td>'+
-      '<td style="text-align:center;font-size:11px;color:#dc2626">'+u.C+'</td>'+
-      '<td style="text-align:center;font-size:11px;color:#0f766e;font-weight:700">'+u.ok+'</td>'+
-      '<td style="text-align:center;font-size:11px;color:#dc2626;font-weight:700">'+u.no+'</td>'+
+      '<td style="text-align:center;font-size:11px;color:#16a34a;font-weight:700">'+u.A+miniD(u.A,pu?pu.A:null)+'</td>'+
+      '<td style="text-align:center;font-size:11px;color:#ca8a04;font-weight:700">'+u.B+miniD(u.B,pu?pu.B:null)+'</td>'+
+      '<td style="text-align:center;font-size:11px;color:#dc2626;font-weight:700">'+u.C+miniD(u.C,pu?pu.C:null)+'</td>'+
+      '<td style="text-align:center;font-size:11px;color:#0f766e;font-weight:700">'+u.ok+miniD(u.ok,pu?pu.ok:null)+'</td>'+
+      '<td style="text-align:center;font-size:11px;color:#dc2626;font-weight:700">'+u.no+miniD(u.no,pu?pu.no:null)+'</td>'+
       '<td style="text-align:center"><span style="display:inline-block;min-width:40px;padding:2px 6px;border-radius:10px;background:'+pcol+';color:#fff;font-size:11px;font-weight:700">'+pct+'%</span></td>'+
       '<td style="text-align:center;font-size:11px">'+arrow+'</td>'+
     '</tr>';
@@ -19288,7 +19277,8 @@ function duUchTable(h){
       '<b>❌ (қызыл крест)</b> — 149 талабы <u>сақталмаған</u> науқастар саны (кемінде біреуі орындалмаған)<br>'+
       '<b>149 %</b> — 149 <u>сақталу деңгейі</u>: ✅ ÷ (✅ + ❌) × 100%. Яғни бағаланатын науқастардың неше пайызында 149 талабы толық орындалған. '+
       '<span style="color:#16a34a;font-weight:600">≥70% жасыл</span>, <span style="color:#f59e0b;font-weight:600">40–69% сары</span>, <span style="color:#dc2626;font-weight:600">&lt;40% қызыл</span><br>'+
-      '<b>Динамика</b> — осы участоктың 149 % көрсеткіші алдыңғы талдаумен салыстырғанда өзгеруі (⬆️ өсті · ⬇️ төмендеді · 🟡 өзгеріссіз)'+
+      '<b>Динамика</b> — осы участоктың 149 % көрсеткіші алдыңғы талдаумен салыстырғанда өзгеруі (⬆️ өсті · ⬇️ төмендеді · 🟡 өзгеріссіз)<br>'+
+      '<span style="color:#64748b">📌 А, В, С, ✅, ❌ бағандарындағы сан астындағы <b>кіші стрелка</b> — сол көрсеткіштің алдыңғы талдаумен салыстырғандағы өзгерісі (дәрі белсенділігі динамикасы участок бойынша).</span>'+
     '</div>'+
     '<div style="overflow-x:auto"><table class="mkb-tbl" style="width:100%">'+
     '<thead><tr><th>Участок</th><th title="Барлығы">Бар.</th><th title="А — белсенді">🟢А</th><th title="В — тұрақсыз">🟡В</th><th title="С — қаралмаған">🔴С</th><th title="149 толық сақталған науқастар саны">✅ сақталған</th><th title="149 сақталмаған науқастар саны">❌ сақталмаған</th><th title="149 сақталу деңгейі (пайыз)">149 % деңгей</th><th>Динамика</th></tr></thead>'+
