@@ -19200,6 +19200,14 @@ function duArrow(v,pv){
 }
 function duFmtIso(s){ try{ var d=new Date(s); function z(n){return(n<10?'0':'')+n;} return z(d.getDate())+'.'+z(d.getMonth()+1); }catch(e){ return ''; } }
 
+function duResetHistory(){
+  if(!confirm('Мониторинг тарихы толық өшіріледі және бүгінгі талдаудан қайта басталады. Жалғастырасыз ба?'))return;
+  var st=document.getElementById('duStatus');
+  fetch(DU_FB+'duchet_history.json',{method:'DELETE'}).then(function(){
+    if(duResult&&duResult.counts){ duSaveHistory(); if(st)st.textContent='✅ Мониторинг нөлденді — бүгінгі талдаудан басталды'; }
+    else { duRenderDynamics([]); if(st)st.textContent='✅ Мониторинг тарихы өшірілді. Қайта талдау жасаңыз — бүгіннен басталады'; }
+  }).catch(function(e){ if(st)st.textContent='⚠️ Өшіру қатесі'; });
+}
 function duRenderDynamics(h){
   var el=document.getElementById('duDynamics'); if(!el)return;
   if(!h||!h.length){ el.innerHTML=''; return; }
@@ -19213,7 +19221,8 @@ function duRenderDynamics(h){
       '<div>'+duArrow(v,pv)+'</div></div>';
   }).join('');
   el.innerHTML=
-    '<div class="du-sec-t" style="font-size:14px;margin-bottom:8px">📈 Динамика мониторингі <span style="font-weight:600;color:#94a3b8;font-size:12px">('+h.length+' талдау · соңғысы '+duFmtIso(cur.date)+')</span></div>'+
+    '<div class="du-sec-t" style="font-size:14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px"><span>📈 Динамика мониторингі <span style="font-weight:600;color:#94a3b8;font-size:12px">('+h.length+' талдау · соңғысы '+duFmtIso(cur.date)+')</span></span>'+
+    '<button onclick="duResetHistory()" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:8px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer">🔄 Бүгіннен бастау</button></div>'+
     '<div style="font-size:11px;color:#94a3b8;margin-bottom:10px">Стрелка алдыңғы талдаумен салыстырғанда: ⬆️ өсті · ⬇️ азайды · 🟡 өзгеріссіз</div>'+
     '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">'+cards+'</div>'+
     duUchTable(h);
