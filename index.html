@@ -19348,30 +19348,19 @@ function tdHandle(input){
   lbl.innerHTML='✅ '+tdFiles.length+' файл жүктелді';
   lbl.parentElement.classList.add('ok');
 }
-function tdColMap(header){ var m={}; header.forEach(function(h,i){ var t=(''+h).toLowerCase().trim();
-  if(t.indexOf('иин пациента')>=0)m.iin=i;
-  else if(t.indexOf('фио пациента')>=0)m.fio=i;
-  else if(t.indexOf('участок прикреп')>=0)m.uch=i;
-  else if(t.indexOf('наименование услуги')>=0)m.svc=i;
-  else if(t.indexOf('повод обращения')>=0)m.povod=i;
-  else if(t.indexOf('диагноз')>=0)m.diag=i;
-}); return m; }
-function tdReadFile(file){ return new Promise(function(res){
-  var rd=new FileReader();
-  rd.onload=function(e){ try{
-    var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-    var ws=wb.Sheets[wb.SheetNames[0]];
-    var aoa=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-    var hi=-1; for(var i=0;i<Math.min(aoa.length,10);i++){ var line=(aoa[i]||[]).map(function(x){return (''+x).toLowerCase();}).join('|'); if(line.indexOf('иин пациента')>=0 && line.indexOf('наименование услуги')>=0){ hi=i; break; } }
-    if(hi<0){ res([]); return; }
-    var m=tdColMap(aoa[hi]); var out=[];
-    for(var r=hi+1;r<aoa.length;r++){ var row=aoa[r]||[];
-      out.push({iin:(''+(row[m.iin]||'')).trim(),fio:(''+(row[m.fio]||'')).trim(),uch:(''+(row[m.uch]||'')).trim(),svc:(''+(row[m.svc]||'')).trim(),povod:(''+(row[m.povod]||'')).trim(),diag:(''+(row[m.diag]||'')).trim()});
-    }
-    res(out);
-  }catch(err){ console.warn('td read',err); res([]); } };
-  rd.readAsArrayBuffer(file);
-}); }
+// Д-есептің дәлелденген парсерін қайта пайдалану (duParseFileRows + duHeaderRow + duCol)
+function tdReadFile(file){ return duParseFileRows(file).then(function(aoa){
+  if(!aoa||!aoa.length) return [];
+  var hi=duHeaderRow(aoa,'НАИМЕНОВАНИЕ УСЛУГИ'); if(hi<0)hi=duHeaderRow(aoa,'ИИН ПАЦИЕНТА'); if(hi<0)hi=duHeaderRow(aoa,'ИИН'); if(hi<0)return [];
+  var H=aoa[hi]||[];
+  var ci=duCol(H,['ИИН ПАЦИЕНТА','ИИН']),cf=duCol(H,['ФИО ПАЦИЕНТА','ФИО']),cu=duCol(H,['УЧАСТОК']),cs=duCol(H,['НАИМЕНОВАНИЕ УСЛУГИ','НАИМЕНОВАНИЕ']),cp=duCol(H,['ПОВОД']),cd=duCol(H,['ДИАГНОЗ']);
+  if(ci<0||cs<0) return []; // керекті бағандар жоқ — бұл дұрыс файл емес
+  var out=[];
+  for(var r=hi+1;r<aoa.length;r++){ var row=aoa[r]||[];
+    out.push({iin:duNormIin(ci>=0?row[ci]:''),fio:(cf>=0?(''+(row[cf]||'')).trim():''),uch:(cu>=0?(''+(row[cu]||'')).trim():''),svc:(cs>=0?(''+(row[cs]||'')).trim():''),povod:(cp>=0?(''+(row[cp]||'')).trim():''),diag:(cd>=0?(''+(row[cd]||'')).trim():'')});
+  }
+  return out;
+}).catch(function(err){ console.warn('td read',err); return []; }); }
 function tdReqInvList(iv){ var seen={},out=[]; (''+iv).split(/•|;|\n/).forEach(function(p){p=p.trim();if(!p)return;var s=duInvSig(p);if(s&&!seen[s]){seen[s]=1;out.push({name:p,sig:s});}}); return out; }
 function tdRun(){
   var st=document.getElementById('tdStatus');
