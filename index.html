@@ -4002,6 +4002,11 @@ html.dark .kz-tile { opacity:0.22; }
     <div class="kuraldar-tile-title">Талдау (149 бұйрық)</div>
     <div class="kuraldar-tile-desc">Орындалған қызметтер · 149 сәйкестік · Word есеп</div>
   </div>
+  <div class="kuraldar-tile" id="tileklm" onclick="openKuralPanel('klm')" style="--tile-color:5,150,105;">
+    <div class="kuraldar-tile-icon">📇</div>
+    <div class="kuraldar-tile-title">1 жылда келмеген халықты анықтау</div>
+    <div class="kuraldar-tile-desc">РПН × қызмет алғандар · жасыл/қызыл заливка · Excel</div>
+  </div>
 <div id="kuraldarPanel" style="display:none;margin-top:20px;">
   <div id="paneliin" class="kuraldar-panel-content" style="display:none;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid rgba(37,99,235,0.15);">
@@ -5324,6 +5329,32 @@ html.dark .kz-tile { opacity:0.22; }
   <div id="tdSummary" style="margin-bottom:12px;"></div>
   <button id="tdWordBtn" onclick="tdGenWord()" style="display:none;margin-bottom:14px;padding:11px 20px;background:#2563eb;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;">📄 Word есебін жүктеу (.doc)</button>
   <div id="tdResult"></div>
+</div>
+
+<div id="panelklm" class="kuraldar-panel-content" style="display:none;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid rgba(5,150,105,0.15);">
+    <span style="font-size:26px;">📇</span>
+    <div>
+      <div style="font-size:15px;font-weight:800;color:var(--dark);">1 жылда келмеген халықты анықтау</div>
+      <div style="font-size:12px;color:var(--gray);">РПН тіркелгендердің қайсысы қызмет алған / алмағанын анықтау</div>
+    </div>
+    <button onclick="openKuralPanel('klm')" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);">✕</button>
+  </div>
+
+  <div style="background:#ecfdf5;border:1.5px solid rgba(5,150,105,0.2);border-radius:14px;padding:16px;margin-bottom:16px;">
+    <div style="font-size:12px;color:#065f46;margin-bottom:12px;line-height:1.5;">💡 1-файл — қызмет алғандар тізімі (ИИН-мен, мыс. «Внутренние направления» немесе «выполненных услуг»). 2-файл — РПН тіркелген халық тізімі.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <label class="du-file" style="border-color:rgba(5,150,105,0.4)" onclick="document.getElementById('klmF-served').click()"><span id="klmL-served">🏥 Қызмет алғандар тізімі (ИИН-мен)</span></label>
+      <label class="du-file" style="border-color:rgba(5,150,105,0.4)" onclick="document.getElementById('klmF-rpn').click()"><span id="klmL-rpn">👥 РПН тіркелген халық тізімі</span></label>
+    </div>
+    <input type="file" id="klmF-served" accept=".xlsx,.xls" style="display:none" onchange="klmHandle('served',this)">
+    <input type="file" id="klmF-rpn" accept=".xlsx,.xls" style="display:none" onchange="klmHandle('rpn',this)">
+    <button onclick="klmRun()" style="width:100%;margin-top:14px;padding:12px;background:linear-gradient(135deg,#059669,#047857);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;">📇 Талдау жасау</button>
+    <div id="klmStatus" style="font-size:12px;color:#64748b;margin-top:10px;min-height:18px;"></div>
+  </div>
+
+  <div id="klmSummary" style="margin-bottom:12px;"></div>
+  <button id="klmDlBtn" onclick="klmDownload()" style="display:none;padding:11px 20px;background:#16a34a;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;">⬇️ Excel жүктеу (жасыл/қызыл заливкамен)</button>
 </div>
 
 <div id="panelmkbook" class="kuraldar-panel-content" style="display:none;">
@@ -19349,27 +19380,36 @@ function tdHandle(input){
   lbl.parentElement.classList.add('ok');
 }
 // Д-есептің дәлелденген парсерін қайта пайдалану (duParseFileRows + duHeaderRow + duCol)
+var tdDbg=[];
 function tdReadFile(file){ return duParseFileRows(file).then(function(aoa){
-  if(!aoa||!aoa.length) return [];
-  var hi=duHeaderRow(aoa,'НАИМЕНОВАНИЕ УСЛУГИ'); if(hi<0)hi=duHeaderRow(aoa,'ИИН ПАЦИЕНТА'); if(hi<0)hi=duHeaderRow(aoa,'ИИН'); if(hi<0)return [];
-  var H=aoa[hi]||[];
-  var ci=duCol(H,['ИИН ПАЦИЕНТА','ИИН']),cf=duCol(H,['ФИО ПАЦИЕНТА','ФИО']),cu=duCol(H,['УЧАСТОК']),cs=duCol(H,['НАИМЕНОВАНИЕ УСЛУГИ','НАИМЕНОВАНИЕ']),cp=duCol(H,['ПОВОД']),cd=duCol(H,['ДИАГНОЗ']);
-  if(ci<0||cs<0) return []; // керекті бағандар жоқ — бұл дұрыс файл емес
+  var info={name:(file.name||'').slice(0,26), total:(aoa?aoa.length:0)};
+  if(!aoa||!aoa.length){ info.err='файл бос оқылды'; tdDbg.push(info); return []; }
+  var hi=duHeaderRow(aoa,'ИИН'); info.hi=hi;
+  if(hi<0){ info.err='«ИИН» тақырыбы табылмады'; tdDbg.push(info); return []; }
+  var H=aoa[hi]||[]; info.hdr=H.map(function(x){return (x==null?'':(''+x)).replace(/\s+/g,' ').trim();}).filter(function(x){return x;}).slice(0,16).join(' | ');
+  var ci=duCol(H,['ИИН']),cf=duCol(H,['ФИО']),cu=duCol(H,['УЧАСТОК']),cs=duCol(H,['НАИМЕНОВАНИЕ','УСЛУГА','ПРОЦЕДУР']),cp=duCol(H,['ПОВОД','ЦЕЛЬ']),cd=duCol(H,['ДИАГНОЗ','МКБ']);
+  info.cols='иин='+ci+' услуга='+cs+' повод='+cp+' диагноз='+cd;
+  if(ci<0||cs<0||cd<0){ info.err='керекті баған жоқ ('+info.cols+')'; tdDbg.push(info); return []; }
   var out=[];
   for(var r=hi+1;r<aoa.length;r++){ var row=aoa[r]||[];
-    out.push({iin:duNormIin(ci>=0?row[ci]:''),fio:(cf>=0?(''+(row[cf]||'')).trim():''),uch:(cu>=0?(''+(row[cu]||'')).trim():''),svc:(cs>=0?(''+(row[cs]||'')).trim():''),povod:(cp>=0?(''+(row[cp]||'')).trim():''),diag:(cd>=0?(''+(row[cd]||'')).trim():'')});
+    out.push({iin:duNormIin(row[ci]),fio:(cf>=0?(''+(row[cf]||'')).trim():''),uch:(cu>=0?(''+(row[cu]||'')).trim():''),svc:(''+(row[cs]||'')).trim(),povod:(cp>=0?(''+(row[cp]||'')).trim():''),diag:(cd>=0?(''+(row[cd]||'')).trim():'')});
   }
-  return out;
-}).catch(function(err){ console.warn('td read',err); return []; }); }
+  info.parsed=out.length; tdDbg.push(info); return out;
+}).catch(function(err){ tdDbg.push({name:(file.name||'').slice(0,26),err:'қате: '+(err&&err.message||err)}); return []; }); }
 function tdReqInvList(iv){ var seen={},out=[]; (''+iv).split(/•|;|\n/).forEach(function(p){p=p.trim();if(!p)return;var s=duInvSig(p);if(s&&!seen[s]){seen[s]=1;out.push({name:p,sig:s});}}); return out; }
 function tdRun(){
   var st=document.getElementById('tdStatus');
   if(!tdFiles.length){ st.textContent='⚠️ Алдымен «Список выполненных услуг» файл(дар)ын жүктеңіз'; return; }
   st.textContent='⏳ Файлдар оқылып, талдау жүріп жатыр...';
+  tdDbg=[];
   loadSheetJS(function(){
     Promise.all(tdFiles.map(tdReadFile)).then(function(all){
       var rows=[].concat.apply([],all);
-      if(!rows.length){ st.textContent='⚠️ Дұрыс «выполненных услуг» файлы табылмады (баған тақырыптары сәйкес емес)'; return; }
+      if(!rows.length){
+        var d=tdDbg.map(function(x){ return '<div style="margin-top:6px"><b>'+x.name+'</b> — '+(x.err||('оқылды: '+x.parsed+' жол'))+(x.hdr?('<br><span style="color:#94a3b8;font-size:10px">Тақырып: '+x.hdr+'</span>'):'')+'</div>'; }).join('');
+        st.innerHTML='⚠️ Жарамды деректер табылмады. Диагностика:'+d+'<div style="margin-top:8px;color:#64748b">Файлда «ИИН пациента», «Наименование услуги», «Диагноз» бағандары болуы керек.</div>';
+        return;
+      }
       var pts={};
       rows.forEach(function(r){ if(!r.iin)return;
         if(!pts[r.iin])pts[r.iin]={fio:r.fio,uch:r.uch,svc:[],diag:''};
@@ -19433,22 +19473,99 @@ function tdGenWord(){
   h+='<p style="text-align:center">ТОО «Азия мед-МО» · Дата анализа: '+tdFmt(tdMeta.date)+'</p>';
   h+='<p>Всего пациентов на динамическом наблюдении: '+tdMeta.dyn+'. Выявлено с неполным исполнением требований 149: <b>'+tdViol.length+'</b>.</p><hr>';
   tdViol.forEach(function(v,i){
-    h+='<p><b>'+(i+1)+'. '+v.fio+'</b> (участок '+v.uch+'), диагноз: '+v.diag+'.</p><p>По 149 НЕ исполнено:</p><ul>';
-    v.missInv.forEach(function(x){ h+='<li>'+x+'</li>'; });
-    v.missSpec.forEach(function(x){ h+='<li>Консультация профильного специалиста: '+x+' — не выполнена</li>'; });
-    if(v.osmNote)h+='<li>'+v.osmNote+'</li>';
+    h+='<p><b>'+(i+1)+'. '+v.fio+'</b> (участок '+v.uch+'), диагноз: '+v.diag+'.</p><p style="color:#C00000;font-weight:bold">По 149 НЕ исполнено:</p><ul style="color:#C00000">';
+    v.missInv.forEach(function(x){ h+='<li style="color:#C00000">'+x+'</li>'; });
+    v.missSpec.forEach(function(x){ h+='<li style="color:#C00000">Консультация профильного специалиста: '+x+' — не выполнена</li>'; });
+    if(v.osmNote)h+='<li style="color:#C00000">'+v.osmNote+'</li>';
     h+='</ul>';
     if(v.okInv.length||v.okSpec.length||v.osmOkNote){
-      h+='<p>По 149 исполнено:</p><ul>';
-      v.okInv.forEach(function(x){ h+='<li>'+x+'</li>'; });
-      v.okSpec.forEach(function(x){ h+='<li>Консультация профильного специалиста: '+x+'</li>'; });
-      if(v.osmOkNote)h+='<li>'+v.osmOkNote+'</li>';
+      h+='<p style="color:#0F7A0F;font-weight:bold">По 149 исполнено:</p><ul style="color:#0F7A0F">';
+      v.okInv.forEach(function(x){ h+='<li style="color:#0F7A0F">'+x+'</li>'; });
+      v.okSpec.forEach(function(x){ h+='<li style="color:#0F7A0F">Консультация профильного специалиста: '+x+'</li>'; });
+      if(v.osmOkNote)h+='<li style="color:#0F7A0F">'+v.osmOkNote+'</li>';
       h+='</ul>';
     }
   });
   h+='</body></html>';
   var blob=new Blob(['﻿'+h],{type:'application/msword'});
   var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='149_анализ_'+tdFmt(tdMeta.date)+'.doc'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+/* ===== 1 ЖЫЛДА КЕЛМЕГЕН ХАЛЫҚ МОДУЛІ ===== */
+var klmServed=null, klmRpn=null, klmResult=null, XLSXStyle=null;
+function klmHandle(kind,input){
+  var f=input.files[0]; if(!f)return;
+  if(kind==='served')klmServed=f; else klmRpn=f;
+  var lbl=document.getElementById('klmL-'+kind);
+  lbl.innerHTML='✅ '+(f.name.length>28?f.name.slice(0,28)+'…':f.name);
+  lbl.parentElement.classList.add('ok');
+}
+// Стиль қолдайтын SheetJS нұсқасын бөлек жүктеу (заливка үшін)
+function loadXlsxStyle(cb){
+  if(XLSXStyle){cb();return;}
+  var prev=window.XLSX;
+  var s=document.createElement('script');
+  s.src='https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js';
+  s.onload=function(){ XLSXStyle=window.XLSX; if(prev)window.XLSX=prev; cb(); };
+  s.onerror=function(){ XLSXStyle=null; cb(); };
+  document.head.appendChild(s);
+}
+function klmRun(){
+  var st=document.getElementById('klmStatus');
+  if(!klmServed||!klmRpn){ st.textContent='⚠️ Екі файлды да жүктеңіз (қызмет алғандар + РПН)'; return; }
+  st.textContent='⏳ Файлдар оқылуда...';
+  loadSheetJS(function(){
+    Promise.all([duParseFileRows(klmServed),duParseFileRows(klmRpn)]).then(function(res){
+      var sAoa=res[0]||[], rAoa=res[1]||[];
+      // 1) Қызмет алғандар ИИН жиыны
+      var shi=duHeaderRow(sAoa,'ИИН'); if(shi<0)shi=1; var sci=duCol(sAoa[shi]||[],['ИИН']);
+      if(sci<0){ st.textContent='⚠️ Қызмет файлында «ИИН» бағаны табылмады'; return; }
+      var served={}, servedN=0;
+      for(var i=shi+1;i<sAoa.length;i++){ var v=duNormIin((sAoa[i]||[])[sci]); if(v.length===12){ if(!served[v])servedN++; served[v]=1; } }
+      // 2) РПН
+      var rhi=duHeaderRow(rAoa,'ИИН'); if(rhi<0)rhi=0; var H=(rAoa[rhi]||[]); var rci=duCol(H,['ИИН']);
+      if(rci<0){ st.textContent='⚠️ РПН файлында «ИИН» бағаны табылмады'; return; }
+      var newcol=H.length;
+      var out=rAoa.map(function(r){ return (r||[]).slice(); });
+      out[rhi][newcol]='Қызмет алған/алмаған (2026)';
+      var got=0,no=0;
+      for(var i=rhi+1;i<out.length;i++){ var v=duNormIin((rAoa[i]||[])[rci]); if(v.length!==12)continue;
+        if(served[v]){ out[i][newcol]='алған'; got++; } else { out[i][newcol]='алмаған'; no++; }
+      }
+      klmResult={out:out,hi:rhi,ci:rci,newcol:newcol,got:got,no:no,total:got+no,servedN:servedN};
+      var pct=klmResult.total?Math.round(no/klmResult.total*100):0;
+      document.getElementById('klmSummary').innerHTML=
+        '<div style="background:#fff;border-radius:12px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.06);display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">'+
+        '<div><div style="font-size:24px;font-weight:900;color:#475569">'+klmResult.total+'</div><div style="font-size:11px;color:#64748b">РПН тіркелген</div></div>'+
+        '<div><div style="font-size:24px;font-weight:900;color:#16a34a">'+got+'</div><div style="font-size:11px;color:#64748b">✅ қызмет алған</div></div>'+
+        '<div><div style="font-size:24px;font-weight:900;color:#dc2626">'+no+'</div><div style="font-size:11px;color:#64748b">❌ 1 жылда келмеген ('+pct+'%)</div></div>'+
+        '</div>';
+      document.getElementById('klmDlBtn').style.display='inline-block';
+      st.textContent='✅ Дайын: '+got+' алған · '+no+' алмаған. Excel-ді жүктеңіз.';
+    }).catch(function(e){ st.textContent='❌ Қате: '+(e&&e.message||e); });
+  });
+}
+function klmDownload(){
+  if(!klmResult){ return; }
+  var st=document.getElementById('klmStatus'); st.textContent='⏳ Excel дайындалуда...';
+  loadXlsxStyle(function(){
+    var XL=XLSXStyle||window.XLSX; var styled=!!XLSXStyle;
+    var ws=XL.utils.aoa_to_sheet(klmResult.out);
+    if(styled){
+      var green={fill:{patternType:'solid',fgColor:{rgb:'C6EFCE'}},font:{color:{rgb:'006100'},bold:true}};
+      var red={fill:{patternType:'solid',fgColor:{rgb:'FFC7CE'}},font:{color:{rgb:'9C0006'},bold:true}};
+      var hdrSt={fill:{patternType:'solid',fgColor:{rgb:'D1FAE5'}},font:{bold:true}};
+      var hr=XL.utils.encode_cell({r:klmResult.hi,c:klmResult.newcol}); if(ws[hr])ws[hr].s=hdrSt;
+      for(var i=klmResult.hi+1;i<klmResult.out.length;i++){
+        var val=klmResult.out[i][klmResult.newcol]; if(val!=='алған'&&val!=='алмаған')continue;
+        var sty=(val==='алған')?green:red;
+        var ir=XL.utils.encode_cell({r:i,c:klmResult.ci}); if(ws[ir])ws[ir].s=sty;
+        var nr=XL.utils.encode_cell({r:i,c:klmResult.newcol}); if(ws[nr])ws[nr].s=sty;
+      }
+    }
+    var wb=XL.utils.book_new(); XL.utils.book_append_sheet(wb,ws,'РПН');
+    XL.writeFile(wb,'РПН_1жылда_келмегендер_2026.xlsx');
+    st.textContent=styled?'✅ Excel жүктелді (жасыл=алған, қызыл=алмаған)':'✅ Excel жүктелді (заливкасыз — стиль кітапханасы жүктелмеді, интернетті тексеріңіз)';
+  });
 }
 /* ===== МЕДКНИЖКА МОДУЛІ ===== */
 var MKB_FB='https://aziyamed-b0714-default-rtdb.asia-southeast1.firebasedatabase.app/';
