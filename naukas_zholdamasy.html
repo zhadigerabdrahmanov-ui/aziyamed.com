@@ -746,11 +746,15 @@
 
     Promise.all([
       dbGet("rpn_baza/"+iin),
-      dbGetQuery("referrals", "iin", iin)
-    ]).then(([rpnData, refObj])=>{
+      dbGet("referrals")
+    ]).then(([rpnData, allRefs])=>{
       const inCurrentList = !!rpnData;
       const pastReferrals = [];
-      if(refObj){ Object.keys(refObj).forEach(key=>{ pastReferrals.push({id: key, ...refObj[key]}); }); }
+      if(allRefs){
+        Object.keys(allRefs).forEach(key=>{
+          if(allRefs[key].iin === iin) pastReferrals.push({id: key, ...allRefs[key]});
+        });
+      }
 
       let patientInfo = rpnData;
       if(!patientInfo && pastReferrals.length){
@@ -797,12 +801,13 @@
   function populateDoctorSelect(){
     const sel = document.getElementById('doctorSelect');
     if(!sel) return;
-    dbGetQuery("staff", "role", "doctor").then(obj=>{
+    dbGet("staff").then(obj=>{
       const opts = ['<option value="">Дәрігерді таңдаңыз...</option>'];
       if(obj){
         Object.keys(obj).forEach(key=>{
           const d = obj[key];
-          opts.push(`<option value="${key}|${escapeAttr(d.fio||"")}">${escapeHtml(d.fio||"")} — участок ${escapeHtml(d.uchastok||"—")}</option>`);
+          if(d.role !== "doctor") return;
+          opts.push(`<option value="${key}|${escapeAttr(d.fio||"")}">${escapeHtml(d.fio||"")} — ${escapeHtml(d.uchastok||"—")}</option>`);
         });
       }
       sel.innerHTML = opts.join("");
@@ -849,9 +854,13 @@
     const box = document.getElementById('docQueue');
     if(!session){ return; }
     box.innerHTML = '<div class="empty-note">Жүктелуде...</div>';
-    dbGetQuery("referrals", "doctorIin", session.iin).then(obj=>{
+    dbGet("referrals").then(obj=>{
       const items = [];
-      if(obj){ Object.keys(obj).forEach(key=>{ items.push({id: key, ...obj[key]}); }); }
+      if(obj){
+        Object.keys(obj).forEach(key=>{
+          if(obj[key].doctorIin === session.iin) items.push({id: key, ...obj[key]});
+        });
+      }
       items.sort((a,b)=>(b.referredAt||"").localeCompare(a.referredAt||""));
       if(!items.length){ box.innerHTML = '<div class="empty-note">Сізге жолданған науқас жоқ.</div>'; return; }
       box.innerHTML = items.map(it => `
