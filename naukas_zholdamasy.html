@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Науқас жолдамасы | Азия мед-МО</title>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <style>
@@ -222,18 +220,27 @@
 </div>
 
 <script>
-  // ====== FIREBASE БАПТАУЫ ======
+  // ====== FIREBASE БАПТАУЫ (REST API арқылы — SDK-дың websocket байланысы кейбір желілерде іліне береді) ======
   // aziyamed-b0714 жобасы (org chart / mkb_protokol құралдарымен ортақ)
-  const firebaseConfig = {
-    apiKey: "ОСЫ_ЖЕРГЕ_ӨЗ_КІЛТІҢІЗДІ_ҚОЙЫҢЫЗ",
-    authDomain: "aziyamed-b0714.firebaseapp.com",
-    databaseURL: "https://aziyamed-b0714-default-rtdb.firebaseio.com",
-    projectId: "aziyamed-b0714",
-    storageBucket: "aziyamed-b0714.appspot.com",
-  };
-  let db = null;
-  try { firebase.initializeApp(firebaseConfig); db = firebase.database(); }
-  catch(e){ console.warn("Firebase бапталмаған:", e); }
+  const DB_URL = "https://aziyamed-b0714-default-rtdb.asia-southeast1.firebasedatabase.app";
+  const db = true; // REST қолжетімді деп есептейміз (config толтырылған)
+
+  function dbGet(path){
+    return fetch(DB_URL + "/" + path + ".json").then(r=>r.json());
+  }
+  function dbGetQuery(path, orderByChild, equalTo){
+    const url = DB_URL + "/" + path + ".json?orderBy=" + encodeURIComponent(JSON.stringify(orderByChild)) + "&equalTo=" + encodeURIComponent(JSON.stringify(equalTo));
+    return fetch(url).then(r=>r.json());
+  }
+  function dbSet(path, data){
+    return fetch(DB_URL + "/" + path + ".json", { method: "PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data) }).then(r=>r.json());
+  }
+  function dbUpdate(path, data){
+    return fetch(DB_URL + "/" + path + ".json", { method: "PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data) }).then(r=>r.json());
+  }
+  function dbPush(path, data){
+    return fetch(DB_URL + "/" + path + ".json", { method: "POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data) }).then(r=>r.json()).then(r=>r.name);
+  }
 
   // ====== МКБ ХАТТАМАЛАР (mkb_protokol.html құралымен ортақ дерекқор) ======
   const PRELOADED = {
@@ -592,10 +599,8 @@
   function doLogin(){
     const iin = document.getElementById('loginIin').value.trim();
     if(!iin || iin.length !== 12){ showLoginErr("ИИН 12 саннан тұруы керек."); return; }
-    if(!db){ showLoginErr("Firebase әлі бапталмаған."); return; }
-    db.ref("staff/"+iin).once("value").then(snap=>{
-      if(!snap.exists()){ showLoginErr(); return; }
-      const d = snap.val();
+    dbGet("staff/"+iin).then(d=>{
+      if(!d){ showLoginErr(); return; }
       session = { iin, fio: d.fio||"—", role: d.role||"regisratura", uchastok: d.uchastok||"", lauazymy: d.lauazymy||"" };
       localStorage.setItem("nz_session", JSON.stringify(session));
       enterApp();
@@ -646,9 +651,7 @@
 
   // ====== RPN META ======
   function loadRpnMeta(){
-    if(!db) return;
-    db.ref("rpn_meta").once("value").then(snap=>{
-      const d = snap.val();
+    dbGet("rpn_meta").then(d=>{
       const el = document.getElementById('rpnMetaInfo');
       if(el){
         el.textContent = d ? `Соңғы импорт: ${d.lastImportDate || "—"} · Жазба саны: ${d.totalCount || 0}` : "Әлі импорт жасалмаған.";
@@ -663,7 +666,6 @@
     if(!fileInput.files.length){ 
       statusEl.className = "import-status err"; statusEl.textContent = "Файл таңдалмады."; return; 
     }
-    if(!db){ statusEl.className = "import-status err"; statusEl.textContent = "Firebase бапталмаған."; return; }
     statusEl.className = "import-status busy"; statusEl.textContent = "Файл оқылуда...";
 
     const file = fileInput.files[0];
@@ -710,10 +712,10 @@
         statusEl.textContent = `${count} жазба Firebase-ке жазылуда... (біраз уақыт алуы мүмкін)`;
 
         // Ескі базаны толығымен алмастырамыз (жаңа тізім = ағымдағы РПН)
-        db.ref("rpn_baza").set(null).then(()=>{
-          return db.ref().update(updates);
+        dbSet("rpn_baza", null).then(()=>{
+          return dbUpdate("", updates);
         }).then(()=>{
-          return db.ref("rpn_meta").set({
+          return dbSet("rpn_meta", {
             lastImportDate: new Date().toLocaleString("kk-KZ"),
             totalCount: count
           });
@@ -739,18 +741,16 @@
     const iin = document.getElementById('regSearchIin').value.trim();
     const box = document.getElementById('regResultBox');
     if(!/^\d{12}$/.test(iin)){ box.innerHTML = '<p class="empty-note">ИИН 12 саннан тұруы керек.</p>'; return; }
-    if(!db){ box.innerHTML = '<p class="empty-note">Firebase бапталмаған.</p>'; return; }
 
     box.innerHTML = '<p class="empty-note">Ізделуде...</p>';
 
     Promise.all([
-      db.ref("rpn_baza/"+iin).once("value"),
-      db.ref("referrals").orderByChild("iin").equalTo(iin).once("value")
-    ]).then(([rpnSnap, refSnap])=>{
-      const inCurrentList = rpnSnap.exists();
-      const rpnData = rpnSnap.val();
+      dbGet("rpn_baza/"+iin),
+      dbGetQuery("referrals", "iin", iin)
+    ]).then(([rpnData, refObj])=>{
+      const inCurrentList = !!rpnData;
       const pastReferrals = [];
-      refSnap.forEach(ch=>{ pastReferrals.push({id: ch.key, ...ch.val()}); });
+      if(refObj){ Object.keys(refObj).forEach(key=>{ pastReferrals.push({id: key, ...refObj[key]}); }); }
 
       let patientInfo = rpnData;
       if(!patientInfo && pastReferrals.length){
@@ -796,13 +796,15 @@
 
   function populateDoctorSelect(){
     const sel = document.getElementById('doctorSelect');
-    if(!sel || !db) return;
-    db.ref("staff").orderByChild("role").equalTo("doctor").once("value").then(snap=>{
+    if(!sel) return;
+    dbGetQuery("staff", "role", "doctor").then(obj=>{
       const opts = ['<option value="">Дәрігерді таңдаңыз...</option>'];
-      snap.forEach(ch=>{
-        const d = ch.val();
-        opts.push(`<option value="${ch.key}|${escapeAttr(d.fio||"")}">${escapeHtml(d.fio||"")} — участок ${escapeHtml(d.uchastok||"—")}</option>`);
-      });
+      if(obj){
+        Object.keys(obj).forEach(key=>{
+          const d = obj[key];
+          opts.push(`<option value="${key}|${escapeAttr(d.fio||"")}">${escapeHtml(d.fio||"")} — участок ${escapeHtml(d.uchastok||"—")}</option>`);
+        });
+      }
       sel.innerHTML = opts.join("");
     });
   }
@@ -833,7 +835,7 @@
       closedByName: null
     };
 
-    db.ref("referrals").push(referral).then(()=>{
+    dbPush("referrals", referral).then(()=>{
       statusEl.innerHTML = `<p style="color:var(--ok);font-size:13px;">✓ ${escapeHtml(doctorName)} дәрігеріне жолданды.</p>`;
     }).catch(err=>{
       statusEl.innerHTML = '<p style="color:var(--bad);font-size:13px;">Қате: '+err.message+'</p>';
@@ -845,11 +847,11 @@
 
   function loadDoctorQueue(){
     const box = document.getElementById('docQueue');
-    if(!db || !session){ return; }
+    if(!session){ return; }
     box.innerHTML = '<div class="empty-note">Жүктелуде...</div>';
-    db.ref("referrals").orderByChild("doctorIin").equalTo(session.iin).once("value").then(snap=>{
+    dbGetQuery("referrals", "doctorIin", session.iin).then(obj=>{
       const items = [];
-      snap.forEach(ch=>{ items.push({id: ch.key, ...ch.val()}); });
+      if(obj){ Object.keys(obj).forEach(key=>{ items.push({id: key, ...obj[key]}); }); }
       items.sort((a,b)=>(b.referredAt||"").localeCompare(a.referredAt||""));
       if(!items.length){ box.innerHTML = '<div class="empty-note">Сізге жолданған науқас жоқ.</div>'; return; }
       box.innerHTML = items.map(it => `
@@ -869,8 +871,7 @@
     const box = document.getElementById('docDetailBox');
     card.style.display = "block";
     box.innerHTML = '<p class="empty-note">Жүктелуде...</p>';
-    db.ref("referrals/"+id).once("value").then(snap=>{
-      const d = snap.val();
+    dbGet("referrals/"+id).then(d=>{
       renderDoctorDetail(id, d);
     });
   }
@@ -907,7 +908,7 @@
   function saveDiagnosisDraft(id){
     const text = document.getElementById('diagText').value.trim();
     const code = document.getElementById('diagMkb').value.trim().toUpperCase();
-    db.ref("referrals/"+id).update({ diagnosisText: text, mkbCode: code }).then(()=>{
+    dbUpdate("referrals/"+id, { diagnosisText: text, mkbCode: code }).then(()=>{
       alert("Сақталды.");
     });
   }
@@ -919,16 +920,15 @@
 
     // Іздеу оқиғасын журналдау — эксперт бақылауы үшін МІНДЕТТІ
     const searchEntry = { code: code, timestamp: new Date().toISOString(), timestampDisplay: new Date().toLocaleString("kk-KZ") };
-    db.ref("referrals/"+id+"/protocolSearches").push(searchEntry);
-    db.ref("referrals/"+id).update({ mkbCode: code });
+    dbPush("referrals/"+id+"/protocolSearches", searchEntry);
+    dbUpdate("referrals/"+id, { mkbCode: code });
 
     // Хаттама мазмұнын көрсету (алдымен PRELOADED, содан кейін Firebase mkb_protocols)
     let data = PRELOADED[code];
     if(data){ renderProtocolResult(data); refreshSearchLogAfterDelay(id, code); return; }
 
-    if(!db){ resultBox.innerHTML = '<p class="protocol-empty">Бұл код бойынша дерек табылмады.</p>'; return; }
-    db.ref("mkb_protocols/"+code).once("value").then(snap=>{
-      if(snap.exists()){ renderProtocolResult(snap.val()); }
+    dbGet("mkb_protocols/"+code).then(d=>{
+      if(d){ renderProtocolResult(d); }
       else { resultBox.innerHTML = `<p class="protocol-empty">«${code}» коды бойынша хаттама дерекқорда әлі жоқ. (mkb_protokol.html құралында толтырыңыз)</p>`; }
       refreshSearchLogAfterDelay(id, code);
     });
@@ -954,10 +954,8 @@
 
   function renderSearchLog(id, currentCode){
     const box = document.getElementById('searchLogBox');
-    if(!db){ return; }
-    db.ref("referrals/"+id+"/protocolSearches").once("value").then(snap=>{
-      const entries = [];
-      snap.forEach(ch=>{ entries.push(ch.val()); });
+    dbGet("referrals/"+id+"/protocolSearches").then(obj=>{
+      const entries = obj ? Object.values(obj) : [];
       if(!entries.length){
         box.innerHTML = '<span class="miss">⚠ Дәрігер бұл науқас бойынша хаттамадан әлі іздеген жоқ.</span>';
         return;
@@ -981,7 +979,7 @@
     }
     if(!confirm(`«${text}» (${code}) диагнозымен науқасты жабуды растайсыз ба?`)) return;
 
-    db.ref("referrals/"+id).update({
+    dbUpdate("referrals/"+id, {
       diagnosisText: text,
       mkbCode: code,
       status: "жабылды",
@@ -997,24 +995,17 @@
   // ====== EXPERT VIEW ======
   let allReferralsCache = [];
   function loadExpertData(){
-    if(!db) return;
-    db.ref("referrals").once("value").then(snap=>{
+    dbGet("referrals").then(obj=>{
       const items = [];
-      const promises = [];
-      snap.forEach(ch=>{
-        const d = ch.val();
-        const item = {id: ch.key, ...d, searches: []};
-        items.push(item);
-        promises.push(
-          db.ref("referrals/"+ch.key+"/protocolSearches").once("value").then(s2=>{
-            s2.forEach(c2=>{ item.searches.push(c2.val()); });
-          })
-        );
-      });
-      Promise.all(promises).then(()=>{
-        allReferralsCache = items.sort((a,b)=>(b.referredAt||"").localeCompare(a.referredAt||""));
-        renderExpertTable();
-      });
+      if(obj){
+        Object.keys(obj).forEach(key=>{
+          const d = obj[key];
+          const searches = d.protocolSearches ? Object.values(d.protocolSearches) : [];
+          items.push({id: key, ...d, searches});
+        });
+      }
+      allReferralsCache = items.sort((a,b)=>(b.referredAt||"").localeCompare(a.referredAt||""));
+      renderExpertTable();
     });
   }
 
