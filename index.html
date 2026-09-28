@@ -4291,9 +4291,13 @@ html.dark .kz-tile { opacity:0.22; }
             <div class="rpn-upload-hint">.xlsx, .xls форматтары қолдау көрсетіледі</div>
             <input type="file" id="vaccFileInput" accept=".xlsx,.xls" style="display:none" onchange="handleVaccFile(this.files[0])">
           </div>
+          <div style="text-align:center;margin:12px 0;">
+            <label style="font-size:.9rem;font-weight:600;color:var(--dark);margin-right:8px;">Жоспар жылы:</label>
+            <select id="vaccYear" onchange="vaccRebuild()" style="padding:9px 14px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:.95rem;font-weight:700;cursor:pointer;"></select>
+          </div>
           <div id="vaccStatus" class="rpn-status" style="display:none;"></div>
           <div id="vaccPreview" style="display:none;">
-            <div class="rpn-preview-title">📋 2026 жылғы екпе жоспары</div>
+            <div class="rpn-preview-title">📋 Екпе жоспары</div>
             <div class="vacc-month-tabs" id="vaccMonthTabs"></div>
             <div class="rpn-table-wrap">
               <table id="vaccPreviewTable" class="rpn-table"></table>
@@ -7200,6 +7204,22 @@ function submitReg(e, role) {
 }
 
 // ─── VACCINATION PLAN 2026 ───────────────────────────────────────────────────
+var vaccPatients = null;
+function vaccSelectedYear(){ var s=document.getElementById('vaccYear'); return (s&&s.value)?parseInt(s.value):new Date().getFullYear(); }
+function vaccRebuild(){
+  if(!vaccPatients||!vaccPatients.length) return;
+  var yr=vaccSelectedYear();
+  var plan=buildVaccPlan2026(vaccPatients, yr);
+  vaccPlanData=plan;
+  renderVaccPreview(plan);
+  vaccStatus('✅ '+yr+' жоспары дайын: '+vaccPatients.length+' пациент · '+plan.length+' екпе жазбасы','ok');
+}
+(function initVaccYear(){
+  var sel=document.getElementById('vaccYear'); if(!sel) return;
+  var cy=new Date().getFullYear(); var o='';
+  for(var y=cy;y<=cy+9;y++){ o+='<option value="'+y+'">'+y+' жыл</option>'; }
+  sel.innerHTML=o;
+})();
 
 
 var vaccPlanData = null;
@@ -7303,7 +7323,8 @@ function processVaccFile(file) {
         var name   = nameCol  >= 0 ? String(cells[nameCol]  || '').trim() : '';
         var bdRaw  = bdCol    >= 0 ? cells[bdCol]    : '';
         var sexRaw = sexCol   >= 0 ? String(cells[sexCol]   || '').trim() : '';
-        var addr     = addrCol     >= 0 ? String(cells[addrCol]     || '').trim() : '';
+        var addr = '';
+        if(addrCol>=0){ for(var _ac=addrCol;_ac<addrCol+5;_ac++){ var _av=String(cells[_ac]||'').trim(); if(_av && _av.toLowerCase()!=='none' && _av.length>addr.length) addr=_av; } }
         var phone    = phoneCol    >= 0 ? String(cells[phoneCol]    || '').trim() : '';
         var uchastok = uchastokCol >= 0 ? String(cells[uchastokCol] || '').trim() : '';
         if (!iin || iin.length < 6) return;
@@ -7336,10 +7357,12 @@ function processVaccFile(file) {
       });
 
       if (!patients.length) { vaccStatus('❌ Пациенттер табылмады. Файл форматын тексеріңіз.', 'err'); return; }
-      var plan = buildVaccPlan2026(patients);
+      vaccPatients = patients;
+      var yr = vaccSelectedYear();
+      var plan = buildVaccPlan2026(patients, yr);
       vaccPlanData = plan;
       renderVaccPreview(plan);
-      vaccStatus('✅ Жоспар дайын: ' + patients.length + ' пациент · ' + plan.length + ' екпе жазбасы', 'ok');
+      vaccStatus('✅ '+yr+' жоспары дайын: ' + patients.length + ' пациент · ' + plan.length + ' екпе жазбасы', 'ok');
     } catch(err) { vaccStatus('❌ Қате: ' + err.message, 'err'); }
   };
   reader.readAsArrayBuffer(file);
@@ -7356,7 +7379,7 @@ function ageLabel(months) {
   return Math.floor(months/12) + ' жас ' + (months%12) + ' ай';
 }
 
-function buildVaccPlan2026(patients) {
+function buildVaccPlan2026(patients, planYear) {
   var RU_M = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
   var VS = [
     { label: 'Туберкулез (БЦЖ)',  newborn: true },
@@ -7389,7 +7412,7 @@ function buildVaccPlan2026(patients) {
     { label: 'АДС-М',              tdBooster: true }
   ];
   var TD_AGES = [16,26,36,46,56];
-  var PLAN_YEAR = 2026;
+  var PLAN_YEAR = planYear || 2026;
   var rows = [];
   patients.forEach(function(patient) {
     var name=patient.name, iin=patient.iin, bd=patient.bd;
@@ -7483,8 +7506,9 @@ function downloadVaccPlan() {
   var HDRS = ['№','Месяц','Вакцина','№ п/п','№ участка','ИИН','ФИО пациента',
     'Дата рождения','Год рождения','Пол','Полный адрес',
     'Контактные данные пациента (все)','Медициналық шектеу','Отказ'];
+  var vYr = vaccSelectedYear();
   var wsData = [
-    ['ЖШС "Азия мед-МО" бойынша 2026 жылға арналған екпе жоспары',
+    ['ЖШС "Азия мед-МО" бойынша '+vYr+' жылға арналған екпе жоспары',
       '','','','','','','','','','','','',''],
     HDRS
   ];
@@ -7500,8 +7524,8 @@ function downloadVaccPlan() {
   var wsx = XLSX.utils.aoa_to_sheet(wsData);
   wsx['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:13} }];
   wsx['!cols'] = [4,12,16,4,8,14,24,12,8,8,35,28,14,10].map(function(w){ return {wch:w}; });
-  XLSX.utils.book_append_sheet(wbx, wsx, '2026 Екпе жоспары');
-  XLSX.writeFile(wbx, 'Vacc_plan_2026_'+new Date().toISOString().slice(0,10)+'.xlsx');
+  XLSX.utils.book_append_sheet(wbx, wsx, vYr+' Екпе жоспары');
+  XLSX.writeFile(wbx, 'Vacc_plan_'+vYr+'_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 
 
