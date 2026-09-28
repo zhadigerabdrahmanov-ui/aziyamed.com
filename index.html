@@ -4007,11 +4007,6 @@ html.dark .kz-tile { opacity:0.22; }
     <div class="kuraldar-tile-title">1 жылда келмеген халықты анықтау</div>
     <div class="kuraldar-tile-desc">РПН × қызмет алғандар · жасыл/қызыл заливка · Excel</div>
   </div>
-  <div class="kuraldar-tile" id="tilecsc" onclick="openKuralPanel('csc')" style="--tile-color:234,88,12;">
-    <div class="kuraldar-tile-icon">🧒</div>
-    <div class="kuraldar-tile-title">Балалар скринингі (18 жасқа дейін)</div>
-    <div class="kuraldar-tile-desc">№264 бұйрық · айлық межелер + жылдық белдеулер · Excel</div>
-  </div>
 <div id="kuraldarPanel" style="display:none;margin-top:20px;">
   <div id="paneliin" class="kuraldar-panel-content" style="display:none;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid rgba(37,99,235,0.15);">
@@ -4247,7 +4242,7 @@ html.dark .kz-tile { opacity:0.22; }
           <div class="staff-task-left">
             <span class="staff-task-icon">📊</span>
             <div>
-              <div class="staff-task-title" data-i18n="task_scrplan_title">Скрининг жоспар генераторы</div>
+              <div class="staff-task-title" data-i18n="task_scrplan_title">Ересектер бойынша скрининг жасау генерациясы</div>
               <div class="staff-task-desc" data-i18n="task_scrplan_desc">«Толық ИИН жасау» нәтижесі бойынша №ҚР ДСМ-174/2020 бұйрығына сәйкес ай сайынғы шақыру жоспары жасалады</div>
             </div>
           </div>
@@ -4277,13 +4272,43 @@ html.dark .kz-tile { opacity:0.22; }
         </div>
       </div>
 
+      <!-- Балалар скринингі (264) — карточка -->
+<div class="staff-task-card" id="taskCsc">
+        <div class="staff-task-head" onclick="toggleStaffTask('taskCscBody')">
+          <div class="staff-task-left">
+            <span class="staff-task-icon">🧒</span>
+            <div>
+              <div class="staff-task-title">Балалар бойынша скрининг жасау генерациясы (18 жасқа дейін)</div>
+              <div class="staff-task-desc">№ҚР ДСМ-264/2020 бұйрығы бойынша: айлық межелер + жылдық белдеулер. Участок/телефон/адреспен, ай және участок бойынша Excel.</div>
+            </div>
+          </div>
+          <span class="staff-task-chevron">▾</span>
+        </div>
+        <div class="staff-task-body" id="taskCscBody" style="display:none;">
+          <div style="background:#fff7ed;border:1.5px solid rgba(234,88,12,0.2);border-radius:14px;padding:16px;">
+            <div style="font-size:12px;color:#9a3412;margin-bottom:12px;line-height:1.5;">💡 РПН тізімін (немесе «Толық ИИН жасау» нәтижесін) жүктеңіз — 18 жасқа дейінгі балалар автоматты сүзіледі. Туған күні, участок, телефон, адрес сол файлдан алынады.</div>
+            <label class="du-file" style="border-color:rgba(234,88,12,0.4)" onclick="document.getElementById('cscFile').click()"><span id="cscLbl">👶 Балалар/РПН тізімі (.xlsx)</span></label>
+            <input type="file" id="cscFile" accept=".xlsx,.xls" style="display:none" onchange="cscHandle(this)">
+            <div style="margin-top:12px;">
+              <label style="font-size:.9rem;font-weight:600;color:var(--dark);margin-right:8px;">Жоспар жылы:</label>
+              <select id="cscYear" style="padding:9px 14px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:.95rem;font-weight:700;cursor:pointer;"></select>
+            </div>
+            <button onclick="cscRun()" style="width:100%;margin-top:14px;padding:12px;background:linear-gradient(135deg,#ea580c,#c2410c);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;">🧒 Жоспар жасау</button>
+            <div id="cscStatus" style="font-size:12px;color:#64748b;margin-top:10px;min-height:18px;"></div>
+          </div>
+          <div id="cscSummary" style="margin:12px 0;"></div>
+          <button id="cscDlBtn" onclick="cscExport()" style="display:none;margin-bottom:14px;padding:11px 20px;background:#16a34a;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;">⬇️ Excel жүктеу (3 бет)</button>
+          <div id="cscResult"></div>
+        </div>
+      </div>
+
       <!-- Жоспарлы профилактикалық екпелер — карточка -->
 <div class="staff-task-card" id="taskVacc">
         <div class="staff-task-head" onclick="toggleStaffTask('taskVaccBody')">
           <div class="staff-task-left">
             <span class="staff-task-icon">💉</span>
             <div>
-              <div class="staff-task-title" data-i18n="task_vacc_title">Жоспарлы профилактикалық екпелер (2026)</div>
+              <div class="staff-task-title" data-i18n="task_vacc_title">Жоспарлы профилактикалық екпелер генерациясы</div>
               <div class="staff-task-desc" data-i18n="task_vacc_desc">Пациенттер тізімін жүктесеңіз, №612 қаулыға сәйкес 2026 жылғы ай бойынша екпе жоспары жасалады</div>
             </div>
           </div>
@@ -5368,33 +5393,6 @@ html.dark .kz-tile { opacity:0.22; }
 
   <div id="klmSummary" style="margin-bottom:12px;"></div>
   <button id="klmDlBtn" onclick="klmDownload()" style="display:none;padding:11px 20px;background:#16a34a;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;">⬇️ Excel жүктеу (жасыл/қызыл заливкамен)</button>
-</div>
-
-<div id="panelcsc" class="kuraldar-panel-content" style="display:none;">
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid rgba(234,88,12,0.15);">
-    <span style="font-size:26px;">🧒</span>
-    <div>
-      <div style="font-size:15px;font-weight:800;color:var(--dark);">Балалар скринингі — 18 жасқа дейін</div>
-      <div style="font-size:12px;color:var(--gray);">№ҚР ДСМ-264/2020 бұйрығы бойынша профилактикалық қарап-тексеру жоспары</div>
-    </div>
-    <button onclick="openKuralPanel('csc')" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);">✕</button>
-  </div>
-
-  <div style="background:#fff7ed;border:1.5px solid rgba(234,88,12,0.2);border-radius:14px;padding:16px;margin-bottom:16px;">
-    <div style="font-size:12px;color:#9a3412;margin-bottom:12px;line-height:1.5;">💡 РПН тізімін (немесе «Толық ИИН жасау» нәтижесін) жүктеңіз — 18 жасқа дейінгі балалар автоматты сүзіледі. Туған күні, участок, телефон, адрес сол файлдан алынады.</div>
-    <label class="du-file" style="border-color:rgba(234,88,12,0.4)" onclick="document.getElementById('cscFile').click()"><span id="cscLbl">👶 Балалар/РПН тізімі (.xlsx)</span></label>
-    <input type="file" id="cscFile" accept=".xlsx,.xls" style="display:none" onchange="cscHandle(this)">
-    <div style="margin-top:12px;">
-      <label style="font-size:.9rem;font-weight:600;color:var(--dark);margin-right:8px;">Жоспар жылы:</label>
-      <select id="cscYear" style="padding:9px 14px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:.95rem;font-weight:700;cursor:pointer;"></select>
-    </div>
-    <button onclick="cscRun()" style="width:100%;margin-top:14px;padding:12px;background:linear-gradient(135deg,#ea580c,#c2410c);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;">🧒 Жоспар жасау</button>
-    <div id="cscStatus" style="font-size:12px;color:#64748b;margin-top:10px;min-height:18px;"></div>
-  </div>
-
-  <div id="cscSummary" style="margin-bottom:12px;"></div>
-  <button id="cscDlBtn" onclick="cscExport()" style="display:none;margin-bottom:14px;padding:11px 20px;background:#16a34a;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;">⬇️ Excel жүктеу (3 бет)</button>
-  <div id="cscResult"></div>
 </div>
 
 <div id="panelmkbook" class="kuraldar-panel-content" style="display:none;">
@@ -6519,7 +6517,7 @@ const T = {
     toast_ok:"✅ Жазылуыңыз қабылданды! Жақын арада хабарласамыз.",
     nav_home:"Басты бет", nav_about:"Біз туралы", nav_structure:"Құрылымы",
     nav_patients:"Пациенттерге", nav_reviews:"Пікірлер", nav_faq:"Сұрақ қою",
-    nav_osms:"МӘМС", nav_tmkkk:"ТМККК", nav_compliance:"Пациентті қолдау және ішкі сараптама қызметі", nav_staff:"🛠 ҚҰРАЛДАР", staff_label:"ҚҰРАЛДАР", staff_title:"Қызметкерлерге арналған <span>құралдар</span>", staff_desc:"Жұмысты жеңілдететін құралдар тізімі. Қажетті тапсырманы таңдаңыз.", task_rpn_title:"Толық ИИН жасау", task_rpn_desc:"Бірігіп кеткен ұяшықтарды ажырату, бос қатарларды өшіру, толық ЖСН жасау", task_scrplan_title:"Скрининг жоспар генераторы", task_scrplan_desc:"«Толық ИИН жасау» нәтижесі бойынша №ҚР ДСМ-174/2020 бұйрығына сәйкес ай сайынғы шақыру жоспары жасалады", task_vacc_title:"Жоспарлы профилактикалық екпелер (2026)", task_vacc_desc:"Пациенттер тізімін жүктесеңіз, №612 қаулыға сәйкес 2026 жылғы ай бойынша екпе жоспары жасалады", task_rpndiff_title:"Тіркелгендер мен шыққандарды анықтау", task_rpndiff_desc:"Айдың басы мен соңындағы РПН файлдарын салыстырып, тіркеуден шыққандар мен жаңадан тіркелгендерді көрсетеді", task_wc_title:"Белый код", task_wc_desc:"Қайта тіркелмеу туралы тілек білдірген пациенттер тізімі. «Толық ИИН жасау» кезінде автоматты анықталады.", task_dez1_title:"Дезинфекциялық құралға қажеттілікті есептеу", task_dez1_desc:"X₁ = Q × N × K × (S1 + S2 + S3) формуласы бойынша жылдық қажеттілік", task_dez2_title:"Ауқымды/Қорытынды дезинфекцияға арналған есептеу (X₂)", task_dez2_desc:"X₂ = 52 × N × K × S₄ — емшара, таңып-байлау, операциялық, босандыру залдары", task_quartz_title:"Кварц сағатын қанша минутқа қою керек?", task_quartz_desc:"Бөлме көлемі мен шам қуатына қарай ұсынылатын уақытты есептеу", task_quiz_title:"Қызметкерлерге арналған тест", task_quiz_desc:"Қол жуу, скрининг, вакцинация, инфекциялық бақылау тақырыптары бойынша", nav_support:"Пациенттерді қолдау ↗",
+    nav_osms:"МӘМС", nav_tmkkk:"ТМККК", nav_compliance:"Пациентті қолдау және ішкі сараптама қызметі", nav_staff:"🛠 ҚҰРАЛДАР", staff_label:"ҚҰРАЛДАР", staff_title:"Қызметкерлерге арналған <span>құралдар</span>", staff_desc:"Жұмысты жеңілдететін құралдар тізімі. Қажетті тапсырманы таңдаңыз.", task_rpn_title:"Толық ИИН жасау", task_rpn_desc:"Бірігіп кеткен ұяшықтарды ажырату, бос қатарларды өшіру, толық ЖСН жасау", task_scrplan_title:"Ересектер бойынша скрининг жасау генерациясы", task_scrplan_desc:"«Толық ИИН жасау» нәтижесі бойынша №ҚР ДСМ-174/2020 бұйрығына сәйкес ай сайынғы шақыру жоспары жасалады", task_vacc_title:"Жоспарлы профилактикалық екпелер генерациясы", task_vacc_desc:"Пациенттер тізімін жүктесеңіз, №612 қаулыға сәйкес таңдалған жылғы ай бойынша екпе жоспары жасалады", task_rpndiff_title:"Тіркелгендер мен шыққандарды анықтау", task_rpndiff_desc:"Айдың басы мен соңындағы РПН файлдарын салыстырып, тіркеуден шыққандар мен жаңадан тіркелгендерді көрсетеді", task_wc_title:"Белый код", task_wc_desc:"Қайта тіркелмеу туралы тілек білдірген пациенттер тізімі. «Толық ИИН жасау» кезінде автоматты анықталады.", task_dez1_title:"Дезинфекциялық құралға қажеттілікті есептеу", task_dez1_desc:"X₁ = Q × N × K × (S1 + S2 + S3) формуласы бойынша жылдық қажеттілік", task_dez2_title:"Ауқымды/Қорытынды дезинфекцияға арналған есептеу (X₂)", task_dez2_desc:"X₂ = 52 × N × K × S₄ — емшара, таңып-байлау, операциялық, босандыру залдары", task_quartz_title:"Кварц сағатын қанша минутқа қою керек?", task_quartz_desc:"Бөлме көлемі мен шам қуатына қарай ұсынылатын уақытты есептеу", task_quiz_title:"Қызметкерлерге арналған тест", task_quiz_desc:"Қол жуу, скрининг, вакцинация, инфекциялық бақылау тақырыптары бойынша", nav_support:"Пациенттерді қолдау ↗",
     sec_tmkkk_label:"ТМККК", sec_tmkkk_title:"Тегін медициналық көмектің <span>кепілдік берілген көлемі</span>", sec_tmkkk_desc:"Мемлекет кепілдік берген тегін медициналық қызметтер тізімі",
     tmkkk1_title:"Алғашқы медициналық-санитариялық көмек", tmkkk1_text:"Учаскелік терапевт, педиатр, жалпы практика дәрігері — тіркеу бойынша тегін қабылдау.",
     tmkkk2_title:"Зертханалық диагностика", tmkkk2_text:"Жалпы қан, зәр талдаулары және негізгі биохимиялық зерттеулер ТМККК шеңберінде тегін жүргізіледі.",
@@ -6646,7 +6644,7 @@ const T = {
     toast_ok:"✅ Ваша запись принята! Мы свяжемся с вами в ближайшее время.",
     nav_home:"Главная", nav_about:"О нас", nav_structure:"Структура",
     nav_patients:"Пациентам", nav_reviews:"Отзывы", nav_faq:"Вопросы",
-    nav_osms:"ОСМС", nav_tmkkk:"ГОБМП", nav_compliance:"Служба поддержки пациентов и внутреннего контроля", nav_staff:"🛠 Инструменты", staff_label:"ИНСТРУМЕНТЫ", staff_title:"Инструменты для <span>сотрудников</span>", staff_desc:"Список инструментов для упрощения работы. Выберите нужное задание.", task_rpn_title:"Создание полного ИИН", task_rpn_desc:"Разбивка объединённых ячеек, удаление пустых строк, формирование полного ИИН", task_scrplan_title:"Генератор плана скрининга", task_scrplan_desc:"На основе результата «Создание полного ИИН» формируется ежемесячный план вызова по приказу №ҚР ДСМ-174/2020", task_vacc_title:"Плановые профилактические прививки (2026)", task_vacc_desc:"После загрузки списка пациентов формируется план прививок на 2026 год по постановлению №612", task_rpndiff_title:"Выявление прикреплённых и выбывших", task_rpndiff_desc:"Сравнивает файлы РПН начала и конца месяца, показывает выбывших и вновь прикреплённых", task_wc_title:"Белый код", task_wc_desc:"Список пациентов, отказавшихся от повторного прикрепления. Автоматически определяется при создании полного ИИН.", task_dez1_title:"Расчёт потребности в дезинфицирующих средствах", task_dez1_desc:"Годовая потребность по формуле X₁ = Q × N × K × (S1 + S2 + S3)", task_dez2_title:"Расчёт заключительной дезинфекции (X₂)", task_dez2_desc:"X₂ = 52 × N × K × S₄ — процедурная, перевязочная, операционная, родильный зал", task_quartz_title:"На сколько минут ставить кварцевую лампу?", task_quartz_desc:"Расчёт рекомендуемого времени в зависимости от объёма помещения и мощности лампы", task_quiz_title:"Тест для сотрудников", task_quiz_desc:"Темы: мытьё рук, скрининг, вакцинация, инфекционный контроль", nav_support:"Поддержка пациентов ↗",
+    nav_osms:"ОСМС", nav_tmkkk:"ГОБМП", nav_compliance:"Служба поддержки пациентов и внутреннего контроля", nav_staff:"🛠 Инструменты", staff_label:"ИНСТРУМЕНТЫ", staff_title:"Инструменты для <span>сотрудников</span>", staff_desc:"Список инструментов для упрощения работы. Выберите нужное задание.", task_rpn_title:"Создание полного ИИН", task_rpn_desc:"Разбивка объединённых ячеек, удаление пустых строк, формирование полного ИИН", task_scrplan_title:"Генератор скрининга по взрослым", task_scrplan_desc:"На основе результата «Создание полного ИИН» формируется ежемесячный план вызова по приказу №ҚР ДСМ-174/2020", task_vacc_title:"Генератор плановых профилактических прививок", task_vacc_desc:"После загрузки списка пациентов формируется план прививок на выбранный год по постановлению №612", task_rpndiff_title:"Выявление прикреплённых и выбывших", task_rpndiff_desc:"Сравнивает файлы РПН начала и конца месяца, показывает выбывших и вновь прикреплённых", task_wc_title:"Белый код", task_wc_desc:"Список пациентов, отказавшихся от повторного прикрепления. Автоматически определяется при создании полного ИИН.", task_dez1_title:"Расчёт потребности в дезинфицирующих средствах", task_dez1_desc:"Годовая потребность по формуле X₁ = Q × N × K × (S1 + S2 + S3)", task_dez2_title:"Расчёт заключительной дезинфекции (X₂)", task_dez2_desc:"X₂ = 52 × N × K × S₄ — процедурная, перевязочная, операционная, родильный зал", task_quartz_title:"На сколько минут ставить кварцевую лампу?", task_quartz_desc:"Расчёт рекомендуемого времени в зависимости от объёма помещения и мощности лампы", task_quiz_title:"Тест для сотрудников", task_quiz_desc:"Темы: мытьё рук, скрининг, вакцинация, инфекционный контроль", nav_support:"Поддержка пациентов ↗",
     sec_tmkkk_label:"ГОБМП", sec_tmkkk_title:"Гарантированный объём <span>бесплатной медицинской помощи</span>", sec_tmkkk_desc:"Перечень бесплатных медицинских услуг, гарантированных государством",
     tmkkk1_title:"Первичная медико-санитарная помощь", tmkkk1_text:"Участковый терапевт, педиатр, врач общей практики — бесплатный приём по прикреплению.",
     tmkkk2_title:"Лабораторная диагностика", tmkkk2_text:"Общий анализ крови, мочи и основные биохимические исследования проводятся бесплатно в рамках ГОБМП.",
@@ -6765,7 +6763,7 @@ const T = {
     toast_ok:"✅ Appointment received! We will contact you soon.",
     nav_home:"Home",nav_about:"About",nav_structure:"Structure",
     nav_patients:"For Patients",nav_reviews:"Reviews",nav_faq:"FAQ",
-    nav_osms:"OSMS",nav_tmkkk:"GFMC",nav_compliance:"Patient Support & Internal Expertise", nav_staff:"🛠 TOOLS", staff_label:"TOOLS", staff_title:"Tools for <span>staff</span>", staff_desc:"A list of tools to simplify your work. Select the task you need.", task_rpn_title:"Full IIN Generation", task_rpn_desc:"Split merged cells, remove empty rows, generate full IIN numbers", task_scrplan_title:"Screening Plan Generator", task_scrplan_desc:"Generates a monthly call plan based on order №ҚР ДСМ-174/2020 from the Full IIN result", task_vacc_title:"Scheduled Preventive Vaccinations (2026)", task_vacc_desc:"Upload a patient list to generate a 2026 vaccination plan per resolution №612", task_rpndiff_title:"Detect Registered & Departed", task_rpndiff_desc:"Compares RPN files from start and end of month to show who left and who was newly registered", task_wc_title:"White Code", task_wc_desc:"List of patients who refused re-registration. Automatically detected during Full IIN generation.", task_dez1_title:"Disinfectant Requirement Calculation", task_dez1_desc:"Annual need using formula X₁ = Q × N × K × (S1 + S2 + S3)", task_dez2_title:"Final Disinfection Calculation (X₂)", task_dez2_desc:"X₂ = 52 × N × K × S₄ — procedure, dressing, operating, delivery rooms", task_quartz_title:"How long to run the UV lamp?", task_quartz_desc:"Calculates recommended time based on room volume and lamp wattage", task_quiz_title:"Staff Knowledge Test", task_quiz_desc:"Topics: hand washing, screening, vaccination, infection control",nav_support:"Patient Support ↗",
+    nav_osms:"OSMS",nav_tmkkk:"GFMC",nav_compliance:"Patient Support & Internal Expertise", nav_staff:"🛠 TOOLS", staff_label:"TOOLS", staff_title:"Tools for <span>staff</span>", staff_desc:"A list of tools to simplify your work. Select the task you need.", task_rpn_title:"Full IIN Generation", task_rpn_desc:"Split merged cells, remove empty rows, generate full IIN numbers", task_scrplan_title:"Adult Screening Generator", task_scrplan_desc:"Generates a monthly call plan based on order №ҚР ДСМ-174/2020 from the Full IIN result", task_vacc_title:"Preventive Vaccination Generator", task_vacc_desc:"Upload a patient list to generate a vaccination plan for the selected year per resolution №612", task_rpndiff_title:"Detect Registered & Departed", task_rpndiff_desc:"Compares RPN files from start and end of month to show who left and who was newly registered", task_wc_title:"White Code", task_wc_desc:"List of patients who refused re-registration. Automatically detected during Full IIN generation.", task_dez1_title:"Disinfectant Requirement Calculation", task_dez1_desc:"Annual need using formula X₁ = Q × N × K × (S1 + S2 + S3)", task_dez2_title:"Final Disinfection Calculation (X₂)", task_dez2_desc:"X₂ = 52 × N × K × S₄ — procedure, dressing, operating, delivery rooms", task_quartz_title:"How long to run the UV lamp?", task_quartz_desc:"Calculates recommended time based on room volume and lamp wattage", task_quiz_title:"Staff Knowledge Test", task_quiz_desc:"Topics: hand washing, screening, vaccination, infection control",nav_support:"Patient Support ↗",
     sec_tmkkk_label:"GFMC",sec_tmkkk_title:"Guaranteed Volume of <span>Free Medical Care</span>",sec_tmkkk_desc:"List of free medical services guaranteed by the state",
     tmkkk1_title:"Primary Health Care",tmkkk1_text:"District therapist, pediatrician, GP — free reception by registration.",
     tmkkk2_title:"Laboratory Diagnostics",tmkkk2_text:"General blood and urine tests and basic biochemical tests are free under GFMC.",
