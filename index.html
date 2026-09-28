@@ -4007,6 +4007,11 @@ html.dark .kz-tile { opacity:0.22; }
     <div class="kuraldar-tile-title">1 жылда келмеген халықты анықтау</div>
     <div class="kuraldar-tile-desc">РПН × қызмет алғандар · жасыл/қызыл заливка · Excel</div>
   </div>
+  <div class="kuraldar-tile" id="tilecsc" onclick="openKuralPanel('csc')" style="--tile-color:234,88,12;">
+    <div class="kuraldar-tile-icon">🧒</div>
+    <div class="kuraldar-tile-title">Балалар скринингі (18 жасқа дейін)</div>
+    <div class="kuraldar-tile-desc">№264 бұйрық · айлық межелер + жылдық белдеулер · Excel</div>
+  </div>
 <div id="kuraldarPanel" style="display:none;margin-top:20px;">
   <div id="paneliin" class="kuraldar-panel-content" style="display:none;">
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid rgba(37,99,235,0.15);">
@@ -5363,6 +5368,33 @@ html.dark .kz-tile { opacity:0.22; }
 
   <div id="klmSummary" style="margin-bottom:12px;"></div>
   <button id="klmDlBtn" onclick="klmDownload()" style="display:none;padding:11px 20px;background:#16a34a;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;">⬇️ Excel жүктеу (жасыл/қызыл заливкамен)</button>
+</div>
+
+<div id="panelcsc" class="kuraldar-panel-content" style="display:none;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:14px;border-bottom:2px solid rgba(234,88,12,0.15);">
+    <span style="font-size:26px;">🧒</span>
+    <div>
+      <div style="font-size:15px;font-weight:800;color:var(--dark);">Балалар скринингі — 18 жасқа дейін</div>
+      <div style="font-size:12px;color:var(--gray);">№ҚР ДСМ-264/2020 бұйрығы бойынша профилактикалық қарап-тексеру жоспары</div>
+    </div>
+    <button onclick="openKuralPanel('csc')" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray);">✕</button>
+  </div>
+
+  <div style="background:#fff7ed;border:1.5px solid rgba(234,88,12,0.2);border-radius:14px;padding:16px;margin-bottom:16px;">
+    <div style="font-size:12px;color:#9a3412;margin-bottom:12px;line-height:1.5;">💡 РПН тізімін (немесе «Толық ИИН жасау» нәтижесін) жүктеңіз — 18 жасқа дейінгі балалар автоматты сүзіледі. Туған күні, участок, телефон, адрес сол файлдан алынады.</div>
+    <label class="du-file" style="border-color:rgba(234,88,12,0.4)" onclick="document.getElementById('cscFile').click()"><span id="cscLbl">👶 Балалар/РПН тізімі (.xlsx)</span></label>
+    <input type="file" id="cscFile" accept=".xlsx,.xls" style="display:none" onchange="cscHandle(this)">
+    <div style="margin-top:12px;">
+      <label style="font-size:.9rem;font-weight:600;color:var(--dark);margin-right:8px;">Жоспар жылы:</label>
+      <select id="cscYear" style="padding:9px 14px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:.95rem;font-weight:700;cursor:pointer;"></select>
+    </div>
+    <button onclick="cscRun()" style="width:100%;margin-top:14px;padding:12px;background:linear-gradient(135deg,#ea580c,#c2410c);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;">🧒 Жоспар жасау</button>
+    <div id="cscStatus" style="font-size:12px;color:#64748b;margin-top:10px;min-height:18px;"></div>
+  </div>
+
+  <div id="cscSummary" style="margin-bottom:12px;"></div>
+  <button id="cscDlBtn" onclick="cscExport()" style="display:none;margin-bottom:14px;padding:11px 20px;background:#16a34a;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:800;cursor:pointer;">⬇️ Excel жүктеу (3 бет)</button>
+  <div id="cscResult"></div>
 </div>
 
 <div id="panelmkbook" class="kuraldar-panel-content" style="display:none;">
@@ -19642,6 +19674,124 @@ function klmDownload(){
     var wb=XL.utils.book_new(); XL.utils.book_append_sheet(wb,ws,'РПН');
     XL.writeFile(wb,'РПН_1жылда_келмегендер_2026.xlsx');
     st.textContent=styled?'✅ Excel жүктелді (жасыл=алған, қызыл=алмаған)':'✅ Excel жүктелді (заливкасыз — стиль кітапханасы жүктелмеді, интернетті тексеріңіз)';
+  });
+}
+/* ===== БАЛАЛАР СКРИНИНГІ (264 БҰЙРЫҚ) МОДУЛІ ===== */
+var cscFile=null, cscRows=null, cscResult=null;
+var CSC_MONTHS=['Қаңтар','Ақпан','Наурыз','Сәуір','Мамыр','Маусым','Шілде','Тамыз','Қыркүйек','Қазан','Қараша','Желтоқсан'];
+var DENTAL='Ауыз қуысын тексеру (стоматолог)';
+// Айлық межелер (сәбилер): m — жас (ай), ex — қосымша тексерулер (педиатр+мейіргер қабылдауы әрдайым бар)
+var CSC_MILE=[
+  {m:1, lbl:'1 айлық', ex:['Хирург','Невролог']},
+  {m:5, lbl:'5 айлық', ex:[]},
+  {m:6, lbl:'6 айлық', ex:['Оториноларинголог','Офтальмолог']},
+  {m:9, lbl:'9 айлық', ex:[]},
+  {m:12,lbl:'12 айлық (1 жас)', ex:['Жалпы қан талдауы','Жалпы несеп талдауы','Хирург','Оториноларинголог','Офтальмолог','Невролог']},
+  {m:15,lbl:'1 жас 3 ай', ex:[]},
+  {m:18,lbl:'1 жас 6 ай', ex:[]},
+  {m:21,lbl:'1 жас 9 ай', ex:[]},
+  {m:24,lbl:'2 жас', ex:['Оториноларинголог',DENTAL]},
+  {m:30,lbl:'2 жас 6 ай', ex:['Жалпы қан талдауы','Жалпы несеп талдауы','Хирург','Оториноларинголог','Невролог','Офтальмолог',DENTAL]}
+];
+// Жылдық белдеулер (a жасқа толған жылы): a — жас, ex — қосымша тексерулер
+var CSC_YEAR={
+  3:[DENTAL], 4:[DENTAL],
+  5:['Жалпы қан талдауы','Жалпы несеп талдауы','Хирург','Оториноларинголог','Офтальмолог','Невролог',DENTAL],
+  6:[DENTAL], 7:[DENTAL], 8:[DENTAL], 9:[DENTAL],
+  10:['Жалпы қан талдауы','Жалпы несеп талдауы','Хирург кабинеті мейіргерінің қарауы','Офтальмолог кабинеті мейіргерінің қарауы','ЭКГ (12 кескінде)',DENTAL],
+  11:[DENTAL], 12:[DENTAL], 13:[DENTAL],
+  14:['ЭКГ (12 кескінде)','Жалпы қан талдауы','Жалпы несеп талдауы','Хирург кабинеті мейіргерінің қарауы','Офтальмолог кабинеті мейіргерінің қарауы',DENTAL],
+  15:['ЭКГ (12 кескінде)','Жалпы қан талдауы','Жалпы несеп талдауы','Хирург кабинеті мейіргерінің қарауы','Офтальмолог кабинеті мейіргерінің қарауы',DENTAL],
+  16:['ЭКГ (12 кескінде)','Жалпы қан талдауы','Жалпы несеп талдауы','Хирург кабинеті мейіргерінің қарауы','Офтальмолог кабинеті мейіргерінің қарауы',DENTAL],
+  17:['Хирург кабинеті мейіргерінің қарауы','Офтальмолог кабинеті мейіргерінің қарауы',DENTAL]
+};
+function cscHandle(input){ var f=input.files[0]; if(!f)return; cscFile=f; var l=document.getElementById('cscLbl'); l.innerHTML='✅ '+(f.name.length>26?f.name.slice(0,26)+'…':f.name); l.parentElement.classList.add('ok'); }
+(function cscInitYear(){ var s=document.getElementById('cscYear'); if(!s)return; var cy=new Date().getFullYear(); var o=''; for(var y=cy;y<=cy+9;y++)o+='<option value="'+y+'">'+y+' жыл</option>'; s.innerHTML=o; })();
+function cscBirth(bdStr,iin){
+  var s=String(bdStr||'').trim(); var d=null;
+  var m1=s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/), m2=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(m1)d=new Date(+m1[3],+m1[2]-1,+m1[1]); else if(m2)d=new Date(+m2[1],+m2[2]-1,+m2[3]);
+  if((!d||isNaN(d)) && iin && iin.length===12){ var yy=+iin.slice(0,2),mm=+iin.slice(2,4)-1,dd=+iin.slice(4,6),g=+iin[6]; d=new Date((g<=2?1800:g<=4?1900:2000)+yy,mm,dd); }
+  return (d&&!isNaN(d))?d:null;
+}
+function cscRun(){
+  var st=document.getElementById('cscStatus');
+  if(!cscFile){ st.textContent='⚠️ Алдымен тізімді жүктеңіз'; return; }
+  st.textContent='⏳ Оқылуда...';
+  loadSheetJS(function(){
+    duParseFileRows(cscFile).then(function(aoa){
+      if(!aoa||!aoa.length){ st.textContent='⚠️ Файл бос'; return; }
+      var hi=duHeaderRow(aoa,'ИИН'); if(hi<0)hi=0; var H=aoa[hi]||[];
+      var ci=duCol(H,['ИИН']); if(ci<0)ci=7;
+      var cn=duCol(H,['ФИО','аты']); if(cn<0)cn=8;
+      var cbd=duCol(H,['дата рожд','туған күн']); if(cbd<0)cbd=9;
+      var cg=duCol(H,['пол','жыныс']); if(cg<0)cg=11;
+      var cu=duCol(H,['участ']); if(cu<0)cu=3;
+      var cp=duCol(H,['контакт','телефон','байланыс']); if(cp<0)cp=20;
+      var ca=duCol(H,['адрес','мекен']); if(ca<0)ca=12;
+      function pickAddr(row){ var b=''; for(var c=ca;c<ca+5;c++){ var v=String(row[c]||'').trim(); if(v&&v.toLowerCase()!=='none'&&v.length>b.length)b=v; } return b; }
+      function cc(v){ v=String(v||'').trim(); return v.toLowerCase()==='none'?'':v; }
+      var year=parseInt(document.getElementById('cscYear').value)||new Date().getFullYear();
+      var out=[]; var seenKids={};
+      for(var r=hi+1;r<aoa.length;r++){ var row=aoa[r]||[];
+        var iin=duNormIin(row[ci]); var bd=cscBirth(row[cbd],iin); if(!bd)continue;
+        // 0-18 жас сүзгісі (жоспар жылында 18-ден кіші)
+        var ageY=year-bd.getFullYear(); if(ageY<0||ageY>18)continue;
+        var kid={iin:iin,name:cc(row[cn])||iin,uch:cc(row[cu]),phone:cc(row[cp]),addr:pickAddr(row),bd:bd};
+        // 1) Айлық межелер
+        CSC_MILE.forEach(function(ml){ var t=new Date(bd); t.setMonth(t.getMonth()+ml.m); if(t.getFullYear()===year){ out.push(cscRow(kid,t.getMonth(),ml.lbl,ml.ex,'айлық')); } });
+        // 2) Жылдық белдеулер (a жасқа толған жылы)
+        for(var a=3;a<=17;a++){ if(bd.getFullYear()+a===year){ out.push(cscRow(kid,bd.getMonth(),a+'-'+(a+1)+' жас',CSC_YEAR[a]||[],'жылдық')); } }
+        seenKids[iin]=1;
+      }
+      out.sort(function(x,y){ return x.monthIdx-y.monthIdx || (parseInt(x.uch)||999)-(parseInt(y.uch)||999) || x.name.localeCompare(y.name,'kk'); });
+      cscResult={rows:out,year:year,kids:Object.keys(seenKids).length};
+      cscRender();
+      st.textContent='✅ '+year+' жоспары дайын: '+Object.keys(seenKids).length+' бала · '+out.length+' қарап-тексеру жазбасы';
+    }).catch(function(e){ st.textContent='❌ Қате: '+(e&&e.message||e); });
+  });
+}
+function cscRow(kid,mi,ageGrp,ex,kind){
+  var exams=['Педиатр/ЖПД + мейіргер қабылдауы'].concat(ex||[]);
+  return {monthIdx:mi,monthName:CSC_MONTHS[mi],iin:kid.iin,name:kid.name,uch:kid.uch,phone:kid.phone,addr:kid.addr,
+    by:kid.bd.getFullYear(),bdStr:cscFmt(kid.bd),ageGrp:ageGrp,kind:kind,exams:exams};
+}
+function cscFmt(d){ function z(n){return(n<10?'0':'')+n;} return z(d.getDate())+'.'+z(d.getMonth()+1)+'.'+d.getFullYear(); }
+function cscRender(){
+  var sum=document.getElementById('cscSummary'), res=document.getElementById('cscResult');
+  document.getElementById('cscDlBtn').style.display=cscResult.rows.length?'inline-block':'none';
+  // ай бойынша сан
+  var byM={}; cscResult.rows.forEach(function(r){ byM[r.monthIdx]=(byM[r.monthIdx]||0)+1; });
+  sum.innerHTML='<div style="background:#fff;border-radius:12px;padding:14px;box-shadow:0 1px 4px rgba(0,0,0,.06)"><span style="font-size:22px;font-weight:900;color:#ea580c">'+cscResult.kids+'</span> <span style="font-size:13px;color:#475569">бала (18 жасқа дейін) · '+cscResult.rows.length+' қарап-тексеру · '+cscResult.year+' жыл</span></div>';
+  // ай кестесі (қысқаша)
+  var mhtml=CSC_MONTHS.map(function(mn,mi){ if(!byM[mi])return ''; return '<tr><td style="font-weight:600">'+mn+' '+cscResult.year+'</td><td style="text-align:center">'+byM[mi]+'</td></tr>'; }).join('');
+  res.innerHTML='<div style="font-size:13px;font-weight:700;color:#334155;margin:6px 0">📅 Ай бойынша қарап-тексеру саны</div>'+
+    '<table class="mkb-tbl" style="width:auto"><thead><tr><th>Ай</th><th>Саны</th></tr></thead><tbody>'+mhtml+'</tbody></table>'+
+    '<div style="font-size:11px;color:#94a3b8;margin-top:8px">Толық тізім (участок/телефон/адрес) және участок бойынша бөлініс Excel-де 3 бетте.</div>';
+}
+function cscExport(){
+  if(!cscResult||!cscResult.rows.length)return;
+  loadSheetJS(function(){
+    var wb=XLSX.utils.book_new(); var Y=cscResult.year; var rows=cscResult.rows;
+    // 1) Жалпы жоспар (ай × жас тобы саны + барлығы)
+    var grpSet={}; rows.forEach(function(r){grpSet[r.ageGrp]=1;});
+    var s1=[['АЙ','ҚАРАП-ТЕКСЕРУ САНЫ','оның ішінде айлық межелер','жылдық белдеулер']];
+    var t1=0,tm=0,ty=0;
+    CSC_MONTHS.forEach(function(mn,mi){ var a=rows.filter(function(r){return r.monthIdx===mi;}); if(!a.length)return; var mc=a.filter(function(r){return r.kind==='айлық';}).length, yc=a.length-mc; s1.push([mn+' '+Y,a.length,mc,yc]); t1+=a.length;tm+=mc;ty+=yc; });
+    s1.push(['БАРЛЫҒЫ',t1,tm,ty]);
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(s1),'Жалпы жоспар');
+    // 2) Участок бойынша (ай × участок)
+    var uSet={}; rows.forEach(function(r){ uSet[(r.uch||'—').trim()||'—']=1; });
+    var uList=Object.keys(uSet).sort(function(a,b){var na=parseInt(a),nb=parseInt(b);na=isNaN(na)?9999:na;nb=isNaN(nb)?9999:nb;return na-nb||a.localeCompare(b,'ru');});
+    var s2=[['АЙ'].concat(uList).concat(['БАРЛЫҒЫ'])]; var colT={}; uList.forEach(function(u){colT[u]=0;}); var gr=0;
+    CSC_MONTHS.forEach(function(mn,mi){ var a=rows.filter(function(r){return r.monthIdx===mi;}); if(!a.length)return; var cnt={};uList.forEach(function(u){cnt[u]=0;}); a.forEach(function(r){var u=(r.uch||'—').trim()||'—';cnt[u]++;}); var arr=[mn+' '+Y],rt=0; uList.forEach(function(u){arr.push(cnt[u]);colT[u]+=cnt[u];rt+=cnt[u];}); arr.push(rt);gr+=rt; s2.push(arr); });
+    var tr=['БАРЛЫҒЫ'];uList.forEach(function(u){tr.push(colT[u]);});tr.push(gr);s2.push(tr);
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(s2),'Участок бойынша');
+    // 3) Толық тізім
+    var s3=[['АЙ','АТЫ-ЖӨНІ','ИИН','Туған күні','Жас тобы','УЧАСКЕ','ТЕЛЕФОН','Адрес','Тексерулер көлемі']];
+    rows.forEach(function(r){ s3.push([r.monthName+' '+Y,r.name,r.iin,r.bdStr,r.ageGrp,r.uch||'',r.phone||'',r.addr||'',r.exams.join('; ')]); });
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(s3),'Толық тізім');
+    XLSX.writeFile(wb,'Balalar_skrining_264_'+Y+'.xlsx');
   });
 }
 /* ===== МЕДКНИЖКА МОДУЛІ ===== */
