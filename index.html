@@ -4256,6 +4256,10 @@ html.dark .kz-tile { opacity:0.22; }
               <div style="font-size:2.2rem;margin-bottom:10px;">🔗</div>
               <div style="font-weight:700;font-size:1rem;color:var(--dark);margin-bottom:8px;">«Толық ИИН жасау» нәтижесінен алу</div>
               <div style="font-size:.85rem;color:var(--gray);margin-bottom:18px;">Жоғарыдағы «Толық ИИН жасау» бөлімінде файл өңделген болса, деректер автоматты жүктеледі</div>
+              <div style="margin-bottom:16px;">
+                <label style="font-size:.9rem;color:var(--dark);font-weight:600;margin-right:8px;">Жоспар жылы:</label>
+                <select id="splanYear" style="padding:9px 14px;border:1.5px solid #cbd5e1;border-radius:9px;font-size:.95rem;font-weight:700;cursor:pointer;"></select>
+              </div>
               <button class="rpn-download-btn" onclick="splanLoadFromRpn()" style="font-size:.95rem;padding:13px 32px;">
                 ▶ Жоспар жасау
               </button>
@@ -9222,51 +9226,83 @@ function calcScreening() {
 
   function setStatus(msg){ var el=document.getElementById('splanStatus'); if(el) el.textContent=msg; }
 
+  // Жыл таңдағышты толтыру (ағымдағы жылдан +9 жылға дейін — кез келгенін таңдауға болады)
+  (function initSplanYear(){
+    var sel=document.getElementById('splanYear'); if(!sel) return;
+    var cy=new Date().getFullYear(); var opts='';
+    for(var y=cy;y<=cy+9;y++){ opts+='<option value="'+y+'">'+y+' жыл</option>'; }
+    sel.innerHTML=opts;
+  })();
+
   window.splanLoadFromRpn = function(){
     if(typeof rpnCleanData === 'undefined' || !rpnCleanData || !rpnCleanData.length){
       setStatus('⚠️ Деректер табылмады. Алдымен «Толық ИИН жасау» бөлімінде файл өңдеңіз.');
       return;
     }
-    var headers = typeof rpnHeaders !== 'undefined' ? rpnHeaders : [];
-    // Find columns
+    var data = rpnCleanData;
+    // Нақты тақырып қатарын табу (ИИН бар қатар) — rpnHeaders атау болмауы мүмкін
+    var hRow = -1;
+    for(var i=0;i<Math.min(data.length,25);i++){
+      var joined = (data[i]||[]).map(function(c){return String(c).toLowerCase();}).join('|');
+      if(joined.indexOf('иин')>=0 && (joined.indexOf('участ')>=0 || joined.indexOf('пол')>=0 || joined.indexOf('фио')>=0)){ hRow=i; break; }
+    }
+    var headers = hRow>=0 ? (data[hRow]||[]).map(function(h){return String(h).trim();}) : (typeof rpnHeaders!=='undefined'?rpnHeaders:[]);
+
     var yearCol      = colIdx(headers, ['год рождения','туған жыл','birth year','год']);
     var genderCol    = colIdx(headers, ['пол','жынысы','жыныс','gender','sex']);
     var nameCol      = colIdx(headers, ['фио','аты','ф.и.о','name']);
     var iinCol       = colIdx(headers, ['иин','жсн','iin']);
     var phoneCol     = colIdx(headers, ['контактн','телефон','phone','байланыс','связь']);
     var uchastokCol  = colIdx(headers, ['участ','учас']);
+    var addrCol      = colIdx(headers, ['адрес','мекенжай','address','проживан']);
 
-    // fallback by position (based on known RPN file structure)
+    // Позиция бойынша резерв (белгілі РПН құрылымы)
     if(yearCol  ===-1) yearCol   = 10;
     if(genderCol===-1) genderCol = 11;
     if(nameCol  ===-1) nameCol   = 8;
     if(iinCol   ===-1) iinCol    = 7;
+    if(uchastokCol===-1) uchastokCol = 3;
+    if(phoneCol ===-1) phoneCol  = 20;
+    if(addrCol  ===-1) addrCol   = 12;
 
-    var currentYear = new Date().getFullYear();
+    // Адрес бірнеше бағанға бөлінуі мүмкін (12-16) — ең толық (ұзын) мәнді аламыз
+    function pickAddr(row){
+      var best='';
+      for(var c=addrCol;c<addrCol+5;c++){ var v=String(row[c]||'').trim(); if(v && v.toLowerCase()!=='none' && v.length>best.length) best=v; }
+      return best;
+    }
+    function cleanCell(v){ v=String(v||'').trim(); return (v.toLowerCase()==='none')?'':v; }
+
+    var yearSel = document.getElementById('splanYear');
+    var planYear = yearSel && yearSel.value ? parseInt(yearSel.value) : new Date().getFullYear();
+
     var patients = [];
-    rpnCleanData.forEach(function(row){
-      // skip header-like rows
+    var startRow = hRow>=0 ? hRow+1 : 0;
+    for(var ri=startRow; ri<data.length; ri++){
+      var row = data[ri]||[];
       var by = parseInt(row[yearCol]);
-      if(!by || isNaN(by) || by < 1900 || by > currentYear) return;
-      var age = currentYear - by;
+      if(!by || isNaN(by) || by < 1900 || by > planYear) continue;
+      var age = planYear - by;
       var female = isFemale(row[genderCol]);
-      if(female === null) return;
+      if(female === null) continue;
       var scrs = getScreenings(age, female);
-      if(!scrs.length) return;
+      if(!scrs.length) continue;
       patients.push({
-        iin:      String(row[iinCol]       || ''),
-        name:     String(row[nameCol]      || ''),
-        phone:    phoneCol    >= 0 ? String(row[phoneCol]    || '') : '',
-        uchastok: uchastokCol >= 0 ? String(row[uchastokCol] || '') : '',
+        iin:      cleanCell(row[iinCol]),
+        name:     cleanCell(row[nameCol]),
+        phone:    cleanCell(row[phoneCol]),
+        uchastok: cleanCell(row[uchastokCol]),
+        address:  pickAddr(row),
         by: by, age: age, female: female,
         scrs: scrs
       });
-    });
+    }
 
     if(!patients.length){
-      setStatus('⚠️ Бұйрықтағы нысаналы жасқа кіретін пациент табылмады (' + currentYear + ' жыл)');
+      setStatus('⚠️ Бұйрықтағы нысаналы жасқа кіретін пациент табылмады (' + planYear + ' жыл)');
       return;
     }
+    var currentYear = planYear;
 
     // Sort older first, distribute across 12 months
     patients.sort(function(a,b){ return b.age - a.age; });
@@ -9297,7 +9333,7 @@ function calcScreening() {
       }).join('');
       var rowsHtml = bucket.map(function(p,idx){
         var badges = p.scrs.map(function(s){ return '<span class="splan-scr-badge">'+s.icon+' '+s.label+'</span>'; }).join('');
-        return '<tr><td>'+(idx+1)+'</td><td>'+p.iin+'</td><td>'+p.name+'</td><td>'+p.by+'</td><td>'+(p.female?'Ж':'Е')+'</td><td>'+p.age+'</td><td>'+badges+'</td></tr>';
+        return '<tr><td>'+(idx+1)+'</td><td>'+p.iin+'</td><td>'+p.name+'</td><td>'+p.by+'</td><td>'+(p.female?'Ж':'Е')+'</td><td>'+p.age+'</td><td>'+(p.uchastok||'')+'</td><td>'+(p.phone||'')+'</td><td style="font-size:11px;color:#64748b">'+(p.address||'')+'</td><td>'+badges+'</td></tr>';
       }).join('');
       return '<div class="splan-month-row" id="splanMonth'+mi+'">' +
         '<div class="splan-month-head" onclick="splanToggleMonth('+mi+')">' +
@@ -9309,7 +9345,7 @@ function calcScreening() {
         '<div class="splan-month-body">' +
           '<div class="splan-type-list">'+tagsHtml+'</div>' +
           '<div class="splan-patient-table-wrap"><table class="splan-patient-table">' +
-            '<thead><tr><th>№</th><th>ИИН</th><th>АТЫ-ЖӨНІ</th><th>Туған жыл</th><th>Жынысы</th><th>Жасы</th><th>Скрининг түрлері</th></tr></thead>' +
+            '<thead><tr><th>№</th><th>ИИН</th><th>АТЫ-ЖӨНІ</th><th>Туған жыл</th><th>Жынысы</th><th>Жасы</th><th>УЧАСКЕ</th><th>ТЕЛЕФОН</th><th>Адрес</th><th>Скрининг түрлері</th></tr></thead>' +
             '<tbody>'+rowsHtml+'</tbody>' +
           '</table></div>' +
         '</div>' +
@@ -9338,10 +9374,10 @@ function calcScreening() {
   window.splanExportCSV2 = function(){
     _staffActivity('Есеп жүктелді', 'Скрининг жоспары (CSV)');
     var d = window._splanData; if(!d) return;
-    var rows = [['Ай','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','УЧАСКЕ','ТЕЛЕФОН','Скрининг түрлері']];
+    var rows = [['Ай','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','УЧАСКЕ','ТЕЛЕФОН','Адрес','Скрининг түрлері']];
     d.monthBuckets.forEach(function(bucket,mi){
       bucket.forEach(function(p){
-        rows.push([MONTHS_KZ[mi]+' '+d.year, p.name, p.iin, p.by, p.female?'Ж':'Е', p.age, p.uchastok||'', p.phone||'', p.scrs.map(function(s){return s.label;}).join(' | ')]);
+        rows.push([MONTHS_KZ[mi]+' '+d.year, p.name, p.iin, p.by, p.female?'Ж':'Е', p.age, p.uchastok||'', p.phone||'', p.address||'', p.scrs.map(function(s){return s.label;}).join(' | ')]);
       });
     });
     var csv = rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\r\n');
@@ -9360,8 +9396,25 @@ function calcScreening() {
         sum.push([MONTHS_KZ[mi]+' '+d.year, b.length, tc.cvd, tc.breast, tc.cervix, tc.stroke, tc.colon]);
       });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(sum), 'Жалпы жоспар');
-      var det = [['АЙ','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','УЧАСКЕ','ТЕЛЕФОН','СКРИНИНГ ТҮРЛЕРІ']];
-      d.monthBuckets.forEach(function(b,mi){ b.forEach(function(p){ det.push([MONTHS_KZ[mi]+' '+d.year,p.name,p.iin,p.by,p.female?'Ж':'Е',p.age,p.uchastok||'',p.phone||'',p.scrs.map(function(s){return s.label;}).join('; ')]); }); });
+
+      // Участок бойынша ай сайынғы бөлініс (айлар × участоктар матрицасы)
+      var uchSet={};
+      d.patients.forEach(function(p){ var u=(p.uchastok||'').trim()||'—'; uchSet[u]=1; });
+      var uchList=Object.keys(uchSet).sort(function(a,b){ var na=parseInt(a),nb=parseInt(b); na=isNaN(na)?9999:na; nb=isNaN(nb)?9999:nb; if(na!==nb)return na-nb; return a.localeCompare(b,'ru'); });
+      var uch=[['АЙ'].concat(uchList).concat(['БАРЛЫҒЫ'])];
+      var colTot={}; uchList.forEach(function(u){colTot[u]=0;}); var grand=0;
+      d.monthBuckets.forEach(function(b,mi){
+        var cnt={}; uchList.forEach(function(u){cnt[u]=0;});
+        b.forEach(function(p){ var u=(p.uchastok||'').trim()||'—'; cnt[u]=(cnt[u]||0)+1; });
+        var arr=[MONTHS_KZ[mi]+' '+d.year], rt=0;
+        uchList.forEach(function(u){ arr.push(cnt[u]); colTot[u]+=cnt[u]; rt+=cnt[u]; });
+        arr.push(rt); grand+=rt; uch.push(arr);
+      });
+      var tr=['БАРЛЫҒЫ']; uchList.forEach(function(u){tr.push(colTot[u]);}); tr.push(grand); uch.push(tr);
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(uch), 'Участок бойынша');
+
+      var det = [['АЙ','АТЫ-ЖӨНІ','ИИН','Туған жыл','Жынысы','Жасы','УЧАСКЕ','ТЕЛЕФОН','Адрес','СКРИНИНГ ТҮРЛЕРІ']];
+      d.monthBuckets.forEach(function(b,mi){ b.forEach(function(p){ det.push([MONTHS_KZ[mi]+' '+d.year,p.name,p.iin,p.by,p.female?'Ж':'Е',p.age,p.uchastok||'',p.phone||'',p.address||'',p.scrs.map(function(s){return s.label;}).join('; ')]); }); });
       XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(det), 'Толық тізім');
       XLSX.writeFile(wb, 'scrining-jospy-'+d.year+'.xlsx');
     }
