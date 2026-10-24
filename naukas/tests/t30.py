@@ -1,0 +1,20 @@
+exec(open('/tmp/ord/t3.py').read().split("with sync_playwright")[0])
+put("staff",{"920123300487":{"fio":"Эксперт","role":"expert"}})
+put("referrals",{"r1":{"iin":"900101300201","fio":"Т","status":"жаңа"},"r2":{"iin":"900101300202","fio":"Т2","status":"жабылды"}})
+put("orders",{"o1":{"iin":"900101300201","referralId":"r1","name":"ОАК","kind":"lab","createdAt":"2026-10-01T00:00:00.000Z"}})
+put("notif",{"x":{"a":1}})
+put("rpn_baza",{"900101300201":{"fio":"Т","uchastok":"Участок №5","inList":True}})
+with sync_playwright() as p:
+    b=p.chromium.launch(); pg=b.new_page(accept_downloads=True)
+    errs=[]; pg.on("pageerror",lambda e:errs.append(str(e)))
+    msgs=[]
+    def dlg(d):
+        msgs.append(d.message[:80]); d.accept("ТАЗАЛАУ" if d.type=="prompt" else None)
+    pg.on("dialog",dlg)
+    pg.goto(B+"/"); pg.evaluate("localStorage.setItem('nz_session', JSON.stringify({iin:'920123300487',fio:'Эксперт',role:'expert'}))"); pg.reload(); pg.wait_for_timeout(2500)
+    pg.evaluate("switchTab('ind')"); pg.wait_for_timeout(4000)
+    print("btn", pg.evaluate("!!document.querySelector('#nx-ind details button[onclick=\"indReset()\"]')"))
+    with pg.expect_download() as d: pg.evaluate("indReset()")
+    print("download", d.value.suggested_filename); pg.wait_for_timeout(2500)
+    for k in ("referrals","orders","notif","staff","rpn_baza"): print(k, pg.evaluate("dbGet('%s')"%k) and list(pg.evaluate("dbGet('%s')"%k).keys()))
+    print(msgs, errs); b.close()

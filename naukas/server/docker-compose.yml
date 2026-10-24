@@ -1,0 +1,12 @@
+services:
+  naukas:
+    build: .
+    container_name: naukas
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+    environment:
+      # Тек емхана желісіне рұқсат (өз желіңізге сәйкес өзгертіңіз), бос қалдыруға болады
+      ALLOW_PREFIX: "192.168.,10."
+    volumes:
+      - ./data:/data

@@ -1,0 +1,21 @@
+exec(open('/tmp/ord/t3.py').read().split("with sync_playwright")[0])
+base={"gender":"м","inList":True,"contacts":"87071234567","dob":"05.03.1960"}
+put("rpn_baza",{"900101300201":dict(base,fio="Тест Бес Иванович",uchastok="Участок №5"),"900101300202":dict(base,fio="Тест Алты Иванович",uchastok="Участок №6")})
+now=time.time()
+def O(i,iin,uch,days,**k):
+    put("orders/o%d"%i,dict({"referralId":"r","iin":iin,"fio":"Тест","uchastok":uch,"doctorName":"Дәрігер Тест","kind":"lab","name":"ЖҚА (ОАК)","createdAt":time.strftime("%Y-%m-%dT%H:%M:%S.000Z",time.gmtime(now-days*86400))},**k))
+O(1,"900101300201","Участок №5",0)
+O(2,"900101300201","Участок №5",10)
+O(3,"900101300201","Участок №5",3,resultAt=time.strftime("%Y-%m-%dT%H:%M:%S.000Z",time.gmtime(now-86400)))
+O(4,"900101300202","Участок №6",0)
+O(5,"900101300202","",12)
+with sync_playwright() as p:
+    b=p.chromium.launch(); pg=b.new_page(viewport={"width":1280,"height":1500})
+    errs=[]; pg.on("pageerror",lambda e:errs.append(str(e))); pg.on("console",lambda m: errs.append(m.text) if m.type=="warning" else 0)
+    pg.goto(B+"/"); pg.evaluate("localStorage.setItem('nz_session', JSON.stringify({iin:'222222222222',fio:'Медбике Тест',role:'nurse',uchastok:'5',uchList:[5]}))"); pg.reload(); pg.wait_for_timeout(1500); pg.evaluate("loadUchTable()"); pg.wait_for_timeout(2500); pg.evaluate("nurseDashRender()"); pg.wait_for_timeout(4000)
+    print(pg.evaluate("[...document.querySelectorAll('#ndOrd .nd-stat')].map(s=>s.innerText.replace(/\\n/g,' ')).join(' | ')"))
+    print(pg.evaluate("[...document.querySelectorAll('#ndOrd .nd-p')].length"), pg.evaluate("[...document.querySelectorAll('#nurseDash .nd-n')].map(n=>n.innerText).join(',')"))
+    pg.evaluate("ordMarkArrived('o1')"); pg.wait_for_timeout(1500)
+    print(pg.evaluate("[...document.querySelectorAll('#ndOrd .nd-stat')].map(s=>s.innerText.replace(/\\n/g,' ')).join(' | ')"))
+    pg.locator("#ndOrd").screenshot(path="/tmp/ord/v103_ord.png")
+    print(errs); b.close()

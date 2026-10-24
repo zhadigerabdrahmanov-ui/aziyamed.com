@@ -1,0 +1,14 @@
+services:
+  naukas:
+    build: .
+    container_name: naukas
+    restart: unless-stopped
+    ports:
+      - "8088:8080"
+    environment:
+      BACKUP_DIR: /backups
+      BACKUP_KEEP_DAYS: "30"
+    volumes:
+      - ./data:/data
+      - ./app:/srv/naukas/app
+      - ./backups:/backups

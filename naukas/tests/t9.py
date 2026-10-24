@@ -1,0 +1,23 @@
+exec(open('/tmp/ord/t3.py').read().split("with sync_playwright")[0])
+from playwright.sync_api import sync_playwright
+with sync_playwright() as p:
+    b=p.chromium.launch(); pg=b.new_page(viewport={"width":1300,"height":900})
+    errs=[]; pg.on("pageerror",lambda e:errs.append(str(e)))
+    pg.goto(B+"/")
+    pg.evaluate("localStorage.setItem('nz_session', JSON.stringify({iin:'111111111111',fio:'Дәрігер Тест',role:'doctor',uchastok:'5'}))"); pg.reload(); pg.wait_for_timeout(1500)
+    put("referrals/r2",dict(base,dob="1975-03-02",referredAt=iso(0),referredByName="Регистратура",status="жаңа",date="2026-10-15",time="11:00"))
+    pg.click("#tabBtn-doc"); pg.wait_for_timeout(800)
+    h=pg.query_selector(".panel.active .card > h2"); print("card h2:",h.inner_text() if h else None)
+    if h:
+        vis=lambda: pg.evaluate("(()=>{const c=document.querySelector('.panel.active .card > h2').parentElement;return [...c.children].filter(x=>x.tagName!=='H2').some(x=>x.offsetHeight>0)})()")
+        print("visible before:",vis()); h.click(); print("after fold:",vis()); pg.reload(); pg.wait_for_timeout(1500); pg.click("#tabBtn-doc"); pg.wait_for_timeout(500); print("persist:",vis()); pg.query_selector(".panel.active .card > h2").click()
+    pg.evaluate("openReferral('r2')"); pg.wait_for_timeout(1500)
+    pg.fill("#diagMkb","I10"); pg.click("text=Протоколдан іздеу >> nth=0"); pg.wait_for_timeout(1500)
+    print("bar:",pg.inner_text("#protocolResultBox .nx-pbar"))
+    h1=lambda: pg.evaluate("document.querySelector('#protocolResultBox .row').offsetHeight")
+    a=h1(); pg.click("#protocolResultBox .row > b"); print("row h:",a,"->",h1())
+    pg.click("#protocolResultBox [data-nxa=all-on]"); pg.click("#protocolResultBox [data-nxa=scroll]"); print("scroll cls:",pg.evaluate("document.querySelector('#protocolResultBox .protocol-box').className"))
+    pg.click("#protocolResultBox [data-nxa=all-off]"); print("all folded:",pg.evaluate("[...document.querySelectorAll('#protocolResultBox .row')].every(r=>r.classList.contains('nx-folded'))"))
+    pg.click("#ordDocBox > .field > label"); print("ord folded:",pg.evaluate("document.querySelector('#ordDocBox > .field').classList.contains('nx-folded')"))
+    pg.evaluate("setLang('ru')"); pg.wait_for_timeout(400); print(pg.inner_text("#protocolResultBox .nx-pbar"))
+    pg.screenshot(path="/tmp/ord/v94.png"); print(errs); b.close()

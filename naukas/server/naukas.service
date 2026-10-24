@@ -1,0 +1,15 @@
+# Docker-сыз нұсқа: /etc/systemd/system/naukas.service
+[Unit]
+Description=Naukas zholdamasy local server
+After=network.target
+
+[Service]
+WorkingDirectory=/srv/naukas
+Environment=PORT=80 DATA_DIR=/srv/naukas/data ALLOW_PREFIX=192.168.,10.
+ExecStart=/usr/bin/node /srv/naukas/server.js
+Restart=always
+User=naukas
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
